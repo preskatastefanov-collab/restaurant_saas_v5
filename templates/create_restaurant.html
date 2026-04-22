@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="bg">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Нов ресторант</title>
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+<body class="dashboard-page">
+
+    <div class="header">
+        <div class="brand-wrap">
+            <div class="brand-icon">➕</div>
+            <h1>Създай нов ресторант</h1>
+        </div>
+
+        <div class="header-actions">
+            <a class="top-btn" href="/restaurants">🏪 Ресторанти</a>
+            <a class="top-btn" href="/dashboard">📊 Dashboard</a>
+            <a class="top-btn" href="/users">👥 Потребители</a>
+            <a class="top-btn" href="/menu-manager">📋 Меню</a>
+            <a class="top-btn" href="/settings">⚙️ Настройки</a>
+            <a class="logout-btn" href="/logout">🚪 Изход</a>
+        </div>
+    </div>
+
+    <div class="container">
+
+        {% if error %}
+        <div class="error" style="margin-bottom: 18px;">{{ error }}</div>
+        {% endif %}
+
+        {% if success %}
+        <div class="saved-banner" style="margin-bottom: 18px;">{{ success }}</div>
+        {% endif %}
+
+        <div class="settings-card">
+            <h2>Данни за ресторанта</h2>
+
+            <form method="POST" action="/create-restaurant">
+                <div class="settings-grid">
+                    <div class="settings-field">
+                        <label>Име на ресторанта</label>
+                        <input type="text" name="restaurant_name" required>
+                    </div>
+
+                    <div class="settings-field">
+                        <label>Slug</label>
+                        <input type="text" name="slug" placeholder="primer-restorant" required>
+                    </div>
+
+                    <div class="settings-field">
+                        <label>Потребителско име</label>
+                        <input type="text" name="username" required>
+                    </div>
+
+                    <div class="settings-field">
+                        <label>Парола</label>
+                        <input type="text" name="password" required>
+                    </div>
+
+                    <div class="settings-field">
+                        <label>Макс. капацитет</label>
+                        <input type="number" name="max_capacity" value="20" required>
+                    </div>
+
+                    <div class="settings-field">
+                        <label>Отваря в</label>
+                        <input type="number" name="open_hour" value="10" required>
+                    </div>
+
+                    <div class="settings-field">
+                        <label>Затваря в</label>
+                        <input type="number" name="close_hour" value="22" required>
+                    </div>
+                </div>
+
+                <div class="settings-actions">
+                    <button class="save-settings-btn" type="submit">🚀 Създай ресторант</button>
+                </div>
+            </form>
+        </div>
+
+    </div>
+
+</body>
+</html>

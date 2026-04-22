@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="bg">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ widget_title }}</title>
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+<body class="widget-page">
+
+    <div class="demo-page">
+        <div class="demo-content">
+            <h1>Restaurant Website Demo</h1>
+            <p>
+                Това е примерен сайт. Chatbot widget-ът стои долу вдясно и може
+                да се вгради в реален сайт.
+            </p>
+        </div>
+    </div>
+
+    {% if widget_enabled == 1 %}
+    <button
+        id="chatLauncher"
+        class="chat-launcher"
+        aria-label="Отвори чат"
+        style="background: {{ primary_color }};"
+    >
+        <span class="launcher-icon">💬</span>
+    </button>
+
+    <div id="chatWidget" class="chat-widget hidden">
+        <div id="chatHeader" class="chat-header" style="background: {{ primary_color }};">
+            <div class="chat-header-left">
+                <div class="chat-avatar">🍽️</div>
+                <div>
+                    <div class="chat-title">{{ widget_title }}</div>
+                    <div class="chat-status">Онлайн</div>
+                </div>
+            </div>
+
+            <div class="chat-header-actions">
+                <button id="minimizeBtn" class="icon-btn" aria-label="Минимизирай">—</button>
+            </div>
+        </div>
+
+        <div id="chatLog" class="chat-log"></div>
+        <div id="chatQuickActions" class="chat-quick-actions"></div>
+
+        <div class="chat-input-wrap">
+            <input
+                id="userInput"
+                type="text"
+                placeholder="Напиши съобщение..."
+                autocomplete="off"
+            >
+            <button id="send-btn" class="send-btn" aria-label="Изпрати">➤</button>
+        </div>
+    </div>
+    {% endif %}
+
+    <script>
+        window.CHATBOT_CONFIG = {
+            tenantSlug: {{ tenant_slug | tojson }},
+            welcomeMessage: {{ welcome_message | tojson }},
+            widgetTitle: {{ widget_title | tojson }},
+            primaryColor: {{ primary_color | tojson }},
+            widgetEnabled: {{ widget_enabled | tojson }},
+            chatEndpoint: {{ ("/chat/" ~ tenant_slug) | tojson }}
+        };
+    </script>
+
+    <script src="/static/script.js"></script>
+</body>
+</html>

@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="bg">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Настройки</title>
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+<body class="dashboard-page">
+
+    <div class="header">
+        <div class="brand-wrap">
+            <div class="brand-icon">⚙️</div>
+            <h1>Настройки на ресторанта</h1>
+        </div>
+
+        <div class="header-actions">
+            {% if role == "super_admin" %}
+                <a class="top-btn" href="/restaurants">🏪 Ресторанти</a>
+                <a class="top-btn" href="/create-restaurant">➕ Нов ресторант</a>
+                <a class="top-btn" href="/users">👥 Потребители</a>
+                <a class="top-btn" href="/menu-manager">📋 Меню</a>
+                <a class="top-btn" href="/dashboard">📊 Dashboard</a>
+            {% elif role == "owner" %}
+                <a class="top-btn" href="/users">👥 Потребители</a>
+                <a class="top-btn" href="/menu-manager">📋 Меню</a>
+                <a class="top-btn" href="/dashboard">📊 Dashboard</a>
+            {% elif role == "admin" %}
+                <a class="top-btn" href="/users">👥 Потребители</a>
+                <a class="top-btn" href="/menu-manager">📋 Меню</a>
+                <a class="top-btn" href="/dashboard">📊 Dashboard</a>
+            {% endif %}
+            <a class="logout-btn" href="/logout">🚪 Изход</a>
+        </div>
+    </div>
+
+    <div class="container">
+        {% if saved %}
+        <div class="saved-banner" style="margin-bottom: 18px;">✅ Настройките са запазени успешно.</div>
+        {% endif %}
+
+        <div class="settings-card">
+            <form method="POST" action="/settings">
+                <div class="settings-grid">
+                    <div class="settings-field">
+                        <label>Име на ресторанта</label>
+                        <input type="text" name="restaurant_name" value="{{ settings.restaurant_name or '' }}">
+                    </div>
+
+                    <div class="settings-field">
+                        <label>Телефон</label>
+                        <input type="text" name="phone" value="{{ settings.phone or '' }}">
+                    </div>
+
+                    <div class="settings-field">
+                        <label>Email</label>
+                        <input type="text" name="email" value="{{ settings.email or '' }}">
+                    </div>
+
+                    <div class="settings-field">
+                        <label>Адрес</label>
+                        <input type="text" name="address" value="{{ settings.address or '' }}">
+                    </div>
+
+                    <div class="settings-field settings-full">
+                        <label>Welcome message</label>
+                        <textarea name="welcome_message">{{ settings.welcome_message or '' }}</textarea>
+                    </div>
+
+                    <div class="settings-field">
+                        <label>Макс. капацитет</label>
+                        <input type="number" name="max_capacity" value="{{ settings.max_capacity or 20 }}">
+                    </div>
+
+                    <div class="settings-field">
+                        <label>Отваря в</label>
+                        <input type="number" name="open_hour" value="{{ settings.open_hour or 10 }}">
+                    </div>
+
+                    <div class="settings-field">
+                        <label>Затваря в</label>
+                        <input type="number" name="close_hour" value="{{ settings.close_hour or 22 }}">
+                    </div>
+
+                    <div class="settings-field">
+                        <label>Primary color</label>
+                        <input type="text" name="primary_color" value="{{ settings.primary_color or '#1e88ff' }}">
+                    </div>
+
+                    <div class="settings-field">
+                        <label>Widget title</label>
+                        <input type="text" name="widget_title" value="{{ settings.widget_title or 'AI ChatBot - Ресторант' }}">
+                    </div>
+
+                    <div class="settings-field">
+                        <label>Widget enabled</label>
+                        <select name="widget_enabled">
+                            <option value="1" {% if settings.widget_enabled == 1 %}selected{% endif %}>Да</option>
+                            <option value="0" {% if settings.widget_enabled == 0 %}selected{% endif %}>Не</option>
+                        </select>
+                    </div>
+
+                    <div class="settings-field">
+                        <label>LLM enabled</label>
+                        <select name="llm_enabled">
+                            <option value="1" {% if settings.llm_enabled == 1 %}selected{% endif %}>Да</option>
+                            <option value="0" {% if settings.llm_enabled == 0 %}selected{% endif %}>Не</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="settings-actions">
+                    <button class="save-settings-btn" type="submit">💾 Запази настройките</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+</body>
+</html>

@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="bg">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ресторанти</title>
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+<body class="dashboard-page">
+
+    <div class="header">
+        <div class="brand-wrap">
+            <div class="brand-icon">🏪</div>
+            <h1>Всички ресторанти</h1>
+        </div>
+
+        <div class="header-actions">
+            <a class="top-btn" href="/dashboard">📊 Dashboard</a>
+            <a class="top-btn" href="/create-restaurant">➕ Нов ресторант</a>
+            <a class="top-btn" href="/users">👥 Потребители</a>
+            <a class="top-btn" href="/menu-manager">📋 Меню</a>
+            <a class="top-btn" href="/settings">⚙️ Настройки</a>
+            <a class="logout-btn" href="/logout">🚪 Изход</a>
+        </div>
+    </div>
+
+    <div class="container">
+
+        <div class="table-card">
+            <table>
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Име</th>
+                        <th>Slug</th>
+                        <th>Статус</th>
+                        <th>Създаден</th>
+                        <th>Действие</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% if restaurants %}
+                        {% for r in restaurants %}
+                        <tr>
+                            <td>{{ r.id }}</td>
+                            <td>{{ r.name }}</td>
+                            <td>{{ r.slug }}</td>
+                            <td>
+                                {% if r.is_active == 1 %}
+                                    <span class="people-badge" style="background: linear-gradient(180deg, #27c77f 0%, #17a85f 100%);">Активен</span>
+                                {% else %}
+                                    <span class="people-badge" style="background: linear-gradient(180deg, #ff6666 0%, #f34a4a 100%);">Спрян</span>
+                                {% endif %}
+                            </td>
+                            <td>{{ r.created_at }}</td>
+                            <td>
+                                <div class="actions">
+                                    {% if r.is_active == 1 %}
+                                    <form method="POST" action="/restaurants/deactivate" onsubmit="return confirm('Сигурен ли си, че искаш да спреш този ресторант?')">
+                                        <input type="hidden" name="tenant_id" value="{{ r.id }}">
+                                        <button class="action-btn action-delete" type="submit">⛔</button>
+                                    </form>
+                                    {% else %}
+                                    <form method="POST" action="/restaurants/activate">
+                                        <input type="hidden" name="tenant_id" value="{{ r.id }}">
+                                        <button class="action-btn action-edit" type="submit">✅</button>
+                                    </form>
+                                    {% endif %}
+                                </div>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    {% else %}
+                        <tr>
+                            <td colspan="6" class="empty-state">Няма създадени ресторанти</td>
+                        </tr>
+                    {% endif %}
+                </tbody>
+            </table>
+        </div>
+
+    </div>
+
+</body>
+</html>

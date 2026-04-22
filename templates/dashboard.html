@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html lang="bg">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard</title>
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+<body class="dashboard-page">
+
+    <div class="header">
+        <div class="brand-wrap">
+            <div class="brand-icon">🍽</div>
+            <h1>Restaurant Dashboard</h1>
+        </div>
+
+        <div class="header-actions">
+            {% if role == "super_admin" %}
+                <a class="top-btn" href="/restaurants">🏬 Ресторанти</a>
+                <a class="top-btn" href="/create-restaurant">➕ Нов ресторант</a>
+                <a class="top-btn" href="/users">👥 Потребители</a>
+                <a class="top-btn" href="/menu-manager">📋 Меню</a>
+                <a class="top-btn" href="/settings">⚙️ Настройки</a>
+            {% elif role == "owner" %}
+                <a class="top-btn" href="/users">👥 Потребители</a>
+                <a class="top-btn" href="/menu-manager">📋 Меню</a>
+                <a class="top-btn" href="/settings">⚙️ Настройки</a>
+            {% elif role == "admin" %}
+                <a class="top-btn" href="/users">👥 Потребители</a>
+                <a class="top-btn" href="/menu-manager">📋 Меню</a>
+                <a class="top-btn" href="/settings">⚙️ Настройки</a>
+            {% endif %}
+
+            <a class="logout-btn" href="/logout">🚪 Изход</a>
+        </div>
+    </div>
+
+    <div class="container">
+
+        <div class="stats-grid stats-grid-4">
+            <div class="stat-card">
+                <div class="stat-title">Общо</div>
+                <div class="stat-icon soft-blue">📊</div>
+                <div class="stat-value">{{ total }}</div>
+            </div>
+
+            <div class="stat-card">
+                <div class="stat-title">Днес</div>
+                <div class="stat-icon soft-green">📅</div>
+                <div class="stat-value">{{ today_count }}</div>
+            </div>
+
+            <div class="stat-card">
+                <div class="stat-title">Предстоящи</div>
+                <div class="stat-icon soft-yellow">🗓️</div>
+                <div class="stat-value">{{ upcoming }}</div>
+            </div>
+
+            <div class="stat-card">
+                <div class="stat-title">Свободни места днес</div>
+                <div class="stat-icon soft-mint">{{ free_places_today }}</div>
+                <div class="stat-value stat-value-small">&nbsp;</div>
+            </div>
+        </div>
+
+        <div class="stats-grid stats-grid-3 second-row">
+            <div class="stat-card">
+                <div class="stat-title">Chat съобщения</div>
+                <div class="stat-icon soft-blue">💬</div>
+                <div class="stat-value">{{ analytics.total_chat_messages }}</div>
+            </div>
+
+            <div class="stat-card">
+                <div class="stat-title">Започнати резервации</div>
+                <div class="stat-icon soft-purple">🔖</div>
+                <div class="stat-value">{{ analytics.reservation_started }}</div>
+            </div>
+
+            <div class="stat-card">
+                <div class="stat-title">Conversion %</div>
+                <div class="stat-icon soft-lavender">{{ analytics.conversion_rate }}</div>
+                <div class="stat-value stat-value-small">&nbsp;</div>
+            </div>
+        </div>
+
+        <div class="toolbar">
+            <input
+                type="text"
+                id="searchInput"
+                class="search-input"
+                placeholder="Търси..."
+                onkeyup="filterTable()"
+            >
+
+            <button class="export-btn" onclick="window.location.href='/export'">
+                📥 Export
+            </button>
+        </div>
+
+        <div class="table-card">
+            <table id="reservationTable">
+                <thead>
+                    <tr>
+                        <th>Име</th>
+                        <th>Телефон</th>
+                        <th>Дата</th>
+                        <th>Час</th>
+                        <th>Хора</th>
+                        <th>Действие</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% if reservations %}
+                        {% for r in reservations %}
+                        <tr>
+                            <td>{{ r.name }}</td>
+                            <td>{{ r.phone }}</td>
+                            <td>{{ r.date }}</td>
+                            <td>{{ r.time }}</td>
+                            <td>
+                                <span class="people-badge">{{ r.people }}</span>
+                            </td>
+                            <td>
+                                <div class="actions">
+                                    <button
+                                        class="action-btn action-edit"
+                                        onclick="openEditModal('{{ r.id }}', '{{ r.name|e }}', '{{ r.phone|e }}', '{{ r.date|e }}', '{{ r.time|e }}', '{{ r.people|e }}')"
+                                    >✏️</button>
+
+                                    <button
+                                        class="action-btn action-delete"
+                                        onclick="deleteReservation('{{ r.id }}')"
+                                    >🗑️</button>
+                                </div>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    {% else %}
+                        <tr>
+                            <td colspan="6" class="empty-state">Няма намерени резервации</td>
+                        </tr>
+                    {% endif %}
+                </tbody>
+            </table>
+        </div>
+
+    </div>
+
+    <div id="editModal" class="modal">
+        <div class="modal-content">
+            <h2>Редакция</h2>
+
+            <input type="hidden" id="editId">
+            <input type="text" id="editName" placeholder="Име">
+            <input type="text" id="editPhone" placeholder="Телефон">
+            <input type="text" id="editDate" placeholder="Дата">
+            <input type="text" id="editTime" placeholder="Час">
+            <input type="text" id="editPeople" placeholder="Хора">
+
+            <div class="modal-actions">
+                <button class="save-btn" onclick="saveEdit()">💾 Запази</button>
+                <button class="close-btn" onclick="closeEditModal()">Затвори</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="popup">Успешно!</div>
+
+    <script>
+        function filterTable() {
+            const input = document.getElementById("searchInput").value.toLowerCase();
+            const rows = document.querySelectorAll("#reservationTable tbody tr");
+
+            rows.forEach((row) => {
+                if (row.querySelector(".empty-state")) return;
+                const text = row.innerText.toLowerCase();
+                row.style.display = text.includes(input) ? "" : "none";
+            });
+        }
+
+        function showPopup(text) {
+            const popup = document.getElementById("popup");
+            popup.innerText = text;
+            popup.style.display = "block";
+
+            setTimeout(() => {
+                popup.style.display = "none";
+            }, 1800);
+        }
+
+        function deleteReservation(id) {
+            if (!confirm("Сигурен ли си?")) return;
+
+            fetch("/delete_reservation", {
+                method: "POST",
+                headers: {"Content-Type": "application/json"},
+                body: JSON.stringify({ id: id })
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.status === "success") {
+                    showPopup("Изтрито!");
+                    setTimeout(() => location.reload(), 700);
+                } else {
+                    alert(data.message || "Грешка");
+                }
+            });
+        }
+
+        function openEditModal(id, name, phone, date, time, people) {
+            document.getElementById("editId").value = id;
+            document.getElementById("editName").value = name;
+            document.getElementById("editPhone").value = phone;
+            document.getElementById("editDate").value = date;
+            document.getElementById("editTime").value = time;
+            document.getElementById("editPeople").value = people;
+            document.getElementById("editModal").style.display = "flex";
+        }
+
+        function closeEditModal() {
+            document.getElementById("editModal").style.display = "none";
+        }
+
+        function saveEdit() {
+            const payload = {
+                id: document.getElementById("editId").value,
+                name: document.getElementById("editName").value,
+                phone: document.getElementById("editPhone").value,
+                date: document.getElementById("editDate").value,
+                time: document.getElementById("editTime").value,
+                people: document.getElementById("editPeople").value
+            };
+
+            fetch("/edit_reservation", {
+                method: "POST",
+                headers: {"Content-Type": "application/json"},
+                body: JSON.stringify(payload)
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.status === "success") {
+                    closeEditModal();
+                    showPopup("Редактирано!");
+                    setTimeout(() => location.reload(), 700);
+                } else {
+                    alert(data.message || "Грешка");
+                }
+            });
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="bg">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Управление на менюто</title>
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+<body class="dashboard-page">
+
+    <div class="header">
+        <div class="brand-wrap">
+            <div class="brand-icon">📋</div>
+            <h1>Управление на менюто</h1>
+        </div>
+
+        <div class="header-actions">
+            {% if role == "super_admin" %}
+                <a class="top-btn" href="/restaurants">🏪 Ресторанти</a>
+                <a class="top-btn" href="/create-restaurant">➕ Нов ресторант</a>
+                <a class="top-btn" href="/users">👥 Потребители</a>
+                <a class="top-btn" href="/settings">⚙️ Настройки</a>
+                <a class="top-btn" href="/dashboard">📊 Dashboard</a>
+            {% elif role == "owner" %}
+                <a class="top-btn" href="/users">👥 Потребители</a>
+                <a class="top-btn" href="/settings">⚙️ Настройки</a>
+                <a class="top-btn" href="/dashboard">📊 Dashboard</a>
+            {% elif role == "admin" %}
+                <a class="top-btn" href="/users">👥 Потребители</a>
+                <a class="top-btn" href="/settings">⚙️ Настройки</a>
+                <a class="top-btn" href="/dashboard">📊 Dashboard</a>
+            {% endif %}
+            <a class="logout-btn" href="/logout">🚪 Изход</a>
+        </div>
+    </div>
+
+    <div class="container">
+        {% if saved %}
+        <div class="saved-banner" style="margin-bottom: 18px;">✅ Менюто е обновено успешно.</div>
+        {% endif %}
+
+        <div class="settings-card">
+            <h2>Добави категория</h2>
+
+            <form method="POST" action="/menu-manager/add-category">
+                <div class="settings-grid">
+                    <div class="settings-field">
+                        <label>Име на категория</label>
+                        <input type="text" name="name" placeholder="Пример: Салати" required>
+                    </div>
+
+                    <div class="settings-field">
+                        <label>Подредба</label>
+                        <input type="number" name="sort_order" value="0">
+                    </div>
+                </div>
+
+                <div class="settings-actions">
+                    <button class="save-settings-btn" type="submit">➕ Добави категория</button>
+                </div>
+            </form>
+        </div>
+
+        <div class="settings-card" style="margin-top: 24px;">
+            <h2>Добави артикул</h2>
+
+            <form method="POST" action="/menu-manager/add-item">
+                <div class="settings-grid">
+                    <div class="settings-field">
+                        <label>Категория</label>
+                        <select name="category_id" required>
+                            {% for cat in categories %}
+                            <option value="{{ cat.id }}">{{ cat.name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    <div class="settings-field">
+                        <label>Име на артикула</label>
+                        <input type="text" name="name" required>
+                    </div>
+
+                    <div class="settings-field settings-full">
+                        <label>Описание</label>
+                        <input type="text" name="description">
+                    </div>
+
+                    <div class="settings-field">
+                        <label>Цена</label>
+                        <input type="number" step="0.01" name="price" value="0">
+                    </div>
+
+                    <div class="settings-field">
+                        <label>Подредба</label>
+                        <input type="number" name="sort_order" value="0">
+                    </div>
+                </div>
+
+                <div class="settings-actions">
+                    <button class="save-settings-btn" type="submit">➕ Добави артикул</button>
+                </div>
+            </form>
+        </div>
+
+        {% for block in menu_data %}
+        <div class="settings-card" style="margin-top: 24px;">
+            <div style="display:flex; justify-content:space-between; align-items:center; gap:12px; flex-wrap:wrap;">
+                <h2 style="margin:0;">{{ block["category"]["name"] }}</h2>
+
+                <form method="POST" action="/menu-manager/delete-category" onsubmit="return confirm('Сигурен ли си?')">
+                    <input type="hidden" name="category_id" value="{{ block['category']['id'] }}">
+                    <button class="logout-btn" type="submit" style="border:none;">🗑️ Изтрий категория</button>
+                </form>
+            </div>
+
+            {% if block["items"] %}
+            <div class="table-card" style="margin-top: 18px;">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Име</th>
+                            <th>Описание</th>
+                            <th>Цена</th>
+                            <th>Действие</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for item in block["items"] %}
+                        <tr>
+                            <td>{{ item["name"] }}</td>
+                            <td>{{ item["description"] }}</td>
+                            <td>€{{ "%.2f"|format(item["price"]) }}</td>
+                            <td>
+                                <form method="POST" action="/menu-manager/delete-item" onsubmit="return confirm('Сигурен ли си?')">
+                                    <input type="hidden" name="item_id" value="{{ item['id'] }}">
+                                    <button class="action-btn action-delete" type="submit">🗑️</button>
+                                </form>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% else %}
+            <p style="margin-top:16px; color:#6b7280;">Няма добавени артикули в тази категория.</p>
+            {% endif %}
+        </div>
+        {% endfor %}
+    </div>
+
+</body>
+</html>
