@@ -57,6 +57,14 @@ def has_role(*allowed_roles):
     return user.get("role") in allowed_roles
 
 
+def is_super_admin():
+    return has_role("super_admin")
+
+
+def can_manage_premium_features():
+    return has_role("super_admin")
+
+
 def parse_bg_date(date_str):
     try:
         return datetime.strptime(date_str, "%d.%m.%Y").date()
@@ -158,7 +166,6 @@ def login():
 def logout():
     session.pop("user", None)
 
-    # чистим всички chat_data_* сесии
     keys_to_remove = [k for k in session.keys() if k.startswith("chat_data_")]
     for k in keys_to_remove:
         session.pop(k, None)
@@ -252,7 +259,9 @@ def dashboard():
         free_places_today=free_places_today,
         analytics=analytics,
         username=user["username"],
-        role=user["role"]
+        role=user["role"],
+        can_manage_premium_features=can_manage_premium_features(),
+        is_super_admin=is_super_admin()
     )
 
 
@@ -266,8 +275,11 @@ def settings():
         return redirect("/dashboard")
 
     tenant_id = user["tenant_id"]
+    can_manage_premium = can_manage_premium_features()
 
     if request.method == "POST":
+        existing_settings = get_tenant_settings(tenant_id) or {}
+
         restaurant_name = request.form.get("restaurant_name", "").strip()
         phone = request.form.get("phone", "").strip()
         email = request.form.get("email", "").strip()
@@ -279,7 +291,11 @@ def settings():
         primary_color = request.form.get("primary_color", "#1e88ff").strip()
         widget_title = request.form.get("widget_title", "AI ChatBot - Ресторант").strip()
         widget_enabled = int(request.form.get("widget_enabled", 1))
-        llm_enabled = int(request.form.get("llm_enabled", 0))
+
+        if can_manage_premium:
+            llm_enabled = int(request.form.get("llm_enabled", existing_settings.get("llm_enabled", 0)))
+        else:
+            llm_enabled = int(existing_settings.get("llm_enabled", 0))
 
         update_tenant_settings(
             tenant_id=tenant_id,
@@ -299,14 +315,16 @@ def settings():
 
         return redirect("/settings?saved=1")
 
-    settings_data = get_tenant_settings(tenant_id)
+    settings_data = get_tenant_settings(tenant_id) or {}
     saved = request.args.get("saved") == "1"
 
     return render_template(
         "settings.html",
         settings=settings_data,
         saved=saved,
-        role=user["role"]
+        role=user["role"],
+        can_manage_premium_features=can_manage_premium,
+        is_super_admin=is_super_admin()
     )
 
 
@@ -464,7 +482,9 @@ def users_page():
         users=list_users_by_tenant(tenant_id),
         success=success,
         error=error,
-        role=user["role"]
+        role=user["role"],
+        can_manage_premium_features=can_manage_premium_features(),
+        is_super_admin=is_super_admin()
     )
 
 
@@ -694,7 +714,9 @@ def menu_manager():
         categories=categories,
         menu_data=menu_data,
         saved=saved,
-        role=user["role"]
+        role=user["role"],
+        can_manage_premium_features=can_manage_premium_features(),
+        is_super_admin=is_super_admin()
     )
 
 

@@ -43,6 +43,21 @@
         <div class="saved-banner" style="max-width: 100%; margin-bottom: 18px;">{{ success }}</div>
         {% endif %}
 
+        {% if role == "super_admin" %}
+        <div class="saved-banner" style="max-width: 100%; margin-bottom: 18px;">
+            🔒 Super Admin режим: имаш пълен контрол над ролите и управлението на потребителите.
+        </div>
+        {% elif role == "owner" %}
+        <div class="saved-banner" style="max-width: 100%; margin-bottom: 18px;">
+            👤 Owner режим: можеш да управляваш екипа на ресторанта, без системните права на платформата.
+        </div>
+        {% elif role == "admin" %}
+        <div class="saved-banner" style="max-width: 100%; margin-bottom: 18px;">
+            ℹ️ Admin режим: виждаш потребителите, но нямаш пълен контрол върху роли и чувствителни действия.
+        </div>
+        {% endif %}
+
+        {% if role == "super_admin" or role == "owner" %}
         <div class="settings-card">
             <h2>Добави потребител</h2>
 
@@ -75,6 +90,7 @@
                 </div>
             </form>
         </div>
+        {% endif %}
 
         <div class="table-card" style="margin-top: 24px;">
             <table>
@@ -101,11 +117,20 @@
                                 <span class="people-badge" style="background: linear-gradient(180deg, #ff6666 0%, #f34a4a 100%);">Спрян</span>
                             {% endif %}
                         </td>
+
                         <td>
-                            {% if u.role == "super_admin" %}
+                            {% if role == "admin" %}
+                                <span style="color:#666;">—</span>
+
+                            {% elif u.role == "super_admin" %}
                                 <strong>super_admin</strong>
+
                             {% elif u.role == "owner" and role != "super_admin" %}
                                 <strong>owner</strong>
+
+                            {% elif u.id == session["user"]["id"] %}
+                                <strong>{{ u.role }}</strong>
+
                             {% else %}
                             <form method="POST" action="/users/change-role" style="display:flex; gap:8px; justify-content:center; align-items:center;">
                                 <input type="hidden" name="user_id" value="{{ u.id }}">
@@ -120,16 +145,22 @@
                             </form>
                             {% endif %}
                         </td>
+
                         <td>
                             <div class="actions">
-                                {% if u.role == "super_admin" %}
+                                {% if role == "admin" %}
                                     <span style="color:#666;">—</span>
+
+                                {% elif u.role == "super_admin" %}
+                                    <span style="color:#666;">—</span>
+
                                 {% elif u.id == session["user"]["id"] %}
                                     <span style="color:#666;">—</span>
+
                                 {% elif u.role == "owner" and role != "super_admin" %}
                                     <span style="color:#666;">—</span>
+
                                 {% else %}
-                                    {% if role == "super_admin" or role == "owner" %}
                                     <button
                                         class="action-btn action-edit"
                                         type="button"
@@ -152,7 +183,6 @@
                                         <input type="hidden" name="user_id" value="{{ u.id }}">
                                         <button class="action-btn action-delete" type="submit">🗑️</button>
                                     </form>
-                                    {% endif %}
                                 {% endif %}
                             </div>
                         </td>
@@ -163,6 +193,7 @@
         </div>
     </div>
 
+    {% if role == "super_admin" or role == "owner" %}
     <div id="editUserModal" class="modal">
         <div class="modal-content">
             <h2>Редакция на потребител</h2>
@@ -198,18 +229,24 @@
             </form>
         </div>
     </div>
+    {% endif %}
 
     <script>
         function openEditUserModal(id, username, role) {
+            const modal = document.getElementById("editUserModal");
+            if (!modal) return;
+
             document.getElementById("editUserId").value = id;
             document.getElementById("editUsername").value = username;
             document.getElementById("editPassword").value = "";
             document.getElementById("editRole").value = role;
-            document.getElementById("editUserModal").style.display = "flex";
+            modal.style.display = "flex";
         }
 
         function closeEditUserModal() {
-            document.getElementById("editUserModal").style.display = "none";
+            const modal = document.getElementById("editUserModal");
+            if (!modal) return;
+            modal.style.display = "none";
         }
     </script>
 

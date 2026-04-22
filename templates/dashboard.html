@@ -39,7 +39,7 @@
 
         <div class="stats-grid stats-grid-4">
             <div class="stat-card">
-                <div class="stat-title">Общо</div>
+                <div class="stat-title">Общо резервации</div>
                 <div class="stat-icon soft-blue">📊</div>
                 <div class="stat-value">{{ total }}</div>
             </div>
@@ -63,6 +63,11 @@
             </div>
         </div>
 
+        {% if is_super_admin %}
+        <div class="saved-banner" style="margin-top: 18px; margin-bottom: 18px;">
+            🔒 Вътрешни analytics и premium показатели се виждат само от super_admin.
+        </div>
+
         <div class="stats-grid stats-grid-3 second-row">
             <div class="stat-card">
                 <div class="stat-title">Chat съобщения</div>
@@ -82,13 +87,14 @@
                 <div class="stat-value stat-value-small">&nbsp;</div>
             </div>
         </div>
+        {% endif %}
 
         <div class="toolbar">
             <input
                 type="text"
                 id="searchInput"
                 class="search-input"
-                placeholder="Търси..."
+                placeholder="Търси по име, телефон, дата..."
                 onkeyup="filterTable()"
             >
 

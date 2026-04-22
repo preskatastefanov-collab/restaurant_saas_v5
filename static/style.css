@@ -970,6 +970,12 @@ table tr:hover td {
     color: white;
 }
 
+.chat-button {
+    box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+    font-size: 24px;
+    cursor: pointer;
+}
+
     .chat-launcher {
         right: 16px;
         bottom: 16px;

@@ -26,6 +26,10 @@
 
     <div class="container">
 
+        <div class="saved-banner" style="margin-bottom: 18px;">
+            🔒 Този екран е само за super_admin. Тук се управлява tenant status и основният контрол над ресторантите.
+        </div>
+
         <div class="table-card">
             <table>
                 <thead>
@@ -34,6 +38,7 @@
                         <th>Име</th>
                         <th>Slug</th>
                         <th>Статус</th>
+                        <th>Публичен линк</th>
                         <th>Създаден</th>
                         <th>Действие</th>
                     </tr>
@@ -52,18 +57,23 @@
                                     <span class="people-badge" style="background: linear-gradient(180deg, #ff6666 0%, #f34a4a 100%);">Спрян</span>
                                 {% endif %}
                             </td>
+                            <td>
+                                <a class="top-btn" href="/site/{{ r.slug }}" target="_blank" style="padding: 8px 14px; font-size: 14px;">
+                                    🌐 Отвори
+                                </a>
+                            </td>
                             <td>{{ r.created_at }}</td>
                             <td>
                                 <div class="actions">
                                     {% if r.is_active == 1 %}
                                     <form method="POST" action="/restaurants/deactivate" onsubmit="return confirm('Сигурен ли си, че искаш да спреш този ресторант?')">
                                         <input type="hidden" name="tenant_id" value="{{ r.id }}">
-                                        <button class="action-btn action-delete" type="submit">⛔</button>
+                                        <button class="action-btn action-delete" type="submit" title="Спри ресторанта">⛔</button>
                                     </form>
                                     {% else %}
                                     <form method="POST" action="/restaurants/activate">
                                         <input type="hidden" name="tenant_id" value="{{ r.id }}">
-                                        <button class="action-btn action-edit" type="submit">✅</button>
+                                        <button class="action-btn action-edit" type="submit" title="Активирай ресторанта">✅</button>
                                     </form>
                                     {% endif %}
                                 </div>
@@ -72,7 +82,7 @@
                         {% endfor %}
                     {% else %}
                         <tr>
-                            <td colspan="6" class="empty-state">Няма създадени ресторанти</td>
+                            <td colspan="7" class="empty-state">Няма създадени ресторанти</td>
                         </tr>
                     {% endif %}
                 </tbody>
