@@ -1,5 +1,63 @@
 from database import get_db
 
+VALID_PLANS = {"basic", "standard", "premium"}
+
+PLAN_FEATURES = {
+    "basic": {
+        "widget",
+        "menu",
+        "contacts",
+        "reservations",
+        "dashboard",
+        "export",
+        "menu_manager",
+        "user_management_basic",
+    },
+    "standard": {
+        "widget",
+        "menu",
+        "contacts",
+        "reservations",
+        "dashboard",
+        "export",
+        "menu_manager",
+        "user_management_basic",
+        "ai_chat",
+        "smart_food_answers",
+        "better_fallback",
+        "smart_quick_replies",
+    },
+    "premium": {
+        "widget",
+        "menu",
+        "contacts",
+        "reservations",
+        "dashboard",
+        "export",
+        "menu_manager",
+        "user_management_basic",
+        "ai_chat",
+        "smart_food_answers",
+        "better_fallback",
+        "smart_quick_replies",
+        "upsell",
+        "premium_analytics",
+        "advanced_ai_logic",
+        "recommended_dishes",
+        "priority_features",
+    },
+}
+
+
+def normalize_plan(plan):
+    plan = (plan or "basic").strip().lower()
+    return plan if plan in VALID_PLANS else "basic"
+
+
+def has_feature(plan, feature_name):
+    plan = normalize_plan(plan)
+    return feature_name in PLAN_FEATURES.get(plan, set())
+
 
 def get_tenant(tenant_id):
     db = get_db()
@@ -9,6 +67,17 @@ def get_tenant(tenant_id):
     """, (tenant_id,)).fetchone()
     db.close()
     return dict(row) if row else None
+
+
+def get_tenant_plan(tenant_id):
+    tenant = get_tenant(tenant_id)
+    if not tenant:
+        return "basic"
+    return normalize_plan(tenant.get("plan"))
+
+
+def tenant_has_feature(tenant_id, feature_name):
+    return has_feature(get_tenant_plan(tenant_id), feature_name)
 
 
 def get_tenant_settings(tenant_id):
@@ -21,16 +90,19 @@ def get_tenant_settings(tenant_id):
     return dict(row) if row else None
 
 
-def create_tenant(name, slug, max_capacity=20, open_hour=10, close_hour=22):
+def create_tenant(name, slug, max_capacity=20, open_hour=10, close_hour=22, plan="basic"):
     db = get_db()
     cursor = db.cursor()
 
+    plan = normalize_plan(plan)
+
     cursor.execute("""
-        INSERT INTO tenants (name, slug, is_active)
-        VALUES (?, ?, 1)
-    """, (name, slug))
+        INSERT INTO tenants (name, slug, plan, is_active)
+        VALUES (?, ?, ?, 1)
+    """, (name, slug, plan))
 
     tenant_id = cursor.lastrowid
+    default_llm_enabled = 1 if has_feature(plan, "ai_chat") else 0
 
     cursor.execute("""
         INSERT INTO tenant_settings (
@@ -48,7 +120,7 @@ def create_tenant(name, slug, max_capacity=20, open_hour=10, close_hour=22):
             widget_enabled,
             llm_enabled
         )
-        VALUES (?, ?, '', '', '', ?, ?, ?, ?, '#1e88ff', ?, 1, 0)
+        VALUES (?, ?, '', '', '', ?, ?, ?, ?, '#1e88ff', ?, 1, ?)
     """, (
         tenant_id,
         name,
@@ -56,7 +128,8 @@ def create_tenant(name, slug, max_capacity=20, open_hour=10, close_hour=22):
         max_capacity,
         open_hour,
         close_hour,
-        f"{name} ChatBot"
+        f"{name} ChatBot",
+        default_llm_enabled,
     ))
 
     db.commit()
@@ -117,8 +190,8 @@ def update_tenant_settings(
 def list_tenants():
     db = get_db()
     rows = db.execute("""
-        SELECT t.id, t.name, t.slug, t.is_active, t.created_at,
-               ts.restaurant_name, ts.phone, ts.max_capacity
+        SELECT t.id, t.name, t.slug, t.plan, t.is_active, t.created_at,
+               ts.restaurant_name, ts.phone, ts.max_capacity, ts.llm_enabled
         FROM tenants t
         LEFT JOIN tenant_settings ts ON ts.tenant_id = t.id
         ORDER BY t.id DESC
