@@ -27,7 +27,7 @@
     <div class="container">
 
         <div class="saved-banner" style="margin-bottom: 18px;">
-            🔒 Този екран е само за super_admin. Тук се управлява tenant status и основният контрол над ресторантите.
+            🔒 Този екран е само за super_admin. Тук се управляват статусът, планът и основният контрол над ресторантите.
         </div>
 
         <div class="table-card">
@@ -37,6 +37,8 @@
                         <th>ID</th>
                         <th>Име</th>
                         <th>Slug</th>
+                        <th>План</th>
+                        <th>AI</th>
                         <th>Статус</th>
                         <th>Публичен линк</th>
                         <th>Създаден</th>
@@ -50,6 +52,25 @@
                             <td>{{ r.id }}</td>
                             <td>{{ r.name }}</td>
                             <td>{{ r.slug }}</td>
+
+                            <td>
+                                {% if r.plan == "premium" %}
+                                    <span class="people-badge" style="background: linear-gradient(180deg, #7b5cff 0%, #5a3ef0 100%);">Premium</span>
+                                {% elif r.plan == "standard" %}
+                                    <span class="people-badge" style="background: linear-gradient(180deg, #f7b733 0%, #fc8f00 100%);">Standard</span>
+                                {% else %}
+                                    <span class="people-badge" style="background: linear-gradient(180deg, #7f8c9b 0%, #5c6773 100%);">Basic</span>
+                                {% endif %}
+                            </td>
+
+                            <td>
+                                {% if r.llm_enabled == 1 %}
+                                    <span class="people-badge" style="background: linear-gradient(180deg, #27c77f 0%, #17a85f 100%);">Включен</span>
+                                {% else %}
+                                    <span class="people-badge" style="background: linear-gradient(180deg, #b8b8b8 0%, #8d8d8d 100%);">Изключен</span>
+                                {% endif %}
+                            </td>
+
                             <td>
                                 {% if r.is_active == 1 %}
                                     <span class="people-badge" style="background: linear-gradient(180deg, #27c77f 0%, #17a85f 100%);">Активен</span>
@@ -57,12 +78,15 @@
                                     <span class="people-badge" style="background: linear-gradient(180deg, #ff6666 0%, #f34a4a 100%);">Спрян</span>
                                 {% endif %}
                             </td>
+
                             <td>
                                 <a class="top-btn" href="/site/{{ r.slug }}" target="_blank" style="padding: 8px 14px; font-size: 14px;">
                                     🌐 Отвори
                                 </a>
                             </td>
+
                             <td>{{ r.created_at }}</td>
+
                             <td>
                                 <div class="actions">
                                     {% if r.is_active == 1 %}
@@ -82,7 +106,7 @@
                         {% endfor %}
                     {% else %}
                         <tr>
-                            <td colspan="7" class="empty-state">Няма създадени ресторанти</td>
+                            <td colspan="9" class="empty-state">Няма създадени ресторанти</td>
                         </tr>
                     {% endif %}
                 </tbody>
