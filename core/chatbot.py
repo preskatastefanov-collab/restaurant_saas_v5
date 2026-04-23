@@ -6,7 +6,7 @@ from core.validators import (
     is_valid_time_range,
     is_valid_future_or_today_date,
 )
-from services.tenants import get_tenant_settings
+from services.tenants import get_tenant_settings, tenant_has_feature
 from services.reservations import get_reservations_for_date
 from services.analytics import log_event
 from services.menu import get_menu_categories, get_menu_items_by_category, find_menu_category_match
@@ -122,7 +122,10 @@ class ChatBot:
 
         return False
 
-    def add_upsell_if_needed(self, text, original_message=""):
+    def add_upsell_if_needed(self, text, original_message="", upsell_enabled=False):
+        if not upsell_enabled:
+            return text
+
         lower_text = (text or "").lower()
         user_text = (original_message or "").lower()
 
@@ -149,13 +152,13 @@ class ChatBot:
 
         return text
 
-    def llm_buttons(self, text):
+    def llm_buttons(self, text, upsell_enabled=False):
         text = (text or "").lower()
 
-        if any(word in text for word in ["десерт", "сладко", "чийзкейк"]):
+        if upsell_enabled and any(word in text for word in ["десерт", "сладко", "чийзкейк"]):
             return ["Напитки", "Нова резервация", "Контакти"]
 
-        if any(word in text for word in ["напит", "за пиене", "лимонада"]):
+        if upsell_enabled and any(word in text for word in ["напит", "за пиене", "лимонада"]):
             return ["Десерти", "Нова резервация", "Контакти"]
 
         if any(word in text for word in ["препоръч", "меню", "сирене", "месо", "пиле", "ястие", "яйца"]):
@@ -175,11 +178,17 @@ class ChatBot:
 
             settings = get_tenant_settings(self.tenant_id) or {}
             intent = detect_intent(text)
-            llm_enabled = int(settings.get("llm_enabled", 0))
+
+            tenant_has_ai_chat = tenant_has_feature(self.tenant_id, "ai_chat")
+            tenant_has_upsell = tenant_has_feature(self.tenant_id, "upsell")
+
+            llm_enabled = 1 if (tenant_has_ai_chat and int(settings.get("llm_enabled", 0)) == 1) else 0
 
             print("DEBUG MESSAGE:", original_message)
             print("DEBUG INTENT:", intent)
             print("DEBUG LLM ENABLED:", llm_enabled)
+            print("DEBUG TENANT HAS AI CHAT:", tenant_has_ai_chat)
+            print("DEBUG TENANT HAS UPSELL:", tenant_has_upsell)
 
             if intent == "cancel":
                 self.context = self.empty_context()
@@ -200,10 +209,14 @@ class ChatBot:
                 if self.should_use_llm_for_menu_question(original_message, intent, llm_enabled):
                     llm_reply = get_llm_reply(self.tenant_id, original_message)
                     if llm_reply:
-                        llm_reply = self.add_upsell_if_needed(llm_reply, original_message)
+                        llm_reply = self.add_upsell_if_needed(
+                            llm_reply,
+                            original_message,
+                            upsell_enabled=tenant_has_upsell
+                        )
                         return {
                             "text": llm_reply,
-                            "buttons": self.llm_buttons(original_message)
+                            "buttons": self.llm_buttons(original_message, upsell_enabled=tenant_has_upsell)
                         }
 
                 return self.handle_menu(original_message)
@@ -259,16 +272,24 @@ class ChatBot:
             if self.should_use_llm_for_menu_question(original_message, intent, llm_enabled):
                 llm_reply = get_llm_reply(self.tenant_id, original_message)
                 if llm_reply:
-                    llm_reply = self.add_upsell_if_needed(llm_reply, original_message)
+                    llm_reply = self.add_upsell_if_needed(
+                        llm_reply,
+                        original_message,
+                        upsell_enabled=tenant_has_upsell
+                    )
                     return {
                         "text": llm_reply,
-                        "buttons": self.llm_buttons(original_message)
+                        "buttons": self.llm_buttons(original_message, upsell_enabled=tenant_has_upsell)
                     }
 
             if llm_enabled == 1:
                 llm_reply = get_llm_reply(self.tenant_id, original_message)
                 if llm_reply:
-                    llm_reply = self.add_upsell_if_needed(llm_reply, original_message)
+                    llm_reply = self.add_upsell_if_needed(
+                        llm_reply,
+                        original_message,
+                        upsell_enabled=tenant_has_upsell
+                    )
                     return {
                         "text": llm_reply,
                         "buttons": self.default_buttons()

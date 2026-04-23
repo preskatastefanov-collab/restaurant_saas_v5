@@ -11,7 +11,6 @@ from config import (
     DEFAULT_CLOSE_HOUR,
 )
 
-
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 
 
@@ -35,6 +34,11 @@ def get_db():
     return conn
 
 
+def column_exists(cursor, table_name, column_name):
+    rows = cursor.execute(f"PRAGMA table_info({table_name})").fetchall()
+    return any(row[1] == column_name for row in rows)
+
+
 def init_db():
     conn = get_db()
     c = conn.cursor()
@@ -44,6 +48,7 @@ def init_db():
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         name TEXT NOT NULL,
         slug TEXT UNIQUE,
+        plan TEXT DEFAULT 'basic',
         is_active INTEGER DEFAULT 1,
         created_at TEXT DEFAULT CURRENT_TIMESTAMP
     )
@@ -149,6 +154,9 @@ def init_db():
     )
     """)
 
+    if not column_exists(c, "tenants", "plan"):
+        c.execute("ALTER TABLE tenants ADD COLUMN plan TEXT DEFAULT 'basic'")
+
     conn.commit()
     conn.close()
 
@@ -158,8 +166,8 @@ def seed_data():
     c = conn.cursor()
 
     c.execute("""
-    INSERT OR IGNORE INTO tenants (id, name, slug, is_active)
-    VALUES (1, ?, 'demo-restaurant', 1)
+    INSERT OR IGNORE INTO tenants (id, name, slug, plan, is_active)
+    VALUES (1, ?, 'demo-restaurant', 'premium', 1)
     """, (DEFAULT_TENANT_NAME,))
 
     c.execute("""
@@ -169,9 +177,11 @@ def seed_data():
         welcome_message,
         max_capacity,
         open_hour,
-        close_hour
+        close_hour,
+        widget_enabled,
+        llm_enabled
     )
-    VALUES (?, ?, ?, ?, ?, ?)
+    VALUES (?, ?, ?, ?, ?, ?, 1, 1)
     """, (
         1,
         DEFAULT_TENANT_NAME,

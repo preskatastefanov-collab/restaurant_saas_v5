@@ -22,6 +22,9 @@ from services.tenants import (
     list_tenants,
     activate_tenant,
     deactivate_tenant,
+    get_tenant_plan,
+    tenant_has_feature,
+    normalize_plan,
 )
 from services.reservations import (
     get_reservations_by_tenant,
@@ -116,6 +119,7 @@ def public_site(slug):
 
     tenant_id = tenant["id"]
     settings = get_tenant_settings(tenant_id) or {}
+    tenant_plan = get_tenant_plan(tenant_id)
 
     return render_template(
         "index.html",
@@ -123,7 +127,8 @@ def public_site(slug):
         widget_title=settings.get("widget_title", "AI ChatBot - Ресторант"),
         primary_color=settings.get("primary_color", "#1e88ff"),
         widget_enabled=int(settings.get("widget_enabled", 1)),
-        welcome_message=settings.get("welcome_message", "👋 Здравейте! С какво мога да помогна?")
+        welcome_message=settings.get("welcome_message", "👋 Здравейте! С какво мога да помогна?"),
+        tenant_plan=tenant_plan,
     )
 
 
@@ -184,7 +189,6 @@ def chat(slug):
         }), 404
 
     tenant_id = tenant["id"]
-
     data = request.get_json(silent=True) or {}
     user_input = data.get("message", "").strip()
 
@@ -223,6 +227,7 @@ def dashboard():
     reservations = get_reservations_by_tenant(tenant_id)
     settings = get_tenant_settings(tenant_id) or {}
     analytics = get_analytics_summary(tenant_id)
+    tenant_plan = get_tenant_plan(tenant_id)
 
     today = datetime.now().date()
     today_str = today.strftime("%d.%m.%Y")
@@ -261,7 +266,11 @@ def dashboard():
         username=user["username"],
         role=user["role"],
         can_manage_premium_features=can_manage_premium_features(),
-        is_super_admin=is_super_admin()
+        is_super_admin=is_super_admin(),
+        tenant_plan=tenant_plan,
+        tenant_has_ai_chat=tenant_has_feature(tenant_id, "ai_chat"),
+        tenant_has_premium_analytics=tenant_has_feature(tenant_id, "premium_analytics"),
+        tenant_has_upsell=tenant_has_feature(tenant_id, "upsell"),
     )
 
 
@@ -276,6 +285,10 @@ def settings():
 
     tenant_id = user["tenant_id"]
     can_manage_premium = can_manage_premium_features()
+    tenant_plan = get_tenant_plan(tenant_id)
+    tenant_has_ai_chat = tenant_has_feature(tenant_id, "ai_chat")
+    tenant_has_premium_analytics = tenant_has_feature(tenant_id, "premium_analytics")
+    tenant_has_upsell = tenant_has_feature(tenant_id, "upsell")
 
     if request.method == "POST":
         existing_settings = get_tenant_settings(tenant_id) or {}
@@ -292,7 +305,7 @@ def settings():
         widget_title = request.form.get("widget_title", "AI ChatBot - Ресторант").strip()
         widget_enabled = int(request.form.get("widget_enabled", 1))
 
-        if can_manage_premium:
+        if can_manage_premium and tenant_has_ai_chat:
             llm_enabled = int(request.form.get("llm_enabled", existing_settings.get("llm_enabled", 0)))
         else:
             llm_enabled = int(existing_settings.get("llm_enabled", 0))
@@ -324,7 +337,11 @@ def settings():
         saved=saved,
         role=user["role"],
         can_manage_premium_features=can_manage_premium,
-        is_super_admin=is_super_admin()
+        is_super_admin=is_super_admin(),
+        tenant_plan=tenant_plan,
+        tenant_has_ai_chat=tenant_has_ai_chat,
+        tenant_has_premium_analytics=tenant_has_premium_analytics,
+        tenant_has_upsell=tenant_has_upsell,
     )
 
 
@@ -388,6 +405,7 @@ def create_restaurant():
         max_capacity = int(request.form.get("max_capacity", 20))
         open_hour = int(request.form.get("open_hour", 10))
         close_hour = int(request.form.get("close_hour", 22))
+        plan = normalize_plan(request.form.get("plan", "basic"))
 
         if not all([restaurant_name, slug, username, password]):
             return render_template(
@@ -410,7 +428,8 @@ def create_restaurant():
                 slug=slug,
                 max_capacity=max_capacity,
                 open_hour=open_hour,
-                close_hour=close_hour
+                close_hour=close_hour,
+                plan=plan
             )
 
             create_user(
@@ -716,7 +735,8 @@ def menu_manager():
         saved=saved,
         role=user["role"],
         can_manage_premium_features=can_manage_premium_features(),
-        is_super_admin=is_super_admin()
+        is_super_admin=is_super_admin(),
+        tenant_plan=get_tenant_plan(tenant_id),
     )
 
 

@@ -39,6 +39,30 @@
         <div class="saved-banner" style="margin-bottom: 18px;">✅ Настройките са запазени успешно.</div>
         {% endif %}
 
+        <div class="settings-card" style="margin-bottom: 18px;">
+            <div class="settings-grid">
+                <div class="settings-field">
+                    <label>Текущ план</label>
+                    <input type="text" value="{{ tenant_plan|upper }}" readonly>
+                </div>
+
+                <div class="settings-field">
+                    <label>AI Chat</label>
+                    <input type="text" value="{% if tenant_has_ai_chat %}Включен в плана{% else %}Не е включен в плана{% endif %}" readonly>
+                </div>
+
+                <div class="settings-field">
+                    <label>Premium Analytics</label>
+                    <input type="text" value="{% if tenant_has_premium_analytics %}Включени{% else %}Не са включени{% endif %}" readonly>
+                </div>
+
+                <div class="settings-field">
+                    <label>Upsell логика</label>
+                    <input type="text" value="{% if tenant_has_upsell %}Включена{% else %}Не е включена{% endif %}" readonly>
+                </div>
+            </div>
+        </div>
+
         <div class="settings-card">
             <form method="POST" action="/settings">
                 <div class="settings-grid">
@@ -100,7 +124,7 @@
                         </select>
                     </div>
 
-                    {% if can_manage_premium_features %}
+                    {% if can_manage_premium_features and tenant_has_ai_chat %}
                     <div class="settings-field">
                         <label>LLM enabled</label>
                         <select name="llm_enabled">
