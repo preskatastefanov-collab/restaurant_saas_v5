@@ -34,6 +34,10 @@
         <div class="saved-banner" style="margin-bottom: 18px;">{{ success }}</div>
         {% endif %}
 
+        <div class="saved-banner" style="margin-bottom: 18px;">
+            🔒 Само super_admin може да създава нови ресторанти и да избира плана им.
+        </div>
+
         <div class="settings-card">
             <h2>Данни за ресторанта</h2>
 
@@ -72,6 +76,54 @@
                     <div class="settings-field">
                         <label>Затваря в</label>
                         <input type="number" name="close_hour" value="22" required>
+                    </div>
+
+                    <div class="settings-field">
+                        <label>План</label>
+                        <select name="plan" required>
+                            <option value="basic">Basic</option>
+                            <option value="standard">Standard</option>
+                            <option value="premium" selected>Premium</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="settings-card" style="margin-top: 20px; background: rgba(255,255,255,0.65);">
+                    <h2 style="margin-bottom: 14px;">Какво включва всеки план</h2>
+
+                    <div class="settings-grid">
+                        <div class="settings-field">
+                            <label>Basic</label>
+                            <textarea readonly style="min-height: 140px;">• Widget
+• Меню
+• Контакти
+• Базови резервации
+• Dashboard
+• Export
+• Без AI chat
+• Без upsell</textarea>
+                        </div>
+
+                        <div class="settings-field">
+                            <label>Standard</label>
+                            <textarea readonly style="min-height: 140px;">• Всичко от Basic
+• AI chat
+• По-умни отговори за менюто
+• Better fallback
+• Smart food answers
+• Без premium analytics
+• Без upsell</textarea>
+                        </div>
+
+                        <div class="settings-field">
+                            <label>Premium</label>
+                            <textarea readonly style="min-height: 140px;">• Всичко от Standard
+• Upsell логика
+• Premium analytics
+• Advanced AI logic
+• Recommended dishes
+• Priority features</textarea>
+                        </div>
                     </div>
                 </div>
 
