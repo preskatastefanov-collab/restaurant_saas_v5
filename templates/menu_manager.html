@@ -39,6 +39,10 @@
         <div class="saved-banner" style="margin-bottom: 18px;">✅ Менюто е обновено успешно.</div>
         {% endif %}
 
+        <div class="saved-banner" style="margin-bottom: 18px;">
+            💸 Upsell полетата помагат ботът да предлага конкретна напитка или десерт към дадено ястие.
+        </div>
+
         <div class="settings-card">
             <h2>Добави категория</h2>
 
@@ -91,6 +95,16 @@
                     </div>
 
                     <div class="settings-field">
+                        <label>Upsell напитка</label>
+                        <input type="text" name="upsell_drink" placeholder="Пример: Лимонада">
+                    </div>
+
+                    <div class="settings-field">
+                        <label>Upsell десерт</label>
+                        <input type="text" name="upsell_dessert" placeholder="Пример: Чийзкейк">
+                    </div>
+
+                    <div class="settings-field">
                         <label>Подредба</label>
                         <input type="number" name="sort_order" value="0">
                     </div>
@@ -121,6 +135,8 @@
                             <th>Име</th>
                             <th>Описание</th>
                             <th>Цена</th>
+                            <th>Upsell напитка</th>
+                            <th>Upsell десерт</th>
                             <th>Действие</th>
                         </tr>
                     </thead>
@@ -130,6 +146,8 @@
                             <td>{{ item["name"] }}</td>
                             <td>{{ item["description"] }}</td>
                             <td>€{{ "%.2f"|format(item["price"]) }}</td>
+                            <td>{{ item["upsell_drink"] or "—" }}</td>
+                            <td>{{ item["upsell_dessert"] or "—" }}</td>
                             <td>
                                 <form method="POST" action="/menu-manager/delete-item" onsubmit="return confirm('Сигурен ли си?')">
                                     <input type="hidden" name="item_id" value="{{ item['id'] }}">

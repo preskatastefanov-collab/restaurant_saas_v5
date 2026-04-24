@@ -773,10 +773,21 @@ def add_menu_item_route():
     name = request.form.get("name", "").strip()
     description = request.form.get("description", "").strip()
     price = float(request.form.get("price", 0))
+    upsell_drink = request.form.get("upsell_drink", "").strip()
+    upsell_dessert = request.form.get("upsell_dessert", "").strip()
     sort_order = int(request.form.get("sort_order", 0))
 
     if name:
-        create_menu_item(tenant_id, category_id, name, description, price, sort_order)
+        create_menu_item(
+            tenant_id=tenant_id,
+            category_id=category_id,
+            name=name,
+            description=description,
+            price=price,
+            sort_order=sort_order,
+            upsell_drink=upsell_drink,
+            upsell_dessert=upsell_dessert
+        )
 
     return redirect("/menu-manager?saved=1")
 

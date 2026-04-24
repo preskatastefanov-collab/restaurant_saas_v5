@@ -146,6 +146,8 @@ def init_db():
         name TEXT NOT NULL,
         description TEXT DEFAULT '',
         price REAL DEFAULT 0,
+        upsell_drink TEXT DEFAULT '',
+        upsell_dessert TEXT DEFAULT '',
         is_active INTEGER DEFAULT 1,
         sort_order INTEGER DEFAULT 0,
         created_at TEXT DEFAULT CURRENT_TIMESTAMP,
@@ -156,6 +158,12 @@ def init_db():
 
     if not column_exists(c, "tenants", "plan"):
         c.execute("ALTER TABLE tenants ADD COLUMN plan TEXT DEFAULT 'basic'")
+
+    if not column_exists(c, "menu_items", "upsell_drink"):
+        c.execute("ALTER TABLE menu_items ADD COLUMN upsell_drink TEXT DEFAULT ''")
+
+    if not column_exists(c, "menu_items", "upsell_dessert"):
+        c.execute("ALTER TABLE menu_items ADD COLUMN upsell_dessert TEXT DEFAULT ''")
 
     conn.commit()
     conn.close()
@@ -202,54 +210,51 @@ def seed_data():
         DEFAULT_ADMIN_ROLE
     ))
 
+    c.execute("INSERT OR IGNORE INTO menu_categories (id, tenant_id, name, sort_order, is_active) VALUES (1, 1, 'Салати', 1, 1)")
+    c.execute("INSERT OR IGNORE INTO menu_categories (id, tenant_id, name, sort_order, is_active) VALUES (2, 1, 'Основни', 2, 1)")
+    c.execute("INSERT OR IGNORE INTO menu_categories (id, tenant_id, name, sort_order, is_active) VALUES (3, 1, 'Десерти', 3, 1)")
+    c.execute("INSERT OR IGNORE INTO menu_categories (id, tenant_id, name, sort_order, is_active) VALUES (4, 1, 'Напитки', 4, 1)")
+
     c.execute("""
-    INSERT OR IGNORE INTO menu_categories (id, tenant_id, name, sort_order, is_active)
-    VALUES (1, 1, 'Салати', 1, 1)
+    INSERT OR IGNORE INTO menu_items (
+        id, tenant_id, category_id, name, description, price, upsell_drink, upsell_dessert, is_active, sort_order
+    )
+    VALUES (1, 1, 1, 'Цезар', 'Класическа салата Цезар', 12.90, 'Лимонада', 'Чийзкейк', 1, 1)
     """)
 
     c.execute("""
-    INSERT OR IGNORE INTO menu_categories (id, tenant_id, name, sort_order, is_active)
-    VALUES (2, 1, 'Основни', 2, 1)
+    INSERT OR IGNORE INTO menu_items (
+        id, tenant_id, category_id, name, description, price, upsell_drink, upsell_dessert, is_active, sort_order
+    )
+    VALUES (2, 1, 1, 'Гръцка салата', 'Домати, краставици, сирене, маслини', 10.50, 'Лимонада', 'Чийзкейк', 1, 2)
     """)
 
     c.execute("""
-    INSERT OR IGNORE INTO menu_categories (id, tenant_id, name, sort_order, is_active)
-    VALUES (3, 1, 'Десерти', 3, 1)
+    INSERT OR IGNORE INTO menu_items (
+        id, tenant_id, category_id, name, description, price, upsell_drink, upsell_dessert, is_active, sort_order
+    )
+    VALUES (3, 1, 2, 'Пилешка пържола', 'С гарнитура по избор', 16.90, 'Лимонада', 'Чийзкейк', 1, 1)
     """)
 
     c.execute("""
-    INSERT OR IGNORE INTO menu_categories (id, tenant_id, name, sort_order, is_active)
-    VALUES (4, 1, 'Напитки', 4, 1)
+    INSERT OR IGNORE INTO menu_items (
+        id, tenant_id, category_id, name, description, price, upsell_drink, upsell_dessert, is_active, sort_order
+    )
+    VALUES (4, 1, 2, 'Паста Карбонара', 'Кремообразен сос, бекон и пармезан', 14.90, 'Лимонада', 'Чийзкейк', 1, 2)
     """)
 
     c.execute("""
-    INSERT OR IGNORE INTO menu_items (id, tenant_id, category_id, name, description, price, is_active, sort_order)
-    VALUES (1, 1, 1, 'Цезар', 'Класическа салата Цезар', 12.90, 1, 1)
+    INSERT OR IGNORE INTO menu_items (
+        id, tenant_id, category_id, name, description, price, upsell_drink, upsell_dessert, is_active, sort_order
+    )
+    VALUES (5, 1, 3, 'Чийзкейк', 'Домашен чийзкейк', 7.50, 'Лимонада', '', 1, 1)
     """)
 
     c.execute("""
-    INSERT OR IGNORE INTO menu_items (id, tenant_id, category_id, name, description, price, is_active, sort_order)
-    VALUES (2, 1, 1, 'Гръцка салата', 'Домати, краставици, сирене, маслини', 10.50, 1, 2)
-    """)
-
-    c.execute("""
-    INSERT OR IGNORE INTO menu_items (id, tenant_id, category_id, name, description, price, is_active, sort_order)
-    VALUES (3, 1, 2, 'Пилешка пържола', 'С гарнитура по избор', 16.90, 1, 1)
-    """)
-
-    c.execute("""
-    INSERT OR IGNORE INTO menu_items (id, tenant_id, category_id, name, description, price, is_active, sort_order)
-    VALUES (4, 1, 2, 'Паста Карбонара', 'Кремообразен сос, бекон и пармезан', 14.90, 1, 2)
-    """)
-
-    c.execute("""
-    INSERT OR IGNORE INTO menu_items (id, tenant_id, category_id, name, description, price, is_active, sort_order)
-    VALUES (5, 1, 3, 'Чийзкейк', 'Домашен чийзкейк', 7.50, 1, 1)
-    """)
-
-    c.execute("""
-    INSERT OR IGNORE INTO menu_items (id, tenant_id, category_id, name, description, price, is_active, sort_order)
-    VALUES (6, 1, 4, 'Лимонада', 'Домашна лимонада', 4.90, 1, 1)
+    INSERT OR IGNORE INTO menu_items (
+        id, tenant_id, category_id, name, description, price, upsell_drink, upsell_dessert, is_active, sort_order
+    )
+    VALUES (6, 1, 4, 'Лимонада', 'Домашна лимонада', 4.90, '', 'Чийзкейк', 1, 1)
     """)
 
     conn.commit()

@@ -142,29 +142,41 @@ def get_smart_upsell_for_item(tenant_id, item=None, user_text=""):
     if any(x in user_text_clean for x in ["десерт", "напит", "пиене", "пия", "вода", "лимонада"]):
         return None
 
-    drink = get_best_drink(tenant_id)
-    dessert = get_best_dessert(tenant_id)
+    item_name = item.get("name") if item else None
+    custom_drink_name = (item.get("upsell_drink") or "").strip() if item else ""
+    custom_dessert_name = (item.get("upsell_dessert") or "").strip() if item else ""
+
+    drink = None
+    dessert = None
+
+    if custom_drink_name:
+        drink = {"name": custom_drink_name}
+    else:
+        drink = get_best_drink(tenant_id)
+
+    if custom_dessert_name:
+        dessert = {"name": custom_dessert_name}
+    else:
+        dessert = get_best_dessert(tenant_id)
 
     if not drink and not dessert:
         return None
 
-    item_name = item.get("name") if item else None
-
     if item_name and drink:
         return {
-            "text": f"🥤 Към „{item_name}“ много добре върви {drink['name']} — да добавим ли и него? 😊",
+            "text": f"🥤 Към „{item_name}“ най-добре върви {drink['name']} — да добавим ли и него? 😊",
             "buttons": [drink["name"], "Десерти", "Нова резервация"]
         }
 
     if item_name and dessert:
         return {
-            "text": f"🍰 След „{item_name}“ често избират {dessert['name']} — да ви го предложа ли? 😊",
+            "text": f"🍰 След „{item_name}“ много добре пасва {dessert['name']} — да ви го предложа ли? 😊",
             "buttons": [dessert["name"], "Напитки", "Нова резервация"]
         }
 
     if drink and dessert:
         return {
-            "text": f"🥤🍰 Най-често към храната клиентите добавят {drink['name']} или {dessert['name']} — искате ли да разгледате?",
+            "text": f"🥤🍰 Към храната клиентите често добавят {drink['name']} или {dessert['name']} — искате ли да разгледате?",
             "buttons": [drink["name"], dessert["name"], "Нова резервация"]
         }
 
@@ -193,14 +205,40 @@ def create_menu_category(tenant_id, name, sort_order=0):
     db.close()
 
 
-def create_menu_item(tenant_id, category_id, name, description="", price=0, sort_order=0):
+def create_menu_item(
+    tenant_id,
+    category_id,
+    name,
+    description="",
+    price=0,
+    sort_order=0,
+    upsell_drink="",
+    upsell_dessert=""
+):
     db = get_db()
     db.execute("""
         INSERT INTO menu_items (
-            tenant_id, category_id, name, description, price, is_active, sort_order
+            tenant_id,
+            category_id,
+            name,
+            description,
+            price,
+            upsell_drink,
+            upsell_dessert,
+            is_active,
+            sort_order
         )
-        VALUES (?, ?, ?, ?, ?, 1, ?)
-    """, (tenant_id, category_id, name, description, price, sort_order))
+        VALUES (?, ?, ?, ?, ?, ?, ?, 1, ?)
+    """, (
+        tenant_id,
+        category_id,
+        name,
+        description,
+        price,
+        upsell_drink,
+        upsell_dessert,
+        sort_order
+    ))
     db.commit()
     db.close()
 
