@@ -9,7 +9,13 @@ from core.validators import (
 from services.tenants import get_tenant_settings, tenant_has_feature
 from services.reservations import get_reservations_for_date
 from services.analytics import log_event
-from services.menu import get_menu_categories, get_menu_items_by_category, find_menu_category_match
+from services.menu import (
+    get_menu_categories,
+    get_menu_items_by_category,
+    find_menu_category_match,
+    find_item_mentioned_in_text,
+    get_smart_upsell_for_item,
+)
 from services.llm import get_llm_reply
 from database import get_db
 import random
@@ -30,6 +36,7 @@ class ChatBot:
             "confirmed": False,
             "last_question": None,
             "last_topic": None,
+            "last_recommended_item": None,
         }
 
     def default_buttons(self):
@@ -54,41 +61,14 @@ class ChatBot:
         text = (text or "").lower().strip()
 
         food_keywords = [
-            "какво препоръч",
-            "какво да ям",
-            "какво имате",
-            "има ли нещо",
-            "има ли",
-            "сирене",
-            "яйца",
-            "яйце",
-            "с пиле",
-            "пиле",
-            "телешко",
-            "салата",
-            "десерт",
-            "десерти",
-            "напит",
-            "напитки",
-            "веган",
-            "вегетариан",
-            "без глутен",
-            "люто",
-            "месо",
-            "риба",
-            "паста",
-            "бургер",
-            "пица",
-            "леко",
-            "препоръчваш",
-            "меню",
-            "ястие",
-            "ястия",
-            "по-леко",
-            "по-засищащо",
-            "нещо с",
-            "опции с",
-            "за пиене",
+            "какво препоръч", "какво да ям", "какво имате",
+            "има ли нещо", "има ли", "сирене", "яйца", "яйце",
+            "с пиле", "пиле", "телешко", "салата", "десерт",
+            "десерти", "напит", "напитки", "веган", "вегетариан",
+            "без глутен", "люто", "месо", "риба", "паста",
+            "бургер", "пица", "леко", "препоръчваш", "меню",
+            "ястие", "ястия", "по-леко", "по-засищащо",
+            "нещо с", "опции с", "за пиене",
         ]
 
         return any(k in text for k in food_keywords)
@@ -99,8 +79,10 @@ class ChatBot:
 
         if self.is_menu_category_message(text) or self.looks_like_food_question(text) or intent == "menu":
             old_topic = self.context.get("last_topic")
+            old_item = self.context.get("last_recommended_item")
             self.context = self.empty_context()
             self.context["last_topic"] = old_topic
+            self.context["last_recommended_item"] = old_item
 
     def update_topic_context(self, text, intent):
         if self.looks_like_food_question(text) or intent == "menu" or self.is_menu_category_message(text):
@@ -122,35 +104,37 @@ class ChatBot:
 
         return False
 
-    def add_upsell_if_needed(self, text, original_message="", upsell_enabled=False):
+    def remember_mentioned_item(self, text):
+        item = find_item_mentioned_in_text(self.tenant_id, text)
+        if item:
+            self.context["last_recommended_item"] = item
+        return item
+
+    def add_smart_upsell_if_needed(self, reply_text, original_message="", upsell_enabled=False):
         if not upsell_enabled:
-            return text
+            return {
+                "text": reply_text,
+                "buttons": self.default_buttons()
+            }
 
-        lower_text = (text or "").lower()
-        user_text = (original_message or "").lower()
+        item = self.remember_mentioned_item(reply_text) or self.remember_mentioned_item(original_message)
 
-        upsell_triggers = [
-            "мога да ви предложа",
-            "бих ви препоръчал",
-            "бих ви препоръчала",
-            "имаме",
-            "опции с",
-            "подходящ избор",
-            "много добър избор",
-            "любимо на клиентите",
-            "пилешка пържола",
-            "паста карбонара",
-            "гръцка салата",
-            "чийзкейк",
-            "лимонада",
-        ]
+        upsell = get_smart_upsell_for_item(
+            tenant_id=self.tenant_id,
+            item=item,
+            user_text=original_message
+        )
 
-        if any(trigger in lower_text for trigger in upsell_triggers):
-            if "десерт" not in lower_text and "напит" not in lower_text:
-                if not any(x in user_text for x in ["десерт", "напит", "пиене"]):
-                    return text.rstrip() + "\n\n👉 Искате ли да добавим и нещо за пиене или десерт? 😊"
+        if upsell:
+            return {
+                "text": reply_text.rstrip() + "\n\n" + upsell["text"],
+                "buttons": upsell["buttons"]
+            }
 
-        return text
+        return {
+            "text": reply_text,
+            "buttons": self.default_buttons()
+        }
 
     def llm_buttons(self, text, upsell_enabled=False):
         text = (text or "").lower()
@@ -201,25 +185,19 @@ class ChatBot:
             self.update_topic_context(original_message, intent)
 
             if self.is_menu_category_message(original_message):
-                return self.handle_menu(original_message)
+                return self.handle_menu(original_message, upsell_enabled=tenant_has_upsell)
 
             if intent == "menu":
-                print("DEBUG FOOD QUESTION:", self.looks_like_food_question(original_message))
-
                 if self.should_use_llm_for_menu_question(original_message, intent, llm_enabled):
                     llm_reply = get_llm_reply(self.tenant_id, original_message)
                     if llm_reply:
-                        llm_reply = self.add_upsell_if_needed(
+                        return self.add_smart_upsell_if_needed(
                             llm_reply,
                             original_message,
                             upsell_enabled=tenant_has_upsell
                         )
-                        return {
-                            "text": llm_reply,
-                            "buttons": self.llm_buttons(original_message, upsell_enabled=tenant_has_upsell)
-                        }
 
-                return self.handle_menu(original_message)
+                return self.handle_menu(original_message, upsell_enabled=tenant_has_upsell)
 
             if intent == "contact":
                 phone = settings.get("phone") or "0888 123 456"
@@ -236,22 +214,17 @@ class ChatBot:
 
             if people:
                 self.context["people"] = people
-
             if date:
                 self.context["date"] = date
-
             if time:
                 self.context["time"] = time
-
             if name:
                 self.context["name"] = name
-
             if phone:
                 self.context["phone"] = phone
 
             if text.isdigit():
                 num = int(text)
-
                 if self.context.get("last_question") == "people":
                     self.context["people"] = num
                 elif self.context.get("last_question") == "time" and 0 <= num <= 23:
@@ -267,33 +240,23 @@ class ChatBot:
             if intent == "reservation":
                 return self.handle_reservation(settings)
 
-            print("DEBUG FOOD QUESTION:", self.looks_like_food_question(original_message))
-
             if self.should_use_llm_for_menu_question(original_message, intent, llm_enabled):
                 llm_reply = get_llm_reply(self.tenant_id, original_message)
                 if llm_reply:
-                    llm_reply = self.add_upsell_if_needed(
+                    return self.add_smart_upsell_if_needed(
                         llm_reply,
                         original_message,
                         upsell_enabled=tenant_has_upsell
                     )
-                    return {
-                        "text": llm_reply,
-                        "buttons": self.llm_buttons(original_message, upsell_enabled=tenant_has_upsell)
-                    }
 
             if llm_enabled == 1:
                 llm_reply = get_llm_reply(self.tenant_id, original_message)
                 if llm_reply:
-                    llm_reply = self.add_upsell_if_needed(
+                    return self.add_smart_upsell_if_needed(
                         llm_reply,
                         original_message,
                         upsell_enabled=tenant_has_upsell
                     )
-                    return {
-                        "text": llm_reply,
-                        "buttons": self.default_buttons()
-                    }
 
             return {
                 "text": settings.get("welcome_message") or "👋 Здравейте! Добре дошли 😊\nМога да помогна с менюто, контактите или резервация.\n\n👉 Какво ви интересува?",
@@ -307,7 +270,7 @@ class ChatBot:
                 "buttons": self.default_buttons()
             }
 
-    def handle_menu(self, text):
+    def handle_menu(self, text, upsell_enabled=False):
         categories = get_menu_categories(self.tenant_id)
 
         if not categories:
@@ -339,13 +302,20 @@ class ChatBot:
             description = f" – {item['description']}" if item["description"] else ""
             lines.append(f"- {item['name']} – {float(item['price']):.2f} €{description}")
 
-        lines.append("\n👉 Искате ли след това да направим резервация? 😊")
+        item_for_upsell = items[0] if items else None
+        upsell = get_smart_upsell_for_item(self.tenant_id, item=item_for_upsell, user_text=text) if upsell_enabled else None
 
-        category_names = [c["name"] for c in categories]
+        if upsell:
+            lines.append("\n" + upsell["text"])
+            buttons = upsell["buttons"] + ["Меню", "Контакти"]
+        else:
+            lines.append("\n👉 Искате ли след това да направим резервация? 😊")
+            category_names = [c["name"] for c in categories]
+            buttons = ["Нова резервация"] + category_names + ["Контакти"]
 
         return {
             "text": "\n".join(lines),
-            "buttons": ["Нова резервация"] + category_names + ["Контакти"]
+            "buttons": buttons
         }
 
     def handle_reservation(self, settings):
@@ -486,14 +456,12 @@ class ChatBot:
 
         requested_people = int(people)
         available = (occupied + requested_people) <= max_capacity
-        free_places_before = max(max_capacity - occupied, 0)
-        free_places_after = max(max_capacity - (occupied + requested_people), 0)
 
         return {
             "available": available,
             "occupied": occupied,
-            "free_places_before": free_places_before,
-            "free_places_after": free_places_after
+            "free_places_before": max(max_capacity - occupied, 0),
+            "free_places_after": max(max_capacity - (occupied + requested_people), 0)
         }
 
     def get_suggestions(self, date, max_capacity):

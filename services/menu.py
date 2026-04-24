@@ -29,6 +29,35 @@ def get_menu_items_by_category(tenant_id, category_id):
     return [dict(r) for r in rows]
 
 
+def get_full_menu(tenant_id):
+    categories = get_menu_categories(tenant_id)
+    result = []
+
+    for category in categories:
+        items = get_menu_items_by_category(tenant_id, category["id"])
+        result.append({
+            "category": category,
+            "items": items
+        })
+
+    return result
+
+
+def get_all_menu_items(tenant_id):
+    db = get_db()
+    rows = db.execute("""
+        SELECT 
+            mi.*,
+            mc.name AS category_name
+        FROM menu_items mi
+        LEFT JOIN menu_categories mc ON mc.id = mi.category_id
+        WHERE mi.tenant_id = ? AND mi.is_active = 1
+        ORDER BY mi.sort_order ASC, mi.id ASC
+    """, (tenant_id,)).fetchall()
+    db.close()
+    return [dict(r) for r in rows]
+
+
 def get_category_by_name(tenant_id, category_name):
     db = get_db()
     row = db.execute("""
@@ -48,13 +77,11 @@ def find_menu_category_match(tenant_id, text):
     if not text_clean:
         return None
 
-    # 1. точен match
     for category in categories:
         cat_name = normalize_text(category["name"])
         if text_clean == cat_name:
             return category
 
-    # 2. ако съобщението съдържа името на категорията
     for category in categories:
         cat_name = normalize_text(category["name"])
         if cat_name and cat_name in text_clean:
@@ -63,18 +90,97 @@ def find_menu_category_match(tenant_id, text):
     return None
 
 
-def get_full_menu(tenant_id):
-    categories = get_menu_categories(tenant_id)
+def find_item_mentioned_in_text(tenant_id, text):
+    text_clean = normalize_text(text)
+    if not text_clean:
+        return None
+
+    items = get_all_menu_items(tenant_id)
+
+    for item in items:
+        item_name = normalize_text(item.get("name"))
+        if item_name and item_name in text_clean:
+            return item
+
+    return None
+
+
+def get_items_by_category_keywords(tenant_id, keywords):
+    items = get_all_menu_items(tenant_id)
     result = []
 
-    for category in categories:
-        items = get_menu_items_by_category(tenant_id, category["id"])
-        result.append({
-            "category": category,
-            "items": items
-        })
+    for item in items:
+        category_name = normalize_text(item.get("category_name"))
+        item_name = normalize_text(item.get("name"))
+        description = normalize_text(item.get("description"))
+
+        combined = f"{category_name} {item_name} {description}"
+
+        if any(k in combined for k in keywords):
+            result.append(item)
 
     return result
+
+
+def get_best_drink(tenant_id):
+    drinks = get_items_by_category_keywords(tenant_id, [
+        "напит", "лимонада", "вода", "сок", "айрян", "кола", "кафе", "чай"
+    ])
+    return drinks[0] if drinks else None
+
+
+def get_best_dessert(tenant_id):
+    desserts = get_items_by_category_keywords(tenant_id, [
+        "десерт", "слад", "чийзкейк", "торта", "крем", "сладолед"
+    ])
+    return desserts[0] if desserts else None
+
+
+def get_smart_upsell_for_item(tenant_id, item=None, user_text=""):
+    user_text_clean = normalize_text(user_text)
+
+    if any(x in user_text_clean for x in ["десерт", "напит", "пиене", "пия", "вода", "лимонада"]):
+        return None
+
+    drink = get_best_drink(tenant_id)
+    dessert = get_best_dessert(tenant_id)
+
+    if not drink and not dessert:
+        return None
+
+    item_name = item.get("name") if item else None
+
+    if item_name and drink:
+        return {
+            "text": f"🥤 Към „{item_name}“ много добре върви {drink['name']} — да добавим ли и него? 😊",
+            "buttons": [drink["name"], "Десерти", "Нова резервация"]
+        }
+
+    if item_name and dessert:
+        return {
+            "text": f"🍰 След „{item_name}“ често избират {dessert['name']} — да ви го предложа ли? 😊",
+            "buttons": [dessert["name"], "Напитки", "Нова резервация"]
+        }
+
+    if drink and dessert:
+        return {
+            "text": f"🥤🍰 Най-често към храната клиентите добавят {drink['name']} или {dessert['name']} — искате ли да разгледате?",
+            "buttons": [drink["name"], dessert["name"], "Нова резервация"]
+        }
+
+    if drink:
+        return {
+            "text": f"🥤 Към това много добре върви {drink['name']} — да добавим ли? 😊",
+            "buttons": [drink["name"], "Нова резервация", "Меню"]
+        }
+
+    if dessert:
+        return {
+            "text": f"🍰 За финал мога да предложа {dessert['name']} — искате ли? 😊",
+            "buttons": [dessert["name"], "Нова резервация", "Меню"]
+        }
+
+    return None
 
 
 def create_menu_category(tenant_id, name, sort_order=0):
