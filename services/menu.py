@@ -553,68 +553,61 @@ def get_smart_recommendations(tenant_id, user_text="", business_type="restaurant
 
     filters = detect_food_filters(user_text_clean)
 
-    if filters["without"]:
-        blocked = [normalize_text(x) for x in filters["without"] if x]
-
-    extra_meat_words = [
-        "месо",
-        "пиле",
-        "пилешко",
-        "телешко",
-        "свинско",
-        "бекон",
-        "шунка",
-        "риба",
-        "сьомга",
-        "бургер",
-        "кюфте",
-        "кебапче",
-        "пържола",
-        "meat",
-        "chicken",
-        "beef",
-        "pork",
-        "bacon",
-        "ham",
-        "fish",
-        "salmon",
-        "burger",
-        "steak",
+    meat_words = [
+        "месо", "пиле", "пилешко", "телешко", "свинско", "бекон", "шунка",
+        "риба", "сьомга", "бургер", "кюфте", "кебапче", "пържола", "агне",
+        "meat", "chicken", "beef", "pork", "bacon", "ham",
+        "fish", "salmon", "burger", "steak", "lamb"
     ]
 
-    if any(x in blocked for x in ["месо", "meat"]):
-        blocked.extend(extra_meat_words)
+    if filters.get("without"):
+        blocked_words = []
 
-    result = []
+        for word in filters["without"]:
+            word = normalize_text(word)
+            if word:
+                blocked_words.append(word)
 
-    for item in items:
-        combined = item_search_text(item)
+        if "месо" in blocked_words or "meat" in blocked_words:
+            blocked_words.extend(meat_words)
 
-        if any(word in combined for word in blocked):
-            continue
-
-        result.append(item)
-
-        return unique_items(result)[:limit]
         result = []
 
         for item in items:
             combined = item_search_text(item)
 
-            if not any(word in combined for word in blocked):
+            has_blocked_word = False
+
+            for blocked_word in blocked_words:
+                if blocked_word and blocked_word in combined:
+                    has_blocked_word = True
+                    break
+
+            if not has_blocked_word:
                 result.append(item)
 
         return unique_items(result)[:limit]
 
-    if filters["with"]:
-        wanted = [normalize_text(x) for x in filters["with"] if x]
+    if filters.get("with"):
+        wanted_words = []
+
+        for word in filters["with"]:
+            word = normalize_text(word)
+            if word:
+                wanted_words.append(word)
+
+        if "месо" in wanted_words or "meat" in wanted_words:
+            wanted_words.extend(meat_words)
+
         result = []
 
         for item in items:
             combined = item_search_text(item)
 
-            if any(word in combined for word in wanted):
-                result.append(item)
+            for wanted_word in wanted_words:
+                if wanted_word and wanted_word in combined:
+                    result.append(item)
+                    break
 
         return unique_items(result)[:limit]
 
