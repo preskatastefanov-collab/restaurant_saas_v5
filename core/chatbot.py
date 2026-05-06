@@ -423,6 +423,8 @@ class ChatBot:
             "spicy", "cake", "croissant", "cocktail", "beer", "wine",
             "whiskey", "cheap", "price", "prices", "how much", "recommend",
             "what do you have", "what do you recommend", "without", "something with",
+            "is there anything", "do you have anything", "anything with", "anything without",
+            "with potatoes", "with olives", "with cheese", "without meat", "no meat",
         ]
 
         return any(k in text for k in keywords)
@@ -446,7 +448,11 @@ class ChatBot:
             "recommend", "something cheap", "something good", "something tasty",
             "something light", "under 10", "under 12", "under 15", "under 20",
             "budget", "for two", "what should i order", "what should i get",
-            "do you have something", "something with", "without", "no ",
+            "do you have something", "something with", "without", "no ", "is there anything",
+            "do you have anything", "do you have something", "anything with", "anything without",
+            "something with", "something without", "with ", "without ", "no meat", "without meat",
+            "with potatoes", "with olives", "with cheese",
+
         ])
 
     def looks_like_location_question(self, text):
