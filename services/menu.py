@@ -497,6 +497,9 @@ def detect_food_filters(user_text):
             "сирене", "кашкавал", "моцарела", "пармезан",
             "cheese", "mozzarella", "parmesan"
         ],
+        "olives": [
+            "маслина", "маслини", "olive", "olives"
+        ],
         "spicy": [
             "люто", "пикантно", "чили",
             "spicy", "hot", "chili"
@@ -509,22 +512,38 @@ def detect_food_filters(user_text):
             "напитка", "напитки", "лимонада", "бира", "вино", "кафе", "айрян",
             "drink", "drinks", "lemonade", "beer", "wine", "coffee", "ayran"
         ],
-        "vegetarian": [
-            "вегетариан", "без месо", "vegetarian", "without meat", "no meat"
-        ],
     }
 
-    negative_words = ["без", "няма", "without", "no "]
-    positive_words = ["с ", "със ", "има ли", "имате ли", "нещо с", "with", "something with"]
+    is_without = any(phrase in text for phrase in [
+        "без ", "няма ", "не съдържа", "without ", "no "
+    ])
+
+    is_with = any(phrase in text for phrase in [
+        "с ", "със ", "има ли", "имате ли", "нещо с",
+        "with ", "something with", "anything with", "is there anything with",
+        "do you have anything with"
+    ])
+
+    if "вегетариан" in text or "vegetarian" in text or "без месо" in text or "without meat" in text or "no meat" in text:
+        filters["without"].extend(groups["meat"])
+        return filters
 
     for group_name, keywords in groups.items():
-        if any(k in text for k in keywords):
-            if any(w in text for w in negative_words):
-                filters["without"].extend(keywords)
-            elif group_name == "vegetarian":
-                filters["without"].extend(groups["meat"])
-            else:
-                filters["with"].extend(keywords)
+        matched_keywords = []
+
+        for keyword in keywords:
+            if keyword in text:
+                matched_keywords.append(keyword)
+
+        if not matched_keywords:
+            continue
+
+        if is_without:
+            filters["without"].extend(keywords)
+        elif is_with:
+            filters["with"].extend(keywords)
+        else:
+            filters["with"].extend(keywords)
 
     return filters
 
