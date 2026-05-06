@@ -555,6 +555,47 @@ def get_smart_recommendations(tenant_id, user_text="", business_type="restaurant
 
     if filters["without"]:
         blocked = [normalize_text(x) for x in filters["without"] if x]
+
+    extra_meat_words = [
+        "месо",
+        "пиле",
+        "пилешко",
+        "телешко",
+        "свинско",
+        "бекон",
+        "шунка",
+        "риба",
+        "сьомга",
+        "бургер",
+        "кюфте",
+        "кебапче",
+        "пържола",
+        "meat",
+        "chicken",
+        "beef",
+        "pork",
+        "bacon",
+        "ham",
+        "fish",
+        "salmon",
+        "burger",
+        "steak",
+    ]
+
+    if any(x in blocked for x in ["месо", "meat"]):
+        blocked.extend(extra_meat_words)
+
+    result = []
+
+    for item in items:
+        combined = item_search_text(item)
+
+        if any(word in combined for word in blocked):
+            continue
+
+        result.append(item)
+
+        return unique_items(result)[:limit]
         result = []
 
         for item in items:
