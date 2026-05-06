@@ -723,7 +723,13 @@ class ChatBot:
         )
 
         if not items:
-            return None
+            return self.make_response(
+                self.tr(
+                    "Не намерих точно такова нещо в менюто 😊\n\nМожете да опитате с друг въпрос, например: „нещо без месо“, „нещо с картофи“, „десерт“ или „напитки“.",
+                    "I couldn't find an exact match in the menu 😊\n\nYou can try another question, for example: “something without meat”, “something with potatoes”, “dessert” or “drinks”."
+                ),
+                [self.tr("Меню", "Menu"), self.tr("Контакти", "Contact")]
+        )
 
         lines = [self.tr("Ето няколко подходящи предложения 😊", "Here are a few suitable suggestions 😊")]
 

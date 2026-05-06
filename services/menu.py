@@ -463,8 +463,79 @@ def unique_items(items):
     return result
 
 
+def item_search_text(item):
+    return normalize_text(" ".join([
+        item.get("category_name") or "",
+        item.get("category_name_en") or "",
+        item.get("name") or "",
+        item.get("name_en") or "",
+        item.get("description") or "",
+        item.get("description_en") or "",
+    ]))
+
+
+def detect_food_filters(user_text):
+    text = normalize_text(user_text)
+
+    filters = {
+        "without": [],
+        "with": [],
+        "category": [],
+    }
+
+    groups = {
+        "meat": [
+            "месо", "пиле", "пилешко", "телешко", "свинско", "бекон", "шунка",
+            "кюфте", "кебапче", "пържола", "агне", "риба", "сьомга",
+            "meat", "chicken", "beef", "pork", "bacon", "ham", "steak", "lamb", "fish"
+        ],
+        "potatoes": [
+            "картоф", "картофи", "картофки", "пържени картофи",
+            "potato", "potatoes", "fries", "french fries"
+        ],
+        "cheese": [
+            "сирене", "кашкавал", "моцарела", "пармезан",
+            "cheese", "mozzarella", "parmesan"
+        ],
+        "spicy": [
+            "люто", "пикантно", "чили",
+            "spicy", "hot", "chili"
+        ],
+        "dessert": [
+            "десерт", "торта", "сладкиш", "чийзкейк", "тирамису",
+            "dessert", "cake", "cheesecake", "tiramisu"
+        ],
+        "drink": [
+            "напитка", "напитки", "лимонада", "бира", "вино", "кафе", "айрян",
+            "drink", "drinks", "lemonade", "beer", "wine", "coffee", "ayran"
+        ],
+        "vegetarian": [
+            "вегетариан", "без месо", "vegetarian", "without meat", "no meat"
+        ],
+    }
+
+    negative_words = ["без", "няма", "without", "no "]
+    positive_words = ["с ", "със ", "има ли", "имате ли", "нещо с", "with", "something with"]
+
+    for group_name, keywords in groups.items():
+        if any(k in text for k in keywords):
+            if any(w in text for w in negative_words):
+                filters["without"].extend(keywords)
+            elif group_name == "vegetarian":
+                filters["without"].extend(groups["meat"])
+            else:
+                filters["with"].extend(keywords)
+
+    return filters
+
+
 def get_smart_recommendations(tenant_id, user_text="", business_type="restaurant", limit=5):
     user_text_clean = normalize_text(user_text)
+
+    items = get_all_menu_items(tenant_id)
+
+    if not items:
+        return []
 
     if not user_text_clean:
         return get_popular_menu_items(tenant_id, business_type, limit=limit)
@@ -480,12 +551,38 @@ def get_smart_recommendations(tenant_id, user_text="", business_type="restaurant
     if any(w in user_text_clean for w in cheap_words):
         return get_items_by_price_range(tenant_id, max_price=10, limit=limit)
 
+    filters = detect_food_filters(user_text_clean)
+
+    if filters["without"]:
+        blocked = [normalize_text(x) for x in filters["without"] if x]
+        result = []
+
+        for item in items:
+            combined = item_search_text(item)
+
+            if not any(word in combined for word in blocked):
+                result.append(item)
+
+        return unique_items(result)[:limit]
+
+    if filters["with"]:
+        wanted = [normalize_text(x) for x in filters["with"] if x]
+        result = []
+
+        for item in items:
+            combined = item_search_text(item)
+
+            if any(word in combined for word in wanted):
+                result.append(item)
+
+        return unique_items(result)[:limit]
+
     searched = search_menu_items(tenant_id, user_text, limit=limit)
 
     if searched:
         return unique_items(searched)[:limit]
 
-    return get_popular_menu_items(tenant_id, business_type, limit=limit)
+    return []
 
 
 def menu_item_to_text(item):
