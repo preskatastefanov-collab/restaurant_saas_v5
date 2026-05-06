@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="bg">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chat Analytics | Reservy</title>
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+
+<body class="app-layout">
+
+<aside class="premium-sidebar">
+    <div class="brand-box">
+        <div class="brand-icon">R</div>
+        <div>
+            <div class="brand-name">reservy</div>
+            <div class="brand-subtitle">SMART RESERVATIONS</div>
+        </div>
+    </div>
+
+    <nav class="premium-nav">
+        <a class="premium-nav-link" href="/dashboard">🏠 Табло</a>
+        <a class="premium-nav-link" href="/restaurants">🏢 Бизнеси</a>
+        <a class="premium-nav-link" href="/users">👥 Потребители</a>
+        <a class="premium-nav-link" href="/menu-manager">📋 Меню</a>
+        <a class="premium-nav-link" href="/settings">⚙️ Настройки</a>
+        <a class="premium-nav-link" href="/password-requests">🔐 Заявки пароли</a>
+        <a class="premium-nav-link active" href="/analytics/chats">💬 Chat Analytics</a>
+    </nav>
+
+    <div class="premium-user-box">
+        <div class="premium-avatar">AD</div>
+        <div>
+            <strong>{{ session["user"]["username"] }}</strong>
+            <span>{{ role }}</span>
+        </div>
+    </div>
+</aside>
+
+<main class="premium-main">
+
+    <header class="premium-topbar">
+        <div>
+            <span class="muted-label">Analytics</span>
+            <strong>Chat съобщения</strong>
+            <span class="role-pill role-{{ role }}">{{ role }}</span>
+        </div>
+
+        <div class="topbar-right-stack">
+            <div class="topbar-actions-row">
+                <a class="logout-btn" href="/dashboard">← Назад</a>
+                <a class="logout-btn" href="/logout">🚪 Изход</a>
+            </div>
+
+            <div class="topbar-business">
+                {% if active_business %}
+                    <span class="muted-label">Активен бизнес</span>
+                    <strong>{{ active_business.name }}</strong>
+                    <span class="plan-pill">{{ active_business.plan|upper }}</span>
+                {% endif %}
+            </div>
+        </div>
+    </header>
+
+    <section class="premium-page-head">
+        <div>
+            <h1>💬 Chat Analytics</h1>
+            <p>Следи какво пишат клиентите, какви въпроси задават и колко активен е chatbot-ът.</p>
+        </div>
+    </section>
+
+    <section class="premium-stats-grid">
+        <div class="premium-stat-card">
+            <div class="stat-icon blue">💬</div>
+            <h3>Днес</h3>
+            <strong>{{ data.chat_today }}</strong>
+            <p>Chat съобщения днес</p>
+            <span class="trend blue-trend">дневна активност</span>
+        </div>
+
+        <div class="premium-stat-card">
+            <div class="stat-icon green">📅</div>
+            <h3>Тази седмица</h3>
+            <strong>{{ data.chat_week }}</strong>
+            <p>Всички съобщения тази седмица</p>
+            <span class="trend green-trend">седмичен обем</span>
+        </div>
+
+        <div class="premium-stat-card">
+            <div class="stat-icon yellow">🗓️</div>
+            <h3>Минала седмица</h3>
+            <strong>{{ data.chat_last_week }}</strong>
+            <p>Сравнение с предишна седмица</p>
+            <span class="trend neutral-trend">benchmark</span>
+        </div>
+
+        <div class="premium-stat-card">
+            <div class="stat-icon purple">📈</div>
+            <h3>Този месец</h3>
+            <strong>{{ data.chat_month }}</strong>
+            <p>Месечна chatbot активност</p>
+            <span class="trend blue-trend">месечен резултат</span>
+        </div>
+    </section>
+
+    <section class="premium-table-card">
+        <div class="premium-section-head">
+            <div>
+                <h2>Последни клиентски съобщения</h2>
+                <p>Тук виждаш реалните въпроси, които хората задават на chatbot-а.</p>
+            </div>
+        </div>
+
+        <input
+            type="text"
+            id="chatSearchInput"
+            class="premium-search"
+            placeholder="Търси по съобщение, дата..."
+            onkeyup="filterChatTable()"
+        >
+
+        <div class="premium-table-wrap">
+            <table id="chatTable" class="premium-table">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Дата / час</th>
+                        <th>Съобщение</th>
+                        <th>Тип</th>
+                    </tr>
+                </thead>
+
+                <tbody>
+                    {% if events %}
+                        {% for e in events %}
+                        <tr>
+                            <td>{{ e.id }}</td>
+                            <td>{{ e.created_at }}</td>
+                            <td style="text-align:left;">
+                                {{ e.payload_data.message or e.payload_data.raw or "—" }}
+                            </td>
+                            <td>
+                                <span class="status-badge">Chat</span>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    {% else %}
+                        <tr>
+                            <td colspan="4" class="empty-state">Все още няма chat съобщения.</td>
+                        </tr>
+                    {% endif %}
+                </tbody>
+            </table>
+        </div>
+    </section>
+
+</main>
+
+<script>
+function filterChatTable() {
+    const input = document.getElementById("chatSearchInput").value.toLowerCase();
+    const rows = document.querySelectorAll("#chatTable tbody tr");
+
+    rows.forEach((row) => {
+        if (row.querySelector(".empty-state")) return;
+
+        const text = row.innerText.toLowerCase();
+        row.style.display = text.includes(input) ? "" : "none";
+    });
+}
+</script>
+
+</body>
+</html>

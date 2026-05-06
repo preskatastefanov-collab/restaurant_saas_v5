@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="bg">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Известия | Reservy</title>
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+
+<body class="app-layout">
+
+<aside class="premium-sidebar">
+    <div class="brand-box">
+        <div class="brand-icon">R</div>
+        <div>
+            <div class="brand-name">reservy</div>
+            <div class="brand-subtitle">SMART RESERVATIONS</div>
+        </div>
+    </div>
+
+    <nav class="premium-nav">
+        <a class="premium-nav-link" href="/dashboard">🏠 Табло</a>
+
+        {% if role == "super_admin" %}
+            <a class="premium-nav-link" href="/restaurants">🏢 Бизнеси</a>
+            <a class="premium-nav-link" href="/users">👥 Потребители</a>
+            <a class="premium-nav-link" href="/menu-manager">📋 Меню</a>
+            <a class="premium-nav-link" href="/settings">⚙️ Настройки</a>
+            <a class="premium-nav-link" href="/password-requests">🔐 Заявки пароли</a>
+        {% elif role == "owner" or role == "admin" %}
+            <a class="premium-nav-link" href="/users">👥 Потребители</a>
+            <a class="premium-nav-link" href="/menu-manager">📋 Меню</a>
+            <a class="premium-nav-link" href="/settings">⚙️ Настройки</a>
+        {% endif %}
+    </nav>
+
+    <div class="premium-user-box">
+        <div class="premium-avatar">{{ session["user"]["username"][:2]|upper }}</div>
+        <div>
+            <strong>{{ session["user"]["username"] }}</strong>
+            <span>{{ role }}</span>
+        </div>
+    </div>
+</aside>
+
+<main class="premium-main">
+
+    <header class="premium-topbar">
+        <div>
+            <span class="muted-label">Влязъл като</span>
+            <strong>{{ session["user"]["username"] }}</strong>
+            <span class="role-pill role-{{ role }}">{{ role }}</span>
+        </div>
+
+        <div class="topbar-business">
+            {% if active_business %}
+                <span class="muted-label">Активен бизнес</span>
+                <strong>{{ active_business.name }}</strong>
+                <span class="plan-pill">{{ active_business.plan|upper }}</span>
+            {% endif %}
+            <a class="logout-btn" href="/logout">🚪 Изход</a>
+        </div>
+    </header>
+
+    <section class="premium-table-card notifications-page-card">
+        <div class="premium-section-head">
+            <div>
+                <h2>🔔 Всички известия</h2>
+                <p>Тук виждаш активни, стари, минали, предстоящи, непотвърдени и отказани резервации.</p>
+            </div>
+
+            <a class="premium-export-btn" href="/dashboard">⬅ Назад</a>
+        </div>
+
+        {% if notifications %}
+            <div class="all-notifications-list">
+                {% for n in notifications %}
+                    <div class="all-notification-item {{ n.type_class }}">
+                        <div class="all-notification-icon">
+                            {{ n.icon }}
+                        </div>
+
+                        <div class="all-notification-content">
+                            <div class="all-notification-title-row">
+                                <h3>{{ n.title }}</h3>
+                                <span>{{ n.type_label }}</span>
+                            </div>
+
+                            <p>{{ n.text }}</p>
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+        {% else %}
+            <div class="empty-state">
+                Няма известия.
+            </div>
+        {% endif %}
+    </section>
+
+</main>
+
+</body>
+</html>

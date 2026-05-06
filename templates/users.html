@@ -1,254 +1,348 @@
 <!DOCTYPE html>
 <html lang="bg">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Потребители</title>
-    <link rel="stylesheet" href="/static/style.css">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Потребители | Reservy</title>
+<link rel="stylesheet" href="/static/style.css">
 </head>
-<body class="dashboard-page">
 
-    <div class="header">
-        <div class="brand-wrap">
-            <div class="brand-icon">👥</div>
-            <h1>Потребители</h1>
-        </div>
+<body class="app-layout">
 
-        <div class="header-actions">
-            {% if role == "super_admin" %}
-                <a class="top-btn" href="/restaurants">🏪 Ресторанти</a>
-                <a class="top-btn" href="/create-restaurant">➕ Нов ресторант</a>
-                <a class="top-btn" href="/dashboard">📊 Dashboard</a>
-                <a class="top-btn" href="/menu-manager">📋 Меню</a>
-                <a class="top-btn" href="/settings">⚙️ Настройки</a>
-            {% elif role == "owner" %}
-                <a class="top-btn" href="/dashboard">📊 Dashboard</a>
-                <a class="top-btn" href="/menu-manager">📋 Меню</a>
-                <a class="top-btn" href="/settings">⚙️ Настройки</a>
-            {% elif role == "admin" %}
-                <a class="top-btn" href="/dashboard">📊 Dashboard</a>
-                <a class="top-btn" href="/menu-manager">📋 Меню</a>
-                <a class="top-btn" href="/settings">⚙️ Настройки</a>
-            {% endif %}
-            <a class="logout-btn" href="/logout">🚪 Изход</a>
+<aside class="premium-sidebar">
+    <div class="brand-box">
+        <div class="brand-icon">R</div>
+        <div>
+            <div class="brand-name">reservy</div>
+            <div class="brand-subtitle">SMART RESERVATIONS</div>
         </div>
     </div>
 
-    <div class="container">
-        {% if error %}
-        <div class="error" style="max-width: 100%; margin-bottom: 18px;">{{ error }}</div>
-        {% endif %}
-
-        {% if success %}
-        <div class="saved-banner" style="max-width: 100%; margin-bottom: 18px;">{{ success }}</div>
-        {% endif %}
+    <nav class="premium-nav">
+        <a class="premium-nav-link" href="/dashboard">🏠 Табло</a>
 
         {% if role == "super_admin" %}
-        <div class="saved-banner" style="max-width: 100%; margin-bottom: 18px;">
-            🔒 Super Admin режим: имаш пълен контрол над ролите и управлението на потребителите.
-        </div>
-        {% elif role == "owner" %}
-        <div class="saved-banner" style="max-width: 100%; margin-bottom: 18px;">
-            👤 Owner режим: можеш да управляваш екипа на ресторанта, без системните права на платформата.
-        </div>
-        {% elif role == "admin" %}
-        <div class="saved-banner" style="max-width: 100%; margin-bottom: 18px;">
-            ℹ️ Admin режим: виждаш потребителите, но нямаш пълен контрол върху роли и чувствителни действия.
-        </div>
+        <a class="premium-nav-link" href="/restaurants">🏢 Бизнеси</a>
         {% endif %}
 
-        {% if role == "super_admin" or role == "owner" %}
-        <div class="settings-card">
-            <h2>Добави потребител</h2>
+        <a class="premium-nav-link active" href="/users">👥 Потребители</a>
+        <a class="premium-nav-link" href="/menu-manager">📋 Меню</a>
+        <a class="premium-nav-link" href="/settings">⚙️ Настройки</a>
+    </nav>
 
-            <form method="POST" action="/users/create">
-                <div class="settings-grid">
-                    <div class="settings-field">
-                        <label>Потребителско име</label>
-                        <input type="text" name="username" required>
-                    </div>
-
-                    <div class="settings-field">
-                        <label>Парола</label>
-                        <input type="text" name="password" required>
-                    </div>
-
-                    <div class="settings-field">
-                        <label>Роля</label>
-                        <select name="role">
-                            {% if role == "super_admin" %}
-                            <option value="owner">owner</option>
-                            {% endif %}
-                            <option value="admin">admin</option>
-                            <option value="staff">staff</option>
-                        </select>
-                    </div>
-                </div>
-
-                <div class="settings-actions">
-                    <button class="save-settings-btn" type="submit">➕ Добави потребител</button>
-                </div>
-            </form>
+    <div class="premium-user-box">
+        <div class="premium-avatar">{{ session["user"]["username"][:2]|upper }}</div>
+        <div>
+            <strong>{{ session["user"]["username"] }}</strong>
+            <span>{{ role }}</span>
         </div>
+    </div>
+</aside>
+
+<main class="premium-main">
+
+<header class="premium-topbar">
+    <div>
+        <span class="muted-label">Влязъл като</span>
+        <strong>{{ session["user"]["username"] }}</strong>
+        <span class="role-pill role-{{ role }}">{{ role }}</span>
+    </div>
+
+    <div class="topbar-business">
+        {% if active_business %}
+            <span class="muted-label">Активен бизнес</span>
+            <strong>{{ active_business.name }}</strong>
+            <span class="plan-pill">{{ active_business.plan|upper }}</span>
         {% endif %}
+        <a class="logout-btn" href="/logout">🚪 Изход</a>
+    </div>
+</header>
 
-        <div class="table-card" style="margin-top: 24px;">
-            <table>
-                <thead>
-                    <tr>
-                        <th>ID</th>
-                        <th>Потребител</th>
-                        <th>Роля</th>
-                        <th>Статус</th>
-                        <th>Промяна на роля</th>
-                        <th>Действие</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for u in users %}
-                    <tr>
-                        <td>{{ u.id }}</td>
-                        <td>{{ u.username }}</td>
-                        <td>{{ u.role }}</td>
-                        <td>
-                            {% if u.is_active == 1 %}
-                                <span class="people-badge" style="background: linear-gradient(180deg, #27c77f 0%, #17a85f 100%);">Активен</span>
-                            {% else %}
-                                <span class="people-badge" style="background: linear-gradient(180deg, #ff6666 0%, #f34a4a 100%);">Спрян</span>
-                            {% endif %}
-                        </td>
+<div class="premium-info-banner users-blue-info">
+    ℹ️ Таблицата по-долу показва всички потребители в системата и техните роли.
+</div>
 
-                        <td>
-                            {% if role == "admin" %}
-                                <span style="color:#666;">—</span>
+{% if role == "super_admin" %}
+<div class="premium-info-banner">
+    🔒 Super Admin режим: имаш пълен контрол над ролите и управлението на потребителите.
+</div>
+{% elif role == "owner" %}
+<div class="premium-info-banner">
+    🏢 Owner режим: можеш да управляваш admin и staff потребители.
+</div>
+{% elif role == "admin" %}
+<div class="premium-info-banner">
+    🛠 Admin режим: можеш да управляваш staff потребители.
+</div>
+{% endif %}
 
-                            {% elif u.role == "super_admin" %}
-                                <strong>super_admin</strong>
+{% if error %}
+<div class="error" style="margin-bottom:18px;">{{ error }}</div>
+{% endif %}
 
-                            {% elif u.role == "owner" and role != "super_admin" %}
-                                <strong>owner</strong>
+{% if success %}
+<div class="saved-banner" style="margin-bottom:18px;">{{ success }}</div>
+{% endif %}
 
-                            {% elif u.id == session["user"]["id"] %}
-                                <strong>{{ u.role }}</strong>
+<section class="premium-table-card">
 
-                            {% else %}
-                            <form method="POST" action="/users/change-role" style="display:flex; gap:8px; justify-content:center; align-items:center;">
-                                <input type="hidden" name="user_id" value="{{ u.id }}">
-                                <select name="role" style="min-height:44px; border-radius:12px; padding:8px 10px;">
-                                    {% if role == "super_admin" %}
-                                    <option value="owner" {% if u.role == "owner" %}selected{% endif %}>owner</option>
-                                    {% endif %}
-                                    <option value="admin" {% if u.role == "admin" %}selected{% endif %}>admin</option>
-                                    <option value="staff" {% if u.role == "staff" %}selected{% endif %}>staff</option>
-                                </select>
-                                <button class="action-btn action-edit" type="submit" style="width:56px;height:44px;">💾</button>
-                            </form>
-                            {% endif %}
-                        </td>
-
-                        <td>
-                            <div class="actions">
-                                {% if role == "admin" %}
-                                    <span style="color:#666;">—</span>
-
-                                {% elif u.role == "super_admin" %}
-                                    <span style="color:#666;">—</span>
-
-                                {% elif u.id == session["user"]["id"] %}
-                                    <span style="color:#666;">—</span>
-
-                                {% elif u.role == "owner" and role != "super_admin" %}
-                                    <span style="color:#666;">—</span>
-
-                                {% else %}
-                                    <button
-                                        class="action-btn action-edit"
-                                        type="button"
-                                        onclick="openEditUserModal('{{ u.id }}', '{{ u.username|e }}', '{{ u.role|e }}')"
-                                    >✏️</button>
-
-                                    {% if u.is_active == 1 %}
-                                    <form method="POST" action="/users/deactivate" style="display:inline;">
-                                        <input type="hidden" name="user_id" value="{{ u.id }}">
-                                        <button class="action-btn action-delete" type="submit">⛔</button>
-                                    </form>
-                                    {% else %}
-                                    <form method="POST" action="/users/activate" style="display:inline;">
-                                        <input type="hidden" name="user_id" value="{{ u.id }}">
-                                        <button class="action-btn action-edit" type="submit">✅</button>
-                                    </form>
-                                    {% endif %}
-
-                                    <form method="POST" action="/users/delete" style="display:inline;" onsubmit="return confirm('Сигурен ли си, че искаш да изтриеш този потребител?')">
-                                        <input type="hidden" name="user_id" value="{{ u.id }}">
-                                        <button class="action-btn action-delete" type="submit">🗑️</button>
-                                    </form>
-                                {% endif %}
-                            </div>
-                        </td>
-                    </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
-        </div>
+<div class="premium-section-head">
+    <div>
+        <h2>Всички потребители</h2>
     </div>
 
-    {% if role == "super_admin" or role == "owner" %}
-    <div id="editUserModal" class="modal">
-        <div class="modal-content">
-            <h2>Редакция на потребител</h2>
-
-            <form method="POST" action="/users/edit">
-                <input type="hidden" id="editUserId" name="user_id">
-
-                <div class="settings-field">
-                    <label>Потребителско име</label>
-                    <input type="text" id="editUsername" name="username" required>
-                </div>
-
-                <div class="settings-field">
-                    <label>Нова парола</label>
-                    <input type="text" id="editPassword" name="password" placeholder="Остави празно, ако не искаш смяна">
-                </div>
-
-                <div class="settings-field">
-                    <label>Роля</label>
-                    <select id="editRole" name="role">
-                        {% if role == "super_admin" %}
-                        <option value="owner">owner</option>
-                        {% endif %}
-                        <option value="admin">admin</option>
-                        <option value="staff">staff</option>
-                    </select>
-                </div>
-
-                <div class="modal-actions">
-                    <button class="save-btn" type="submit">💾 Запази</button>
-                    <button class="close-btn" type="button" onclick="closeEditUserModal()">Затвори</button>
-                </div>
-            </form>
-        </div>
-    </div>
+    {% if role == "super_admin" or role == "owner" or role == "admin" %}
+    <button class="users-primary-btn" onclick="openCreateUserModal()">
+        ➕ Нов потребител
+    </button>
     {% endif %}
+</div>
 
-    <script>
-        function openEditUserModal(id, username, role) {
-            const modal = document.getElementById("editUserModal");
-            if (!modal) return;
+<div class="premium-table-wrap">
 
-            document.getElementById("editUserId").value = id;
-            document.getElementById("editUsername").value = username;
-            document.getElementById("editPassword").value = "";
-            document.getElementById("editRole").value = role;
-            modal.style.display = "flex";
-        }
+<table class="premium-table users-modern-table">
 
-        function closeEditUserModal() {
-            const modal = document.getElementById("editUserModal");
-            if (!modal) return;
-            modal.style.display = "none";
-        }
-    </script>
+<thead>
+<tr>
+    <th>ID</th>
+    <th>Име</th>
+    <th>Email</th>
+    <th>Роля</th>
+    <th>Статус</th>
+    <th>Последно влизане</th>
+    <th>Действия</th>
+</tr>
+</thead>
+
+<tbody id="usersTableBody">
+
+{% for u in users %}
+
+{% set can_manage_user =
+    u.id != session["user"]["id"]
+    and u.role != "super_admin"
+    and (
+        role == "super_admin"
+        or (role == "owner" and u.role != "owner")
+        or (role == "admin" and u.role == "staff")
+    )
+%}
+
+<tr>
+
+<td>{{ u.id }}</td>
+
+<td>{{ u.username }}</td>
+
+<td>{{ u.email }}</td>
+
+<td>
+{% if u.role == "super_admin" %}
+<span class="users-role-pill purple">super_admin</span>
+{% elif u.role == "owner" %}
+<span class="users-role-pill green">owner</span>
+{% elif u.role == "admin" %}
+<span class="users-role-pill blue">admin</span>
+{% else %}
+<span class="users-role-pill orange">staff</span>
+{% endif %}
+</td>
+
+<td>
+{% if u.is_active == 1 %}
+<span class="users-status active">Активен</span>
+{% else %}
+<span class="users-status off">Неактивен</span>
+{% endif %}
+</td>
+
+<td>{{ u.last_login }}</td>
+
+<td>
+<div class="users-action-row">
+
+{% if can_manage_user %}
+
+<button
+type="button"
+class="users-icon-btn edit"
+onclick="openEditUserModal('{{ u.id }}','{{ u.username|e }}','{{ u.role|e }}')">
+✏️
+</button>
+
+{% if u.is_active == 1 %}
+<form method="POST" action="/users/deactivate">
+<input type="hidden" name="user_id" value="{{ u.id }}">
+<button class="users-icon-btn warn">⛔</button>
+</form>
+{% else %}
+<form method="POST" action="/users/activate">
+<input type="hidden" name="user_id" value="{{ u.id }}">
+<button class="users-icon-btn ok">✅</button>
+</form>
+{% endif %}
+
+<form method="POST"
+action="/users/delete"
+onsubmit="return confirm('Сигурен ли си?')">
+<input type="hidden" name="user_id" value="{{ u.id }}">
+<button class="users-icon-btn delete">🗑️</button>
+</form>
+
+{% else %}
+—
+{% endif %}
+
+</div>
+</td>
+
+</tr>
+
+{% endfor %}
+
+</tbody>
+
+</table>
+
+</div>
+</section>
+
+</main>
+
+<div id="createUserModal" class="modal">
+<div class="modal-content premium-modal">
+
+<div class="premium-modal-header">
+<div class="premium-modal-icon">➕</div>
+<div>
+<h2>Нов потребител</h2>
+<p>Създай нов акаунт</p>
+</div>
+</div>
+
+<form method="POST" action="/users/create">
+
+<div class="settings-field">
+<label>Потребителско име</label>
+<input type="text" name="username" required>
+</div>
+
+<div class="settings-field">
+<label>Парола</label>
+<input type="text" name="password" required>
+</div>
+
+<div class="settings-field">
+<label>Роля</label>
+
+<select name="role">
+{% if role == "super_admin" %}
+<option value="owner">owner</option>
+<option value="admin">admin</option>
+<option value="staff">staff</option>
+{% elif role == "owner" %}
+<option value="admin">admin</option>
+<option value="staff">staff</option>
+{% else %}
+<option value="staff">staff</option>
+{% endif %}
+</select>
+
+</div>
+
+<div class="modal-actions">
+<button class="save-btn">💾 Създай</button>
+<button type="button" class="close-btn" onclick="closeCreateUserModal()">Затвори</button>
+</div>
+
+</form>
+
+</div>
+</div>
+
+<div id="editUserModal" class="modal">
+<div class="modal-content premium-modal">
+
+<div class="premium-modal-header">
+<div class="premium-modal-icon">👤</div>
+<div>
+<h2>Редакция</h2>
+<p>Промени потребителя</p>
+</div>
+</div>
+
+<form method="POST" action="/users/edit">
+
+<input type="hidden" id="editUserId" name="user_id">
+
+<div class="settings-field">
+<label>Потребителско име</label>
+<input type="text" id="editUsername" name="username" required>
+</div>
+
+<div class="settings-field">
+<label>Нова парола</label>
+<input type="text" id="editPassword" name="password">
+</div>
+
+<div class="settings-field">
+<label>Роля</label>
+
+<select id="editRole" name="role">
+{% if role == "super_admin" %}
+<option value="owner">owner</option>
+<option value="admin">admin</option>
+<option value="staff">staff</option>
+{% elif role == "owner" %}
+<option value="admin">admin</option>
+<option value="staff">staff</option>
+{% else %}
+<option value="staff">staff</option>
+{% endif %}
+</select>
+
+</div>
+
+<div class="modal-actions">
+<button class="save-btn">💾 Запази</button>
+<button type="button" class="close-btn" onclick="closeEditUserModal()">Затвори</button>
+</div>
+
+</form>
+
+</div>
+</div>
+
+<script>
+function openCreateUserModal(){
+document.getElementById("createUserModal").style.display="flex";
+}
+
+function closeCreateUserModal(){
+document.getElementById("createUserModal").style.display="none";
+}
+
+function openEditUserModal(id, username, role){
+document.getElementById("editUserId").value=id;
+document.getElementById("editUsername").value=username;
+document.getElementById("editPassword").value="";
+document.getElementById("editRole").value=role;
+document.getElementById("editUserModal").style.display="flex";
+}
+
+function closeEditUserModal(){
+document.getElementById("editUserModal").style.display="none";
+}
+
+window.onclick=function(e){
+if(e.target==document.getElementById("editUserModal")){
+closeEditUserModal();
+}
+if(e.target==document.getElementById("createUserModal")){
+closeCreateUserModal();
+}
+}
+</script>
 
 </body>
 </html>

@@ -39,6 +39,11 @@ def column_exists(cursor, table_name, column_name):
     return any(row[1] == column_name for row in rows)
 
 
+def add_column_if_missing(cursor, table_name, column_name, column_sql):
+    if not column_exists(cursor, table_name, column_name):
+        cursor.execute(f"ALTER TABLE {table_name} ADD COLUMN {column_sql}")
+
+
 def init_db():
     conn = get_db()
     c = conn.cursor()
@@ -48,6 +53,7 @@ def init_db():
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         name TEXT NOT NULL,
         slug TEXT UNIQUE,
+        business_type TEXT DEFAULT 'restaurant',
         plan TEXT DEFAULT 'basic',
         is_active INTEGER DEFAULT 1,
         created_at TEXT DEFAULT CURRENT_TIMESTAMP
@@ -62,12 +68,14 @@ def init_db():
         phone TEXT,
         email TEXT,
         address TEXT,
+        website TEXT DEFAULT '',
+        working_hours TEXT DEFAULT '',
         welcome_message TEXT,
         max_capacity INTEGER DEFAULT 20,
         open_hour INTEGER DEFAULT 10,
         close_hour INTEGER DEFAULT 22,
         primary_color TEXT DEFAULT '#1e88ff',
-        widget_title TEXT DEFAULT 'AI ChatBot - Ресторант',
+        widget_title TEXT DEFAULT 'Restaurant AI Chatbot',
         widget_enabled INTEGER DEFAULT 1,
         llm_enabled INTEGER DEFAULT 0,
         FOREIGN KEY (tenant_id) REFERENCES tenants(id)
@@ -84,6 +92,17 @@ def init_db():
         is_active INTEGER DEFAULT 1,
         created_at TEXT DEFAULT CURRENT_TIMESTAMP,
         FOREIGN KEY (tenant_id) REFERENCES tenants(id)
+    )
+    """)
+
+    c.execute("""
+    CREATE TABLE IF NOT EXISTS password_reset_requests (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        username TEXT NOT NULL,
+        contact TEXT NOT NULL,
+        message TEXT DEFAULT '',
+        status TEXT DEFAULT 'new',
+        created_at TEXT DEFAULT CURRENT_TIMESTAMP
     )
     """)
 
@@ -146,8 +165,10 @@ def init_db():
         name TEXT NOT NULL,
         description TEXT DEFAULT '',
         price REAL DEFAULT 0,
+        image_url TEXT DEFAULT '',
         upsell_drink TEXT DEFAULT '',
         upsell_dessert TEXT DEFAULT '',
+        upsell_side TEXT DEFAULT '',
         is_active INTEGER DEFAULT 1,
         sort_order INTEGER DEFAULT 0,
         created_at TEXT DEFAULT CURRENT_TIMESTAMP,
@@ -156,14 +177,33 @@ def init_db():
     )
     """)
 
-    if not column_exists(c, "tenants", "plan"):
-        c.execute("ALTER TABLE tenants ADD COLUMN plan TEXT DEFAULT 'basic'")
+    add_column_if_missing(c, "tenants", "plan", "plan TEXT DEFAULT 'basic'")
+    add_column_if_missing(c, "tenants", "business_type", "business_type TEXT DEFAULT 'restaurant'")
+    add_column_if_missing(c, "tenants", "is_active", "is_active INTEGER DEFAULT 1")
 
-    if not column_exists(c, "menu_items", "upsell_drink"):
-        c.execute("ALTER TABLE menu_items ADD COLUMN upsell_drink TEXT DEFAULT ''")
+    add_column_if_missing(c, "tenant_settings", "website", "website TEXT DEFAULT ''")
+    add_column_if_missing(c, "tenant_settings", "working_hours", "working_hours TEXT DEFAULT ''")
+    add_column_if_missing(c, "tenant_settings", "primary_color", "primary_color TEXT DEFAULT '#1e88ff'")
+    add_column_if_missing(c, "tenant_settings", "widget_title", "widget_title TEXT DEFAULT 'Restaurant AI Chatbot'")
+    add_column_if_missing(c, "tenant_settings", "widget_enabled", "widget_enabled INTEGER DEFAULT 1")
+    add_column_if_missing(c, "tenant_settings", "llm_enabled", "llm_enabled INTEGER DEFAULT 0")
+    add_column_if_missing(c, "tenant_settings", "max_capacity", "max_capacity INTEGER DEFAULT 20")
+    add_column_if_missing(c, "tenant_settings", "open_hour", "open_hour INTEGER DEFAULT 10")
+    add_column_if_missing(c, "tenant_settings", "close_hour", "close_hour INTEGER DEFAULT 22")
 
-    if not column_exists(c, "menu_items", "upsell_dessert"):
-        c.execute("ALTER TABLE menu_items ADD COLUMN upsell_dessert TEXT DEFAULT ''")
+    add_column_if_missing(c, "menu_items", "image_url", "image_url TEXT DEFAULT ''")
+    add_column_if_missing(c, "menu_items", "upsell_drink", "upsell_drink TEXT DEFAULT ''")
+    add_column_if_missing(c, "menu_items", "upsell_dessert", "upsell_dessert TEXT DEFAULT ''")
+    add_column_if_missing(c, "menu_items", "upsell_side", "upsell_side TEXT DEFAULT ''")
+    add_column_if_missing(c, "menu_items", "sort_order", "sort_order INTEGER DEFAULT 0")
+    add_column_if_missing(c, "menu_items", "is_active", "is_active INTEGER DEFAULT 1")
+    add_column_if_missing(c, "menu_categories", "name_en", "name_en TEXT DEFAULT ''")
+
+    add_column_if_missing(c, "menu_items", "name_en", "name_en TEXT DEFAULT ''")
+    add_column_if_missing(c, "menu_items", "description_en", "description_en TEXT DEFAULT ''")
+    add_column_if_missing(c, "menu_items", "upsell_drink_en", "upsell_drink_en TEXT DEFAULT ''")
+    add_column_if_missing(c, "menu_items", "upsell_dessert_en", "upsell_dessert_en TEXT DEFAULT ''")
+    add_column_if_missing(c, "menu_items", "upsell_side_en", "upsell_side_en TEXT DEFAULT ''")
 
     conn.commit()
     conn.close()
@@ -174,30 +214,54 @@ def seed_data():
     c = conn.cursor()
 
     c.execute("""
-    INSERT OR IGNORE INTO tenants (id, name, slug, plan, is_active)
-    VALUES (1, ?, 'demo-restaurant', 'premium', 1)
+    INSERT OR IGNORE INTO tenants (id, name, slug, business_type, plan, is_active)
+    VALUES (1, ?, 'demo-restaurant', 'restaurant', 'premium', 1)
     """, (DEFAULT_TENANT_NAME,))
 
     c.execute("""
     INSERT OR IGNORE INTO tenant_settings (
         tenant_id,
         restaurant_name,
+        phone,
+        email,
+        address,
+        website,
+        working_hours,
         welcome_message,
         max_capacity,
         open_hour,
         close_hour,
+        primary_color,
+        widget_title,
         widget_enabled,
         llm_enabled
     )
-    VALUES (?, ?, ?, ?, ?, ?, 1, 1)
+    VALUES (?, ?, '+359 88 123 4567', 'info@demorestaurant.bg',
+            'ул. Витоша 123, София, България',
+            'https://demorestaurant.bg',
+            'Понеделник - Неделя: 09:00 - 23:00',
+            ?, ?, ?, ?, '#1e88ff', 'Restaurant AI Chatbot', 1, 1)
     """, (
         1,
         DEFAULT_TENANT_NAME,
-        "👋 Здравейте! С какво мога да помогна?",
+        "👋 Здравейте! Мога да помогна с напитки, резервации и информация.",
         DEFAULT_TENANT_CAPACITY,
         DEFAULT_OPEN_HOUR,
         DEFAULT_CLOSE_HOUR
     ))
+
+    c.execute("""
+    UPDATE tenant_settings
+    SET restaurant_name = COALESCE(NULLIF(restaurant_name, ''), ?),
+        phone = COALESCE(NULLIF(phone, ''), '+359 88 123 4567'),
+        email = COALESCE(NULLIF(email, ''), 'info@demorestaurant.bg'),
+        address = COALESCE(NULLIF(address, ''), 'ул. Витоша 123, София, България'),
+        website = COALESCE(NULLIF(website, ''), 'https://demorestaurant.bg'),
+        working_hours = COALESCE(NULLIF(working_hours, ''), 'Понеделник - Неделя: 09:00 - 23:00'),
+        widget_title = COALESCE(NULLIF(widget_title, ''), 'Restaurant AI Chatbot'),
+        llm_enabled = 1
+    WHERE tenant_id = 1
+    """, (DEFAULT_TENANT_NAME,))
 
     c.execute("""
     INSERT OR IGNORE INTO users (
@@ -210,52 +274,120 @@ def seed_data():
         DEFAULT_ADMIN_ROLE
     ))
 
+    c.execute("""
+    UPDATE users
+    SET role = 'super_admin'
+    WHERE id = 1
+    """)
+
     c.execute("INSERT OR IGNORE INTO menu_categories (id, tenant_id, name, sort_order, is_active) VALUES (1, 1, 'Салати', 1, 1)")
     c.execute("INSERT OR IGNORE INTO menu_categories (id, tenant_id, name, sort_order, is_active) VALUES (2, 1, 'Основни', 2, 1)")
     c.execute("INSERT OR IGNORE INTO menu_categories (id, tenant_id, name, sort_order, is_active) VALUES (3, 1, 'Десерти', 3, 1)")
     c.execute("INSERT OR IGNORE INTO menu_categories (id, tenant_id, name, sort_order, is_active) VALUES (4, 1, 'Напитки', 4, 1)")
+    c.execute("INSERT OR IGNORE INTO menu_categories (id, tenant_id, name, sort_order, is_active) VALUES (5, 1, 'Upsell добавки', 5, 1)")
 
-    c.execute("""
-    INSERT OR IGNORE INTO menu_items (
-        id, tenant_id, category_id, name, description, price, upsell_drink, upsell_dessert, is_active, sort_order
-    )
-    VALUES (1, 1, 1, 'Цезар', 'Класическа салата Цезар', 12.90, 'Лимонада', 'Чийзкейк', 1, 1)
-    """)
+    items = [
+        (1, 1, 1, 'Цезар', 'Класическа салата с пиле, крутони и пармезан', 12.90, '', 'Домашна лимонада', 'Чийзкейк', 'Пържени картофки', 1, 1),
+        (2, 1, 1, 'Гръцка салата', 'Домати, краставици, сирене, маслини', 10.50, '', 'Домашна лимонада', 'Чийзкейк', 'Чеснов сос', 1, 2),
+        (3, 1, 2, 'Пилешка пържола', 'С гарнитура по избор', 16.90, '', 'Домашна лимонада', 'Чийзкейк', 'Пържени картофки', 1, 1),
+        (4, 1, 2, 'Паста Карбонара', 'Кремообразен сос, бекон и пармезан', 14.90, '', 'Чаша бяло вино', 'Тирамису', 'Чесново хлебче', 1, 2),
+        (5, 1, 2, 'Пица Маргарита', 'Доматен сос, моцарела, босилек', 10.50, '', 'Домашна лимонада', 'Тирамису', 'Чеснов сос', 1, 3),
+        (6, 1, 2, 'Бургер Класик', 'Телешко кюфте, салата, домати, сос', 12.90, '', 'Наливна бира', 'Чийзкейк', 'Пържени картофки', 1, 4),
+        (7, 1, 3, 'Чийзкейк', 'Домашен чийзкейк', 7.50, '', 'Капучино', '', '', 1, 1),
+        (8, 1, 3, 'Тирамису', 'Класическо италианско тирамису', 8.50, '', 'Капучино', '', '', 1, 2),
+        (9, 1, 4, 'Домашна лимонада', 'Свежа домашна лимонада', 4.90, '', '', 'Чийзкейк', '', 1, 1),
+        (10, 1, 4, 'Наливна бира', 'Студена наливна бира', 5.50, '', '', '', 'Плато мезета', 1, 2),
+        (11, 1, 4, 'Капучино', 'Класическо капучино', 4.20, '', '', 'Чийзкейк', '', 1, 3),
+        (12, 1, 5, 'Пържени картофки', 'Хрупкави картофки', 5.90, '', 'Наливна бира', '', 'Чеснов сос', 1, 1),
+        (13, 1, 5, 'Чеснов сос', 'Домашен чеснов сос', 1.50, '', '', '', '', 1, 2),
+        (14, 1, 5, 'Плато мезета', 'Подбрани мезета за компания', 18.90, '', 'Наливна бира', '', '', 1, 3),
+    ]
 
-    c.execute("""
+    c.executemany("""
     INSERT OR IGNORE INTO menu_items (
-        id, tenant_id, category_id, name, description, price, upsell_drink, upsell_dessert, is_active, sort_order
+        id, tenant_id, category_id, name, description, price,
+        image_url, upsell_drink, upsell_dessert, upsell_side,
+        is_active, sort_order
     )
-    VALUES (2, 1, 1, 'Гръцка салата', 'Домати, краставици, сирене, маслини', 10.50, 'Лимонада', 'Чийзкейк', 1, 2)
-    """)
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    """, items)
 
-    c.execute("""
-    INSERT OR IGNORE INTO menu_items (
-        id, tenant_id, category_id, name, description, price, upsell_drink, upsell_dessert, is_active, sort_order
-    )
-    VALUES (3, 1, 2, 'Пилешка пържола', 'С гарнитура по избор', 16.90, 'Лимонада', 'Чийзкейк', 1, 1)
-    """)
+    category_translations = {
+        "Салати": "Salads",
+        "Основни": "Main dishes",
+        "Десерти": "Desserts",
+        "Напитки": "Drinks",
+        "Upsell добавки": "Upsell extras",
+    }
 
-    c.execute("""
-    INSERT OR IGNORE INTO menu_items (
-        id, tenant_id, category_id, name, description, price, upsell_drink, upsell_dessert, is_active, sort_order
-    )
-    VALUES (4, 1, 2, 'Паста Карбонара', 'Кремообразен сос, бекон и пармезан', 14.90, 'Лимонада', 'Чийзкейк', 1, 2)
-    """)
+    for bg_name, en_name in category_translations.items():
+        c.execute("""
+            UPDATE menu_categories
+            SET name_en = ?
+            WHERE tenant_id = 1 AND name = ? AND (name_en IS NULL OR name_en = '')
+        """, (en_name, bg_name))
 
-    c.execute("""
-    INSERT OR IGNORE INTO menu_items (
-        id, tenant_id, category_id, name, description, price, upsell_drink, upsell_dessert, is_active, sort_order
-    )
-    VALUES (5, 1, 3, 'Чийзкейк', 'Домашен чийзкейк', 7.50, 'Лимонада', '', 1, 1)
-    """)
+    item_translations = {
+        "Цезар": ("Caesar salad", "Classic Caesar salad with chicken, croutons and parmesan"),
+        "Гръцка салата": ("Greek salad", "Tomatoes, cucumbers, cheese and olives"),
+        "Пилешка пържола": ("Chicken steak", "Chicken fillet with side dish"),
+        "Паста Карбонара": ("Pasta Carbonara", "Creamy sauce, bacon and parmesan"),
+        "Пица Маргарита": ("Pizza Margherita", "Tomato sauce, mozzarella and basil"),
+        "Бургер Класик": ("Classic burger", "Beef patty, lettuce, tomatoes and sauce"),
+        "Чийзкейк": ("Cheesecake", "Homemade cheesecake"),
+        "Тирамису": ("Tiramisu", "Classic Italian tiramisu"),
+        "Домашна лимонада": ("Homemade lemonade", "Fresh homemade lemonade"),
+        "Наливна бира": ("Draft beer", "Cold draft beer"),
+        "Капучино": ("Cappuccino", "Classic cappuccino"),
+        "Пържени картофки": ("French fries", "Crispy french fries"),
+        "Чеснов сос": ("Garlic sauce", "Homemade garlic sauce"),
+        "Плато мезета": ("Meat platter", "Selected appetizers for sharing"),
+    }
 
-    c.execute("""
-    INSERT OR IGNORE INTO menu_items (
-        id, tenant_id, category_id, name, description, price, upsell_drink, upsell_dessert, is_active, sort_order
-    )
-    VALUES (6, 1, 4, 'Лимонада', 'Домашна лимонада', 4.90, '', 'Чийзкейк', 1, 1)
-    """)
+    for bg_name, data in item_translations.items():
+        en_name, en_description = data
+
+        c.execute("""
+            UPDATE menu_items
+            SET name_en = ?,
+                description_en = ?
+            WHERE tenant_id = 1
+              AND name = ?
+              AND (name_en IS NULL OR name_en = '')
+        """, (en_name, en_description, bg_name))
+
+    upsell_translations = {
+        "Домашна лимонада": "Homemade lemonade",
+        "Чийзкейк": "Cheesecake",
+        "Пържени картофки": "French fries",
+        "Айрян": "Ayran",
+        "Чеснов сос": "Garlic sauce",
+        "Чаша бяло вино": "Glass of white wine",
+        "Тирамису": "Tiramisu",
+        "Чесново хлебче": "Garlic bread",
+        "Наливна бира": "Draft beer",
+        "Капучино": "Cappuccino",
+        "Плато мезета": "Meat platter",
+    }
+
+    rows = c.execute("""
+        SELECT id, upsell_drink, upsell_dessert, upsell_side
+        FROM menu_items
+        WHERE tenant_id = 1
+    """).fetchall()
+
+    for row in rows:
+        drink_en = upsell_translations.get(row["upsell_drink"] or "", "")
+        dessert_en = upsell_translations.get(row["upsell_dessert"] or "", "")
+        side_en = upsell_translations.get(row["upsell_side"] or "", "")
+
+        c.execute("""
+            UPDATE menu_items
+            SET upsell_drink_en = COALESCE(NULLIF(upsell_drink_en, ''), ?),
+                upsell_dessert_en = COALESCE(NULLIF(upsell_dessert_en, ''), ?),
+                upsell_side_en = COALESCE(NULLIF(upsell_side_en, ''), ?)
+            WHERE id = ?
+        """, (drink_en, dessert_en, side_en, row["id"]))
 
     conn.commit()
     conn.close()

@@ -3,137 +3,208 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Нов ресторант</title>
+    <title>Нов бизнес | Reservy</title>
     <link rel="stylesheet" href="/static/style.css">
 </head>
-<body class="dashboard-page">
 
-    <div class="header">
-        <div class="brand-wrap">
-            <div class="brand-icon">➕</div>
-            <h1>Създай нов ресторант</h1>
+<body class="app-layout">
+
+<aside class="premium-sidebar">
+    <div class="brand-box">
+        <div class="brand-icon">R</div>
+        <div>
+            <div class="brand-name">reservy</div>
+            <div class="brand-subtitle">SMART RESERVATIONS</div>
+        </div>
+    </div>
+
+    <nav class="premium-nav">
+        <a class="premium-nav-link" href="/dashboard">🏠 Табло</a>
+        <a class="premium-nav-link active" href="/restaurants">🏢 Бизнеси</a>
+        <a class="premium-nav-link" href="/users">👥 Потребители</a>
+        <a class="premium-nav-link" href="/menu-manager">📋 Меню</a>
+        <a class="premium-nav-link" href="/settings">⚙️ Настройки</a>
+    </nav>
+
+    <div class="premium-user-box">
+        <div class="premium-avatar">AD</div>
+        <div>
+            <strong>admin</strong>
+            <span>super_admin</span>
+        </div>
+    </div>
+</aside>
+
+<main class="premium-main">
+
+    <header class="premium-topbar create-business-topbar">
+        <div>
+            <span class="muted-label">➕</span>
+            <strong>Създай нов бизнес</strong>
         </div>
 
-        <div class="header-actions">
-            <a class="top-btn" href="/restaurants">🏪 Ресторанти</a>
-            <a class="top-btn" href="/dashboard">📊 Dashboard</a>
-            <a class="top-btn" href="/users">👥 Потребители</a>
-            <a class="top-btn" href="/menu-manager">📋 Меню</a>
-            <a class="top-btn" href="/settings">⚙️ Настройки</a>
+        <div class="premium-actions top-actions">
+            <a href="/restaurants">🏢 Бизнеси</a>
+            <a href="/dashboard">📊 Dashboard</a>
+            <a href="/users">👥 Потребители</a>
+            <a href="/menu-manager">📋 Меню</a>
+            <a href="/settings">⚙️ Настройки</a>
             <a class="logout-btn" href="/logout">🚪 Изход</a>
         </div>
+    </header>
+
+    {% if error %}
+    <div class="error" style="margin-bottom: 18px;">{{ error }}</div>
+    {% endif %}
+
+    {% if success %}
+    <div class="saved-banner" style="margin-bottom: 18px;">{{ success }}</div>
+    {% endif %}
+
+    <div class="premium-info-banner">
+        🔒 Само super_admin може да създава нови бизнеси, да избира тип и план.
     </div>
 
-    <div class="container">
-
-        {% if error %}
-        <div class="error" style="margin-bottom: 18px;">{{ error }}</div>
-        {% endif %}
-
-        {% if success %}
-        <div class="saved-banner" style="margin-bottom: 18px;">{{ success }}</div>
-        {% endif %}
-
-        <div class="saved-banner" style="margin-bottom: 18px;">
-            🔒 Само super_admin може да създава нови ресторанти и да избира плана им.
+    <section class="premium-table-card create-business-card">
+        <div class="premium-section-head">
+            <div>
+                <h2>Данни за бизнеса</h2>
+                <p>Тези данни създават tenant, owner акаунт, настройки и стартово меню.</p>
+            </div>
         </div>
 
-        <div class="settings-card">
-            <h2>Данни за ресторанта</h2>
+        <form method="POST" action="/create-restaurant">
+            <div class="create-business-grid">
 
-            <form method="POST" action="/create-restaurant">
-                <div class="settings-grid">
-                    <div class="settings-field">
-                        <label>Име на ресторанта</label>
-                        <input type="text" name="restaurant_name" required>
-                    </div>
-
-                    <div class="settings-field">
-                        <label>Slug</label>
-                        <input type="text" name="slug" placeholder="primer-restorant" required>
-                    </div>
-
-                    <div class="settings-field">
-                        <label>Потребителско име</label>
-                        <input type="text" name="username" required>
-                    </div>
-
-                    <div class="settings-field">
-                        <label>Парола</label>
-                        <input type="text" name="password" required>
-                    </div>
-
-                    <div class="settings-field">
-                        <label>Макс. капацитет</label>
-                        <input type="number" name="max_capacity" value="20" required>
-                    </div>
-
-                    <div class="settings-field">
-                        <label>Отваря в</label>
-                        <input type="number" name="open_hour" value="10" required>
-                    </div>
-
-                    <div class="settings-field">
-                        <label>Затваря в</label>
-                        <input type="number" name="close_hour" value="22" required>
-                    </div>
-
-                    <div class="settings-field">
-                        <label>План</label>
-                        <select name="plan" required>
-                            <option value="basic">Basic</option>
-                            <option value="standard">Standard</option>
-                            <option value="premium" selected>Premium</option>
-                        </select>
-                    </div>
+                <div class="settings-field">
+                    <label>Име на бизнеса</label>
+                    <input type="text" name="restaurant_name" placeholder="Пример: Pizza Napoli" required>
                 </div>
 
-                <div class="settings-card" style="margin-top: 20px; background: rgba(255,255,255,0.65);">
-                    <h2 style="margin-bottom: 14px;">Какво включва всеки план</h2>
-
-                    <div class="settings-grid">
-                        <div class="settings-field">
-                            <label>Basic</label>
-                            <textarea readonly style="min-height: 140px;">• Widget
-• Меню
-• Контакти
-• Базови резервации
-• Dashboard
-• Export
-• Без AI chat
-• Без upsell</textarea>
-                        </div>
-
-                        <div class="settings-field">
-                            <label>Standard</label>
-                            <textarea readonly style="min-height: 140px;">• Всичко от Basic
-• AI chat
-• По-умни отговори за менюто
-• Better fallback
-• Smart food answers
-• Без premium analytics
-• Без upsell</textarea>
-                        </div>
-
-                        <div class="settings-field">
-                            <label>Premium</label>
-                            <textarea readonly style="min-height: 140px;">• Всичко от Standard
-• Upsell логика
-• Premium analytics
-• Advanced AI logic
-• Recommended dishes
-• Priority features</textarea>
-                        </div>
-                    </div>
+                <div class="settings-field">
+                    <label>Slug / публичен линк</label>
+                    <input type="text" name="slug" placeholder="pizza-napoli" required>
                 </div>
 
-                <div class="settings-actions">
-                    <button class="save-settings-btn" type="submit">🚀 Създай ресторант</button>
+                <div class="settings-field">
+                    <label>Тип бизнес</label>
+                    <select name="business_type" required>
+                        <option value="restaurant">Ресторант</option>
+                        <option value="cafe">Кафене</option>
+                        <option value="bar">Бар</option>
+                        <option value="pub">Кръчма / Пъб</option>
+                        <option value="pizzeria">Пицария</option>
+                        <option value="fast_food">Бързо хранене</option>
+                        <option value="bakery">Пекарна</option>
+                        <option value="sweet_shop">Сладкарница</option>
+                        <option value="food_truck">Food Truck</option>
+                        <option value="other">Друг бизнес</option>
+                    </select>
                 </div>
-            </form>
-        </div>
 
-    </div>
+                <div class="settings-field">
+                    <label>План</label>
+                    <select name="plan" required>
+                        <option value="basic">Basic</option>
+                        <option value="standard">Standard</option>
+                        <option value="premium" selected>Premium</option>
+                    </select>
+                </div>
+
+                <div class="settings-field">
+                    <label>Потребителско име</label>
+                    <input type="text" name="username" placeholder="Пример: pizza_admin" required>
+                </div>
+
+                <div class="settings-field">
+                    <label>Парола</label>
+                    <input type="text" name="password" placeholder="Въведи парола" required>
+                </div>
+
+                <div class="settings-field">
+                    <label>Макс. капацитет</label>
+                    <input type="number" name="max_capacity" placeholder="Пример: 20" value="20" required>
+                </div>
+
+                <div class="settings-field">
+                    <label>Отваря в</label>
+                    <input type="number" name="open_hour" placeholder="Пример: 10" value="10" required>
+                </div>
+
+                <div class="settings-field">
+                    <label>Затваря в</label>
+                    <input type="number" name="close_hour" placeholder="Пример: 22" value="22" required>
+                </div>
+
+                <div class="settings-field">
+                    <label>Стартово меню</label>
+                    <select name="auto_menu">
+                        <option value="1" selected>Да, създай примерни категории</option>
+                        <option value="0">Не, остави менюто празно</option>
+                    </select>
+                </div>
+
+            </div>
+
+            <h2 class="plans-title">Какво включва всеки план</h2>
+
+            <div class="premium-plan-grid create-plan-grid">
+                <div class="premium-plan-card">
+                    <h3>Basic</h3>
+                     <p>За първоначално демо и малки бизнеси.</p>
+                    <ul>
+                        <li>Reservation widget</li>
+                        <li>Меню система</li>
+                        <li>Контакти и информация</li>
+                        <li>Базови резервации</li>
+                        <li>Basic Dashboard</li>
+                        <li>Бизнес настройки</li>
+                        <li>CSV / Excel export</li>
+                    </ul>
+                </div>
+
+                <div class="premium-plan-card">
+                    <h3>Standard</h3>
+                    <p>За реални бизнеси, които искат професионален контролен панел.</p>
+                    <ul>
+                        <li>Всичко от Basic</li>
+                        <li>Premium admin panel</li>
+                        <li>Управление на потребители</li>
+                        <li>Multi-business структура</li>
+                        <li>По-добри таблици и действия</li>
+                        <li>Pagination на бизнеси</li>
+                        <li>Модерни edit modal прозорци</li>
+                        <li>Известия в dashboard-а</li>
+                        <li>Basic automation</li>
+                    </ul>
+                </div>
+
+                <div class="premium-plan-card highlighted-plan">
+                    <h3>Premium</h3>
+                    <p>Най-добрият план за AI продажби, автоматизация и растеж.</p>
+                    <ul>
+                        <li>Всичко от Standard</li>
+                        <li>AI Chatbot</li>
+                        <li>Smart menu answers</li>
+                        <li>Advanced AI logic</li>
+                        <li>Smart upsell engine</li>
+                        <li>Product images</li>
+                        <li>Recommended dishes</li>
+                        <li>Premium analytics</li>
+                        <li>Conversion tracking</li>
+                        <li>Auto menu translation (BG → EN)</li>
+                        <li>Multilingual chatbot (BG/EN)</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="settings-actions create-business-actions">
+                <button class="save-settings-btn" type="submit">🚀 Създай бизнес</button>
+            </div>
+        </form>
+    </section>
+
+</main>
 
 </body>
 </html>

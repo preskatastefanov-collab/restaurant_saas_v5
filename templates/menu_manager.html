@@ -2,169 +2,692 @@
 <html lang="bg">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Управление на менюто</title>
+    <title>Меню | Reservy</title>
     <link rel="stylesheet" href="/static/style.css">
 </head>
-<body class="dashboard-page">
 
-    <div class="header">
-        <div class="brand-wrap">
-            <div class="brand-icon">📋</div>
-            <h1>Управление на менюто</h1>
-        </div>
+<body class="app-layout">
 
-        <div class="header-actions">
-            {% if role == "super_admin" %}
-                <a class="top-btn" href="/restaurants">🏪 Ресторанти</a>
-                <a class="top-btn" href="/create-restaurant">➕ Нов ресторант</a>
-                <a class="top-btn" href="/users">👥 Потребители</a>
-                <a class="top-btn" href="/settings">⚙️ Настройки</a>
-                <a class="top-btn" href="/dashboard">📊 Dashboard</a>
-            {% elif role == "owner" %}
-                <a class="top-btn" href="/users">👥 Потребители</a>
-                <a class="top-btn" href="/settings">⚙️ Настройки</a>
-                <a class="top-btn" href="/dashboard">📊 Dashboard</a>
-            {% elif role == "admin" %}
-                <a class="top-btn" href="/users">👥 Потребители</a>
-                <a class="top-btn" href="/settings">⚙️ Настройки</a>
-                <a class="top-btn" href="/dashboard">📊 Dashboard</a>
-            {% endif %}
-            <a class="logout-btn" href="/logout">🚪 Изход</a>
+<aside class="premium-sidebar">
+    <div class="brand-box">
+        <div class="brand-icon">R</div>
+        <div>
+            <div class="brand-name">reservy</div>
+            <div class="brand-subtitle">SMART RESERVATIONS</div>
         </div>
     </div>
 
-    <div class="container">
-        {% if saved %}
-        <div class="saved-banner" style="margin-bottom: 18px;">✅ Менюто е обновено успешно.</div>
+    <nav class="premium-nav">
+        <a class="premium-nav-link" href="/dashboard">🏠 Табло</a>
+        {% if role == "super_admin" %}
+        <a class="premium-nav-link" href="/restaurants">🏢 Бизнеси</a>
         {% endif %}
+        <a class="premium-nav-link" href="/users">👥 Потребители</a>
+        <a class="premium-nav-link active" href="/menu-manager">📋 Меню</a>
+        <a class="premium-nav-link" href="/settings">⚙️ Настройки</a>
+    </nav>
 
-        <div class="saved-banner" style="margin-bottom: 18px;">
-            💸 Upsell полетата помагат ботът да предлага конкретна напитка или десерт към дадено ястие.
+    <div class="premium-user-box">
+        <div class="premium-avatar">{{ session["user"]["username"][:2]|upper }}</div>
+        <div>
+            <strong>{{ session["user"]["username"] }}</strong>
+            <span>{{ role }}</span>
+        </div>
+    </div>
+</aside>
+
+<main class="premium-main menu-premium-page">
+
+<header class="premium-topbar">
+    <div>
+        <span class="muted-label">Влязъл като</span>
+        <strong>{{ session["user"]["username"] }}</strong>
+        <span class="role-pill role-{{ role }}">{{ role }}</span>
+    </div>
+
+    <div class="topbar-business">
+        {% if active_business %}
+            <span class="muted-label">Активен бизнес</span>
+            <strong>{{ active_business.name }}</strong>
+            <span class="plan-pill">{{ active_business.plan|upper }}</span>
+        {% endif %}
+        <a class="logout-btn" href="/logout">🚪 Изход</a>
+    </div>
+</header>
+
+{% set ns = namespace(total_items=0, active_items=0, inactive_items=0, with_images=0, with_upsell=0) %}
+{% for block in menu_data %}
+    {% for item in block["items"] %}
+        {% set ns.total_items = ns.total_items + 1 %}
+        {% if item["is_active"] == 1 %}
+            {% set ns.active_items = ns.active_items + 1 %}
+        {% else %}
+            {% set ns.inactive_items = ns.inactive_items + 1 %}
+        {% endif %}
+        {% if item["image_url"] %}
+            {% set ns.with_images = ns.with_images + 1 %}
+        {% endif %}
+        {% if item["upsell_drink"] or item["upsell_dessert"] or item["upsell_side"] %}
+            {% set ns.with_upsell = ns.with_upsell + 1 %}
+        {% endif %}
+    {% endfor %}
+{% endfor %}
+
+{% if saved %}
+<div class="settings-success-banner">✅ Менюто е обновено успешно.</div>
+{% endif %}
+
+<section class="menu-hero">
+    <div>
+        <span class="menu-kicker">Restaurant Menu Management</span>
+        <h1>Управление на менюто</h1>
+        <p>Категории, артикули, снимки, цени и upsell предложения за chatbot-а.</p>
+    </div>
+
+    <div class="menu-hero-actions">
+        <button type="button" class="menu-primary-btn" onclick="openMenuModal('addCategoryModal')">➕ Категория</button>
+        <button type="button" class="menu-secondary-btn" onclick="openMenuModal('addItemModal')">🍽️ Артикул</button>
+    </div>
+</section>
+
+<section class="menu-stats-row">
+    <div class="menu-stat-card">
+        <div class="menu-stat-icon blue">📂</div>
+        <div>
+            <strong>{{ categories|length if categories else 0 }}</strong>
+            <span>Категории</span>
+        </div>
+    </div>
+
+    <div class="menu-stat-card">
+        <div class="menu-stat-icon green">🍽️</div>
+        <div>
+            <strong>{{ ns.total_items }}</strong>
+            <span>Всички артикули</span>
+        </div>
+    </div>
+
+    <div class="menu-stat-card">
+        <div class="menu-stat-icon purple">🖼️</div>
+        <div>
+            <strong>{{ ns.with_images }}</strong>
+            <span>Със снимка</span>
+        </div>
+    </div>
+
+    <div class="menu-stat-card">
+        <div class="menu-stat-icon orange">💸</div>
+        <div>
+            <strong>{{ ns.with_upsell }}</strong>
+            <span>С upsell</span>
+        </div>
+    </div>
+</section>
+
+<section class="menu-tabs">
+    <button class="menu-tab active" type="button" data-filter="all">Всички</button>
+    <button class="menu-tab" type="button" data-filter="active">Активни</button>
+    <button class="menu-tab" type="button" data-filter="inactive">Скрити</button>
+    <button class="menu-tab" type="button" data-filter="images">Със снимки</button>
+    <button class="menu-tab" type="button" data-filter="upsell">Upsell</button>
+</section>
+
+<section class="menu-workspace">
+
+    <aside class="menu-categories-panel">
+        <div class="menu-panel-head">
+            <div>
+                <h2>Категории</h2>
+                <p>Избери категория</p>
+            </div>
+            <button type="button" onclick="openMenuModal('addCategoryModal')">+</button>
         </div>
 
-        <div class="settings-card">
-            <h2>Добави категория</h2>
-
-            <form method="POST" action="/menu-manager/add-category">
-                <div class="settings-grid">
-                    <div class="settings-field">
-                        <label>Име на категория</label>
-                        <input type="text" name="name" placeholder="Пример: Салати" required>
-                    </div>
-
-                    <div class="settings-field">
-                        <label>Подредба</label>
-                        <input type="number" name="sort_order" value="0">
-                    </div>
-                </div>
-
-                <div class="settings-actions">
-                    <button class="save-settings-btn" type="submit">➕ Добави категория</button>
-                </div>
-            </form>
-        </div>
-
-        <div class="settings-card" style="margin-top: 24px;">
-            <h2>Добави артикул</h2>
-
-            <form method="POST" action="/menu-manager/add-item">
-                <div class="settings-grid">
-                    <div class="settings-field">
-                        <label>Категория</label>
-                        <select name="category_id" required>
-                            {% for cat in categories %}
-                            <option value="{{ cat.id }}">{{ cat.name }}</option>
-                            {% endfor %}
-                        </select>
-                    </div>
-
-                    <div class="settings-field">
-                        <label>Име на артикула</label>
-                        <input type="text" name="name" required>
-                    </div>
-
-                    <div class="settings-field settings-full">
-                        <label>Описание</label>
-                        <input type="text" name="description">
-                    </div>
-
-                    <div class="settings-field">
-                        <label>Цена</label>
-                        <input type="number" step="0.01" name="price" value="0">
-                    </div>
-
-                    <div class="settings-field">
-                        <label>Upsell напитка</label>
-                        <input type="text" name="upsell_drink" placeholder="Пример: Лимонада">
-                    </div>
-
-                    <div class="settings-field">
-                        <label>Upsell десерт</label>
-                        <input type="text" name="upsell_dessert" placeholder="Пример: Чийзкейк">
-                    </div>
-
-                    <div class="settings-field">
-                        <label>Подредба</label>
-                        <input type="number" name="sort_order" value="0">
-                    </div>
-                </div>
-
-                <div class="settings-actions">
-                    <button class="save-settings-btn" type="submit">➕ Добави артикул</button>
-                </div>
-            </form>
-        </div>
+        <button class="menu-category-row active" type="button" data-category="all">
+            <span class="cat-emoji">📋</span>
+            <div>
+                <strong>Всички артикули</strong>
+                <small>{{ ns.total_items }} продукта</small>
+            </div>
+        </button>
 
         {% for block in menu_data %}
-        <div class="settings-card" style="margin-top: 24px;">
-            <div style="display:flex; justify-content:space-between; align-items:center; gap:12px; flex-wrap:wrap;">
-                <h2 style="margin:0;">{{ block["category"]["name"] }}</h2>
+        <button class="menu-category-row" type="button" data-category="cat-{{ block['category']['id'] }}">
+            <span class="cat-emoji">📂</span>
+            <div>
+                <strong>{{ block["category"]["name"] }}</strong>
+                <small>{{ block["items"]|length }} артикула</small>
+            </div>
+        </button>
+        {% endfor %}
+    </aside>
 
-                <form method="POST" action="/menu-manager/delete-category" onsubmit="return confirm('Сигурен ли си?')">
+    <section class="menu-items-panel">
+        <div class="menu-panel-head menu-items-head">
+            <div>
+                <h2>Артикули</h2>
+                <p>Редактирай менюто, снимките и upsell предложенията.</p>
+            </div>
+
+            <div class="menu-search-wrap">
+                <input id="menuSearchInput" type="text" placeholder="Търси артикул...">
+            </div>
+        </div>
+
+        <div class="menu-table-wrap">
+            <table class="menu-premium-table">
+                <thead>
+                    <tr>
+                        <th>Артикул</th>
+                        <th>Категория</th>
+                        <th>Цена</th>
+                        <th>Статус</th>
+                        <th>Upsell</th>
+                        <th>Подредба</th>
+                        <th>Действия</th>
+                    </tr>
+                </thead>
+
+                <tbody>
+                {% for block in menu_data %}
+                    {% for item in block["items"] %}
+                    <tr class="menu-item-row"
+                        data-category="cat-{{ block['category']['id'] }}"
+                        data-status="{% if item['is_active'] == 1 %}active{% else %}inactive{% endif %}"
+                        data-image="{% if item['image_url'] %}yes{% else %}no{% endif %}"
+                        data-upsell="{% if item['upsell_drink'] or item['upsell_dessert'] or item['upsell_side'] %}yes{% else %}no{% endif %}"
+                        data-search="{{ item['name']|lower }} {{ item['description']|lower }} {{ block['category']['name']|lower }}">
+
+                        <td>
+                            <div class="menu-product-cell">
+                                <div class="menu-product-image">
+                                    {% if item["image_url"] %}
+                                        <img src="{{ item['image_url'] }}" alt="{{ item['name'] }}">
+                                    {% else %}
+                                        <span>🍽️</span>
+                                    {% endif %}
+                                </div>
+                                <div>
+                                    <strong>{{ item["name"] }}</strong>
+                                    <small>{{ item["description"] or "Няма описание." }}</small>
+                                </div>
+                            </div>
+                        </td>
+
+                        <td><span class="menu-category-pill">{{ block["category"]["name"] }}</span></td>
+
+                        <td><span class="menu-price-pill">{{ "%.2f"|format(item["price"]) }} €</span></td>
+
+                        <td>
+                            {% if item["is_active"] == 1 %}
+                            <span class="menu-status-pill active">Активен</span>
+                            {% else %}
+                            <span class="menu-status-pill inactive">Скрит</span>
+                            {% endif %}
+                        </td>
+
+                        <td>
+                            <div class="menu-upsell-mini">
+                                {% if item["upsell_drink"] %}<span>🥤 {{ item["upsell_drink"] }}</span>{% endif %}
+                                {% if item["upsell_dessert"] %}<span>🍰 {{ item["upsell_dessert"] }}</span>{% endif %}
+                                {% if item["upsell_side"] %}<span>🍟 {{ item["upsell_side"] }}</span>{% endif %}
+                                {% if not item["upsell_drink"] and not item["upsell_dessert"] and not item["upsell_side"] %}
+                                <em>Няма</em>
+                                {% endif %}
+                            </div>
+                        </td>
+
+                        <td><span class="menu-order-badge">{{ item["sort_order"] or 0 }}</span></td>
+
+                        <td>
+                            <div class="menu-actions">
+                                <button class="menu-icon-btn edit" type="button" onclick="openMenuModal('itemModal-{{ item['id'] }}')">✏️</button>
+
+                                <form method="POST" action="/menu-manager/toggle-item">
+                                    <input type="hidden" name="item_id" value="{{ item['id'] }}">
+                                    <button class="menu-icon-btn view" type="submit">👁️</button>
+                                </form>
+
+                                <form method="POST" action="/menu-manager/delete-item" onsubmit="return confirm('Сигурен ли си, че искаш да изтриеш артикула?')">
+                                    <input type="hidden" name="item_id" value="{{ item['id'] }}">
+                                    <button class="menu-icon-btn delete" type="submit">🗑️</button>
+                                </form>
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        <div class="menu-table-footer menu-pagination-footer">
+            <span>
+                Показване на <strong id="pageStart">1</strong> до <strong id="pageEnd">5</strong>
+                от <strong id="visibleMenuCount">{{ ns.total_items }}</strong> артикула
+            </span>
+
+            <div class="menu-pagination-controls">
+                <button type="button" id="prevMenuPage">‹</button>
+                <div id="menuPageNumbers"></div>
+                <button type="button" id="nextMenuPage">›</button>
+            </div>
+
+            <div class="menu-page-jump">
+                <span>Страница</span>
+                <select id="menuPageSelect"></select>
+            </div>
+        </div>
+    </section>
+</section>
+
+<section class="menu-category-management">
+    <div class="menu-panel-head">
+        <div>
+            <h2>Управление на категории</h2>
+            <p>Редакция, подредба и изтриване на категории.</p>
+        </div>
+    </div>
+
+    <div class="menu-category-grid">
+        {% for block in menu_data %}
+        <div class="menu-category-card">
+            <div>
+                <h3>{{ block["category"]["name"] }}</h3>
+                <p>{{ block["items"]|length }} артикула · Подредба {{ block["category"]["sort_order"] or 0 }}</p>
+            </div>
+
+            <div class="menu-actions">
+                <button class="menu-icon-btn edit" type="button" onclick="openMenuModal('categoryModal-{{ block['category']['id'] }}')">✏️</button>
+
+                <form method="POST" action="/menu-manager/delete-category" onsubmit="return confirm('Сигурен ли си? Това ще изтрие категорията и всички артикули в нея.')">
                     <input type="hidden" name="category_id" value="{{ block['category']['id'] }}">
-                    <button class="logout-btn" type="submit" style="border:none;">🗑️ Изтрий категория</button>
+                    <button class="menu-icon-btn delete" type="submit">🗑️</button>
                 </form>
             </div>
-
-            {% if block["items"] %}
-            <div class="table-card" style="margin-top: 18px;">
-                <table>
-                    <thead>
-                        <tr>
-                            <th>Име</th>
-                            <th>Описание</th>
-                            <th>Цена</th>
-                            <th>Upsell напитка</th>
-                            <th>Upsell десерт</th>
-                            <th>Действие</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {% for item in block["items"] %}
-                        <tr>
-                            <td>{{ item["name"] }}</td>
-                            <td>{{ item["description"] }}</td>
-                            <td>€{{ "%.2f"|format(item["price"]) }}</td>
-                            <td>{{ item["upsell_drink"] or "—" }}</td>
-                            <td>{{ item["upsell_dessert"] or "—" }}</td>
-                            <td>
-                                <form method="POST" action="/menu-manager/delete-item" onsubmit="return confirm('Сигурен ли си?')">
-                                    <input type="hidden" name="item_id" value="{{ item['id'] }}">
-                                    <button class="action-btn action-delete" type="submit">🗑️</button>
-                                </form>
-                            </td>
-                        </tr>
-                        {% endfor %}
-                    </tbody>
-                </table>
-            </div>
-            {% else %}
-            <p style="margin-top:16px; color:#6b7280;">Няма добавени артикули в тази категория.</p>
-            {% endif %}
         </div>
         {% endfor %}
     </div>
+</section>
+
+</main>
+
+<div id="addCategoryModal" class="modal">
+    <div class="modal-content premium-modal">
+        <div class="premium-modal-header">
+            <div class="premium-modal-icon">📂</div>
+            <div>
+                <h2>Добави категория</h2>
+                <p>Например: Пици, Кафета, Коктейли, Десерти.</p>
+            </div>
+        </div>
+
+        <form method="POST" action="/menu-manager/add-category">
+            <div class="settings-field">
+                <label>Име на категория</label>
+                <input type="text" name="name" required>
+            </div>
+
+            <div class="settings-field">
+                <label>Подредба</label>
+                <input type="number" name="sort_order" value="0">
+            </div>
+
+            <div class="modal-actions">
+                <button class="save-btn" type="submit">➕ Добави</button>
+                <button class="close-btn" type="button" onclick="closeMenuModal('addCategoryModal')">Затвори</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<div id="addItemModal" class="modal">
+    <div class="modal-content premium-modal menu-item-modal">
+        <div class="premium-modal-header">
+            <div class="premium-modal-icon">🍽️</div>
+            <div>
+                <h2>Добави артикул</h2>
+                <p>Добави продукт със снимка, цена, описание и upsell.</p>
+            </div>
+        </div>
+
+        {% if categories %}
+        <form method="POST" action="/menu-manager/add-item" enctype="multipart/form-data">
+            <div class="settings-form-grid">
+                <div class="settings-field">
+                    <label>Категория</label>
+                    <select name="category_id" required>
+                        {% for cat in categories %}
+                        <option value="{{ cat.id }}">{{ cat.name }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <div class="settings-field">
+                    <label>Име</label>
+                    <input type="text" name="name" required>
+                </div>
+
+                <div class="settings-field settings-full">
+                    <label>Описание</label>
+                    <input type="text" name="description">
+                </div>
+
+                <div class="settings-field">
+                    <label>Цена</label>
+                    <input type="number" step="0.01" name="price" value="0">
+                </div>
+
+                <div class="settings-field">
+                    <label>Подредба</label>
+                    <input type="number" name="sort_order" value="0">
+                </div>
+
+                <div class="settings-field">
+                    <label>Снимка от линк</label>
+                    <input type="text" name="image_url">
+                </div>
+
+                <div class="settings-field">
+                    <label>Качи снимка</label>
+                    <input type="file" name="image_file" accept="image/*">
+                </div>
+
+                <div class="settings-field">
+                    <label>Upsell напитка</label>
+                    <input type="text" name="upsell_drink">
+                </div>
+
+                <div class="settings-field">
+                    <label>Upsell десерт</label>
+                    <input type="text" name="upsell_dessert">
+                </div>
+
+                <div class="settings-field">
+                    <label>Upsell добавка</label>
+                    <input type="text" name="upsell_side">
+                </div>
+            </div>
+
+            <div class="modal-actions">
+                <button class="save-btn" type="submit">➕ Добави</button>
+                <button class="close-btn" type="button" onclick="closeMenuModal('addItemModal')">Затвори</button>
+            </div>
+        </form>
+        {% else %}
+        <div class="empty-state">Първо добави категория.</div>
+        {% endif %}
+    </div>
+</div>
+
+{% for block in menu_data %}
+<div id="categoryModal-{{ block['category']['id'] }}" class="modal">
+    <div class="modal-content premium-modal">
+        <div class="premium-modal-header">
+            <div class="premium-modal-icon">📂</div>
+            <div>
+                <h2>Редакция на категория</h2>
+                <p>Промени името и подредбата.</p>
+            </div>
+        </div>
+
+        <form method="POST" action="/menu-manager/edit-category">
+            <input type="hidden" name="category_id" value="{{ block['category']['id'] }}">
+
+            <div class="settings-field">
+                <label>Име</label>
+                <input type="text" name="name" value="{{ block['category']['name'] }}" required>
+            </div>
+
+            <div class="settings-field">
+                <label>Подредба</label>
+                <input type="number" name="sort_order" value="{{ block['category']['sort_order'] or 0 }}">
+            </div>
+
+            <div class="modal-actions">
+                <button class="save-btn" type="submit">💾 Запази</button>
+                <button class="close-btn" type="button" onclick="closeMenuModal('categoryModal-{{ block['category']['id'] }}')">Затвори</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+{% for item in block["items"] %}
+<div id="itemModal-{{ item['id'] }}" class="modal">
+    <div class="modal-content premium-modal menu-item-modal">
+        <div class="premium-modal-header">
+            <div class="premium-modal-icon">🍽️</div>
+            <div>
+                <h2>Редакция на артикул</h2>
+                <p>Промени име, цена, снимка, описание и upsell предложения.</p>
+            </div>
+        </div>
+
+        <form method="POST" action="/menu-manager/edit-item" enctype="multipart/form-data">
+            <input type="hidden" name="item_id" value="{{ item['id'] }}">
+
+            <div class="settings-form-grid">
+                <div class="settings-field">
+                    <label>Категория</label>
+                    <select name="category_id" required>
+                        {% for cat in categories %}
+                        <option value="{{ cat.id }}" {% if cat.id == item["category_id"] %}selected{% endif %}>{{ cat.name }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <div class="settings-field">
+                    <label>Име</label>
+                    <input type="text" name="name" value="{{ item['name'] }}" required>
+                </div>
+
+                <div class="settings-field settings-full">
+                    <label>Описание</label>
+                    <input type="text" name="description" value="{{ item['description'] or '' }}">
+                </div>
+
+                <div class="settings-field">
+                    <label>Цена</label>
+                    <input type="number" step="0.01" name="price" value="{{ item['price'] }}">
+                </div>
+
+                <div class="settings-field">
+                    <label>Подредба</label>
+                    <input type="number" name="sort_order" value="{{ item['sort_order'] or 0 }}">
+                </div>
+
+                <div class="settings-field">
+                    <label>Снимка от линк</label>
+                    <input type="text" name="image_url" value="{{ item['image_url'] or '' }}">
+                </div>
+
+                <div class="settings-field">
+                    <label>Качи нова снимка</label>
+                    <input type="file" name="image_file" accept="image/*">
+                </div>
+
+                {% if item["image_url"] %}
+                <div class="settings-field settings-full">
+                    <label>Текуща снимка</label>
+                    <img class="menu-preview" src="{{ item['image_url'] }}" alt="{{ item['name'] }}">
+                </div>
+                {% endif %}
+
+                <div class="settings-field">
+                    <label>Upsell напитка</label>
+                    <input type="text" name="upsell_drink" value="{{ item['upsell_drink'] or '' }}">
+                </div>
+
+                <div class="settings-field">
+                    <label>Upsell десерт</label>
+                    <input type="text" name="upsell_dessert" value="{{ item['upsell_dessert'] or '' }}">
+                </div>
+
+                <div class="settings-field">
+                    <label>Upsell добавка</label>
+                    <input type="text" name="upsell_side" value="{{ item['upsell_side'] or '' }}">
+                </div>
+            </div>
+
+            <div class="modal-actions">
+                <button class="save-btn" type="submit">💾 Запази</button>
+                <button class="close-btn" type="button" onclick="closeMenuModal('itemModal-{{ item['id'] }}')">Затвори</button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endfor %}
+{% endfor %}
+
+<script>
+let currentCategory = "all";
+let currentFilter = "all";
+let currentPage = 1;
+const itemsPerPage = 5;
+
+function openMenuModal(id) {
+    document.getElementById(id).style.display = "flex";
+}
+
+function closeMenuModal(id) {
+    document.getElementById(id).style.display = "none";
+}
+
+function getFilteredRows() {
+    const searchValue = document.getElementById("menuSearchInput").value.toLowerCase().trim();
+    const rows = Array.from(document.querySelectorAll(".menu-item-row"));
+
+    return rows.filter(row => {
+        const categoryMatch = currentCategory === "all" || row.dataset.category === currentCategory;
+        const searchMatch = !searchValue || row.dataset.search.includes(searchValue);
+
+        let filterMatch = true;
+
+        if (currentFilter === "active") filterMatch = row.dataset.status === "active";
+        if (currentFilter === "inactive") filterMatch = row.dataset.status === "inactive";
+        if (currentFilter === "images") filterMatch = row.dataset.image === "yes";
+        if (currentFilter === "upsell") filterMatch = row.dataset.upsell === "yes";
+
+        return categoryMatch && searchMatch && filterMatch;
+    });
+}
+
+function renderPagination(totalItems) {
+    const totalPages = Math.max(Math.ceil(totalItems / itemsPerPage), 1);
+    const pageNumbers = document.getElementById("menuPageNumbers");
+    const pageSelect = document.getElementById("menuPageSelect");
+
+    if (currentPage > totalPages) currentPage = totalPages;
+    if (currentPage < 1) currentPage = 1;
+
+    pageNumbers.innerHTML = "";
+    pageSelect.innerHTML = "";
+
+    for (let i = 1; i <= totalPages; i++) {
+        const btn = document.createElement("button");
+        btn.type = "button";
+        btn.innerText = i;
+        btn.className = "menu-page-btn" + (i === currentPage ? " active" : "");
+        btn.onclick = function() {
+            currentPage = i;
+            applyMenuFilters();
+        };
+        pageNumbers.appendChild(btn);
+
+        const option = document.createElement("option");
+        option.value = i;
+        option.innerText = i;
+        if (i === currentPage) option.selected = true;
+        pageSelect.appendChild(option);
+    }
+
+    document.getElementById("prevMenuPage").disabled = currentPage === 1;
+    document.getElementById("nextMenuPage").disabled = currentPage === totalPages;
+}
+
+function applyMenuFilters() {
+    const allRows = Array.from(document.querySelectorAll(".menu-item-row"));
+    const filteredRows = getFilteredRows();
+
+    allRows.forEach(row => {
+        row.style.display = "none";
+    });
+
+    const totalItems = filteredRows.length;
+    const totalPages = Math.max(Math.ceil(totalItems / itemsPerPage), 1);
+
+    if (currentPage > totalPages) currentPage = totalPages;
+
+    const startIndex = (currentPage - 1) * itemsPerPage;
+    const endIndex = startIndex + itemsPerPage;
+
+    filteredRows.slice(startIndex, endIndex).forEach(row => {
+        row.style.display = "";
+    });
+
+    document.getElementById("visibleMenuCount").innerText = totalItems;
+
+    if (totalItems === 0) {
+        document.getElementById("pageStart").innerText = 0;
+        document.getElementById("pageEnd").innerText = 0;
+    } else {
+        document.getElementById("pageStart").innerText = startIndex + 1;
+        document.getElementById("pageEnd").innerText = Math.min(endIndex, totalItems);
+    }
+
+    renderPagination(totalItems);
+}
+
+document.querySelectorAll(".menu-category-row").forEach(btn => {
+    btn.addEventListener("click", function() {
+        document.querySelectorAll(".menu-category-row").forEach(b => b.classList.remove("active"));
+        this.classList.add("active");
+        currentCategory = this.dataset.category;
+        currentPage = 1;
+        applyMenuFilters();
+    });
+});
+
+document.querySelectorAll(".menu-tab").forEach(btn => {
+    btn.addEventListener("click", function() {
+        document.querySelectorAll(".menu-tab").forEach(b => b.classList.remove("active"));
+        this.classList.add("active");
+        currentFilter = this.dataset.filter;
+        currentPage = 1;
+        applyMenuFilters();
+    });
+});
+
+document.getElementById("menuSearchInput").addEventListener("input", function() {
+    currentPage = 1;
+    applyMenuFilters();
+});
+
+document.getElementById("prevMenuPage").addEventListener("click", function() {
+    currentPage--;
+    applyMenuFilters();
+});
+
+document.getElementById("nextMenuPage").addEventListener("click", function() {
+    currentPage++;
+    applyMenuFilters();
+});
+
+document.getElementById("menuPageSelect").addEventListener("change", function() {
+    currentPage = parseInt(this.value);
+    applyMenuFilters();
+});
+
+window.onclick = function(event) {
+    document.querySelectorAll(".modal").forEach(function(modal) {
+        if (event.target === modal) {
+            modal.style.display = "none";
+        }
+    });
+};
+
+applyMenuFilters();
+</script>
 
 </body>
 </html>

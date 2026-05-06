@@ -3,108 +3,332 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dashboard</title>
+    <title>Dashboard | Reservy</title>
     <link rel="stylesheet" href="/static/style.css">
 </head>
-<body class="dashboard-page">
 
-    <div class="header">
-        <div class="brand-wrap">
-            <div class="brand-icon">🍽</div>
-            <h1>Restaurant Dashboard</h1>
-        </div>
+<body class="app-layout">
 
-        <div class="header-actions">
-            {% if role == "super_admin" %}
-                <a class="top-btn" href="/restaurants">🏬 Ресторанти</a>
-                <a class="top-btn" href="/create-restaurant">➕ Нов ресторант</a>
-                <a class="top-btn" href="/users">👥 Потребители</a>
-                <a class="top-btn" href="/menu-manager">📋 Меню</a>
-                <a class="top-btn" href="/settings">⚙️ Настройки</a>
-            {% elif role == "owner" %}
-                <a class="top-btn" href="/users">👥 Потребители</a>
-                <a class="top-btn" href="/menu-manager">📋 Меню</a>
-                <a class="top-btn" href="/settings">⚙️ Настройки</a>
-            {% elif role == "admin" %}
-                <a class="top-btn" href="/users">👥 Потребители</a>
-                <a class="top-btn" href="/menu-manager">📋 Меню</a>
-                <a class="top-btn" href="/settings">⚙️ Настройки</a>
-            {% endif %}
-
-            <a class="logout-btn" href="/logout">🚪 Изход</a>
+<aside class="premium-sidebar">
+    <div class="brand-box">
+        <div class="brand-icon">R</div>
+        <div>
+            <div class="brand-name">reservy</div>
+            <div class="brand-subtitle">SMART RESERVATIONS</div>
         </div>
     </div>
 
-    <div class="container">
+    <nav class="premium-nav">
+        <a class="premium-nav-link active" href="/dashboard">🏠 Табло</a>
 
-        <div class="stats-grid stats-grid-4">
-            <div class="stat-card">
-                <div class="stat-title">Общо резервации</div>
-                <div class="stat-icon soft-blue">📊</div>
-                <div class="stat-value">{{ total }}</div>
-            </div>
-
-            <div class="stat-card">
-                <div class="stat-title">Днес</div>
-                <div class="stat-icon soft-green">📅</div>
-                <div class="stat-value">{{ today_count }}</div>
-            </div>
-
-            <div class="stat-card">
-                <div class="stat-title">Предстоящи</div>
-                <div class="stat-icon soft-yellow">🗓️</div>
-                <div class="stat-value">{{ upcoming }}</div>
-            </div>
-
-            <div class="stat-card">
-                <div class="stat-title">Свободни места днес</div>
-                <div class="stat-icon soft-mint">{{ free_places_today }}</div>
-                <div class="stat-value stat-value-small">&nbsp;</div>
-            </div>
-        </div>
-
-        {% if is_super_admin %}
-        <div class="saved-banner" style="margin-top: 18px; margin-bottom: 18px;">
-            🔒 Вътрешни analytics и premium показатели се виждат само от super_admin.
-        </div>
-
-        <div class="stats-grid stats-grid-3 second-row">
-            <div class="stat-card">
-                <div class="stat-title">Chat съобщения</div>
-                <div class="stat-icon soft-blue">💬</div>
-                <div class="stat-value">{{ analytics.total_chat_messages }}</div>
-            </div>
-
-            <div class="stat-card">
-                <div class="stat-title">Започнати резервации</div>
-                <div class="stat-icon soft-purple">🔖</div>
-                <div class="stat-value">{{ analytics.reservation_started }}</div>
-            </div>
-
-            <div class="stat-card">
-                <div class="stat-title">Conversion %</div>
-                <div class="stat-icon soft-lavender">{{ analytics.conversion_rate }}</div>
-                <div class="stat-value stat-value-small">&nbsp;</div>
-            </div>
-        </div>
+        {% if role == "super_admin" %}
+            <a class="premium-nav-link" href="/restaurants">🏢 Бизнеси</a>
+            <a class="premium-nav-link" href="/users">👥 Потребители</a>
+            <a class="premium-nav-link" href="/menu-manager">📋 Меню</a>
+            <a class="premium-nav-link" href="/settings">⚙️ Настройки</a>
+            <a class="premium-nav-link" href="/password-requests">🔐 Заявки пароли</a>
+        {% elif role == "owner" or role == "admin" %}
+            <a class="premium-nav-link" href="/users">👥 Потребители</a>
+            <a class="premium-nav-link" href="/menu-manager">📋 Меню</a>
+            <a class="premium-nav-link" href="/settings">⚙️ Настройки</a>
         {% endif %}
+    </nav>
 
-        <div class="toolbar">
-            <input
-                type="text"
-                id="searchInput"
-                class="search-input"
-                placeholder="Търси по име, телефон, дата..."
-                onkeyup="filterTable()"
-            >
+    <div class="premium-user-box">
+        <div class="premium-avatar">AD</div>
+        <div>
+            <strong>{{ session["user"]["username"] }}</strong>
+            <span>{{ role }}</span>
+        </div>
+    </div>
+</aside>
 
-            <button class="export-btn" onclick="window.location.href='/export'">
+<main class="premium-main">
+
+    <header class="premium-topbar">
+        <div>
+            <span class="muted-label">Влязъл като</span>
+            <strong>{{ session["user"]["username"] }}</strong>
+            <span class="role-pill role-{{ role }}">{{ role }}</span>
+        </div>
+
+        <div class="topbar-right-stack">
+            <div class="topbar-actions-row">
+                <div class="notification-wrapper">
+    <button class="notification-btn" type="button" onclick="toggleNotifications()">
+        🔔
+        {% if notification_count > 0 %}
+    <span id="notificationDot" data-count="{{ notification_count }}">{{ notification_count }}</span>
+        {% endif %}
+    </button>
+
+    <div id="notificationsPanel" class="notifications-panel">
+        <div class="notifications-head">
+            <div>
+                <h3>🔔 Известия</h3>
+                <p>Последни важни събития</p>
+            </div>
+            <button type="button" onclick="toggleNotifications()">✕</button>
+        </div>
+
+        <div class="notifications-list">
+            {% if notifications %}
+    {% for n in notifications[:7] %}
+        <div class="notification-item notification-{{ n.type }}">
+            <div class="notification-icon">{{ n.icon }}</div>
+            <div>
+                <strong>{{ n.title }}</strong>
+                <p>{{ n.text }}</p>
+            </div>
+        </div>
+    {% endfor %}
+{% else %}
+    <div class="notification-empty">
+        Няма активни известия за днес.
+    </div>
+{% endif %}
+        </div>
+
+        <a class="notifications-footer" href="/notifications">
+            Виж всички известия →
+        </a>
+    </div>
+</div>
+                <a class="logout-btn" href="/logout">🚪 Изход</a>
+            </div>
+
+            <div class="topbar-business">
+                {% if active_business %}
+                    <span class="muted-label">Активен бизнес</span>
+                    <strong>{{ active_business.name }}</strong>
+                    <span class="plan-pill">{{ active_business.plan|upper }}</span>
+                {% endif %}
+            </div>
+        </div>
+    </header>
+
+    <section class="premium-page-head">
+        <div>
+            <h1>📊 Табло</h1>
+            <p>Преглед на резервации, свободни места, чат активност и резултати.</p>
+        </div>
+
+        <div class="premium-actions">
+            {% if role == "super_admin" %}
+                <a href="/restaurants">🏢 Бизнеси</a>
+                <a href="/create-restaurant">➕ Нов бизнес</a>
+                <a href="/users">👥 Потребители</a>
+                <a href="/menu-manager">📋 Меню</a>
+                <a href="/settings">⚙️ Настройки</a>
+            {% elif role == "owner" or role == "admin" %}
+                <a href="/users">👥 Потребители</a>
+                <a href="/menu-manager">📋 Меню</a>
+                <a href="/settings">⚙️ Настройки</a>
+            {% endif %}
+        </div>
+    </section>
+
+    <section class="premium-table-card dashboard-chart-card">
+    <div class="premium-section-head">
+        <div>
+            <h2>📊 Резервации последните 7 дни</h2>
+            <p>Бърз преглед на активността по дни.</p>
+        </div>
+    </div>
+
+    <div class="dashboard-bar-chart">
+        {% for day in last_7_days_chart %}
+            <div class="chart-day">
+                <div class="chart-value">{{ day.count }}</div>
+
+                <div class="chart-bar-wrap">
+                    <div
+                        class="chart-bar"
+                        style="height: {{ (day.count / max_chart_count * 100)|round(0) }}%;"
+                    ></div>
+                </div>
+
+                <div class="chart-label">{{ day.label }}</div>
+                <div class="chart-date">{{ day.date }}</div>
+            </div>
+        {% endfor %}
+    </div>
+</section>
+
+<section class="premium-table-card dashboard-hours-card">
+    <div class="premium-section-head">
+        <div>
+            <h2>⏰ Най-силни часове</h2>
+            <p>Часовете, в които има най-много резервации.</p>
+        </div>
+    </div>
+
+    <div class="top-hours-list">
+        {% if top_hours_chart %}
+            {% for hour in top_hours_chart %}
+                <div class="top-hour-row">
+                    <div class="top-hour-label">{{ hour.label }}</div>
+
+                    <div class="top-hour-bar-wrap">
+                        <div
+                            class="top-hour-bar"
+                            style="width: {{ (hour.count / max_hour_count * 100)|round(0) }}%;"
+                        ></div>
+                    </div>
+
+                    <div class="top-hour-count">{{ hour.count }}</div>
+                </div>
+            {% endfor %}
+        {% else %}
+            <div class="empty-state">Все още няма достатъчно резервации за анализ по часове.</div>
+        {% endif %}
+    </div>
+</section>
+
+<section class="premium-table-card today-live-card">
+    <div class="premium-section-head">
+        <div>
+            <h2>📅 Днешни резервации — Live статус</h2>
+            <p>Виж кои резервации идват скоро, кои са сега и кои са минали.</p>
+        </div>
+    </div>
+
+    {% if today_upcoming_list %}
+        <div class="today-bookings-list">
+            {% for item in today_upcoming_list %}
+                <div class="today-booking-row">
+                    <div>
+                        <strong>{{ item.time }}</strong>
+                    </div>
+
+                    <div>
+                        <strong>{{ item.name }}</strong><br>
+                        <span>{{ item.phone }}</span>
+                    </div>
+
+                    <div>
+                        👥 {{ item.people }}
+                    </div>
+
+                    <div>
+                        <span class="live-status-badge {{ item.status_class }}">
+                            {{ item.status_label }}
+                        </span>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    {% else %}
+        <div class="empty-state">
+            Няма резервации за днес.
+        </div>
+    {% endif %}
+</section>
+
+    <section class="premium-stats-grid">
+        <div class="premium-stat-card">
+            <div class="stat-icon blue">📊</div>
+            <h3>Общо резервации</h3>
+            <strong>{{ total }}</strong>
+            <p>Общо тази седмица</p>
+            <span class="trend blue-trend">↑ активност</span>
+        </div>
+
+        <div class="premium-stat-card">
+            <div class="stat-icon green">📅</div>
+            <h3>Днес</h3>
+            <strong>{{ today_count }}</strong>
+            <p>Резервации днес</p>
+            <span class="trend neutral-trend">— няма промяна</span>
+        </div>
+
+        <div class="premium-stat-card">
+            <div class="stat-icon yellow">🗓️</div>
+            <h3>Предстоящи</h3>
+            <strong>{{ upcoming }}</strong>
+            <p>Очакващи резервации</p>
+            <span class="trend neutral-trend">— няма промяна</span>
+        </div>
+
+        <div class="premium-stat-card">
+    <div class="stat-icon purple">👥</div>
+    <h3>Заетост днес</h3>
+
+    <strong>{{ occupied_today }} / {{ max_capacity }}</strong>
+
+    <p>{{ capacity_percent }}% запълненост</p>
+
+    <div class="capacity-bar">
+        <div
+            class="capacity-fill"
+            style="width: {{ capacity_percent }}%;"
+        ></div>
+    </div>
+
+    <span class="trend green-trend">Свободни: {{ free_places_today }}</span>
+</div>
+    </section>
+
+    {% if role == "super_admin" or role == "owner" %}
+    <div class="premium-info-banner">
+        📊 Analytics показателите са за активния бизнес.
+    </div>
+
+    <section class="premium-analytics-grid">
+        <a class="premium-analytics-card blue-soft analytics-click-card" href="/analytics/chats">
+            <div class="stat-icon blue">💬</div>
+            <div>
+                <h3>Chat съобщения</h3>
+                <p>Виж всички клиентски съобщения и запитвания</p>
+                <strong>{{ analytics.total_chat_messages }}</strong>
+                <span>Отвори детайли →</span>
+            </div>
+        </a>
+
+        <a class="premium-analytics-card purple-soft analytics-click-card" href="/analytics/reservations">
+            <div class="stat-icon purple">🔖</div>
+            <div>
+                <h3>Започнати резервации</h3>
+                <p>Виж започнати, прекъснати и завършени резервации</p>
+                <strong>{{ analytics.reservation_started }}</strong>
+                <span>Отвори детайли →</span>
+            </div>
+        </a>
+
+        <a class="premium-analytics-card green-soft analytics-click-card" href="/analytics/conversion">
+            <div class="stat-icon green">📈</div>
+            <div>
+                <h3>Conversion %</h3>
+                <p>Виж conversion, сравнения и резултати по периоди</p>
+                <strong>{{ analytics.conversion_rate }}%</strong>
+                <span>Отвори детайли →</span>
+            </div>
+        </a>
+    </section>
+    {% endif %}
+
+    <section class="premium-table-card">
+        <div class="premium-section-head">
+            <div>
+                <h2>Последни резервации</h2>
+                <p>Търси, редактирай или изтрий резервации.</p>
+            </div>
+
+            <button class="premium-export-btn" onclick="window.location.href='/export'">
                 📥 Export
             </button>
         </div>
 
-        <div class="table-card">
-            <table id="reservationTable">
+        <input
+            type="text"
+            id="searchInput"
+            class="premium-search"
+            placeholder="Търси по име, телефон, дата..."
+            onkeyup="filterTable()"
+        >
+
+        <div class="premium-table-wrap">
+            <table id="reservationTable" class="premium-table">
                 <thead>
                     <tr>
                         <th>Име</th>
@@ -112,6 +336,7 @@
                         <th>Дата</th>
                         <th>Час</th>
                         <th>Хора</th>
+                        <th>Статус</th>
                         <th>Действие</th>
                     </tr>
                 </thead>
@@ -123,136 +348,234 @@
                             <td>{{ r.phone }}</td>
                             <td>{{ r.date }}</td>
                             <td>{{ r.time }}</td>
+                            <td><span class="people-badge">{{ r.people }}</span></td>
                             <td>
-                                <span class="people-badge">{{ r.people }}</span>
-                            </td>
+{% if r.status == "confirmed" %}
+    <span class="status-badge status-green">Потвърдена</span>
+{% elif r.status == "pending" %}
+    <span class="status-badge status-yellow">Непотвърдена</span>
+{% elif r.status == "cancelled" %}
+    <span class="status-badge status-red">Отказана</span>
+{% else %}
+    <span class="status-badge">Потвърдена</span>
+{% endif %}
+</td>
                             <td>
-                                <div class="actions">
-                                    <button
-                                        class="action-btn action-edit"
-                                        onclick="openEditModal('{{ r.id }}', '{{ r.name|e }}', '{{ r.phone|e }}', '{{ r.date|e }}', '{{ r.time|e }}', '{{ r.people|e }}')"
-                                    >✏️</button>
-
-                                    <button
-                                        class="action-btn action-delete"
-                                        onclick="deleteReservation('{{ r.id }}')"
-                                    >🗑️</button>
+                                <div class="premium-row-actions">
+                                    <button onclick="openEditModal('{{ r.id }}', '{{ r.name|e }}', '{{ r.phone|e }}', '{{ r.date|e }}', '{{ r.time|e }}', '{{ r.people|e }}', '{{ r.status|e }}')">✏️</button>
+                                    <button class="delete" onclick="deleteReservation('{{ r.id }}')">🗑️</button>
                                 </div>
                             </td>
                         </tr>
                         {% endfor %}
                     {% else %}
                         <tr>
-                            <td colspan="6" class="empty-state">Няма намерени резервации</td>
+                            <td colspan="7" class="empty-state">Няма намерени резервации</td>
                         </tr>
                     {% endif %}
                 </tbody>
             </table>
         </div>
 
-    </div>
+        <a class="view-all-reservations" href="/dashboard">
+            Виж всички резервации →
+        </a>
+    </section>
 
-    <div id="editModal" class="modal">
-        <div class="modal-content">
-            <h2>Редакция</h2>
+</main>
 
-            <input type="hidden" id="editId">
-            <input type="text" id="editName" placeholder="Име">
-            <input type="text" id="editPhone" placeholder="Телефон">
-            <input type="text" id="editDate" placeholder="Дата">
-            <input type="text" id="editTime" placeholder="Час">
-            <input type="text" id="editPeople" placeholder="Хора">
+<div id="editModal" class="modal">
+    <div class="modal-content premium-modal reservation-glass-modal">
 
-            <div class="modal-actions">
-                <button class="save-btn" onclick="saveEdit()">💾 Запази</button>
-                <button class="close-btn" onclick="closeEditModal()">Затвори</button>
+        <div class="premium-modal-header">
+            <div class="premium-modal-icon">✏️</div>
+            <div>
+                <h2>Редакция на резервация</h2>
+                <p>Промени данните и запази резервацията</p>
             </div>
         </div>
+
+        <input type="hidden" id="editId">
+
+        <div class="reservation-edit-grid">
+            <div class="glass-field full">
+                <span>👤</span>
+                <input type="text" id="editName" placeholder="Име">
+            </div>
+
+            <div class="glass-field full">
+                <span>📞</span>
+                <input type="text" id="editPhone" placeholder="Телефон">
+            </div>
+
+            <div class="glass-field">
+                <span>📅</span>
+                <input type="text" id="editDate" placeholder="Дата">
+            </div>
+
+            <div class="glass-field">
+                <span>⏰</span>
+                <input type="text" id="editTime" placeholder="Час">
+            </div>
+
+            <div class="glass-field">
+                <span>👥</span>
+                <input type="text" id="editPeople" placeholder="Хора">
+            </div>
+
+            <div class="glass-field">
+                <span>🏷️</span>
+                <select id="editStatus">
+                    <option value="confirmed">Потвърдена</option>
+                    <option value="pending">Непотвърдена</option>
+                    <option value="cancelled">Отказана</option>
+                </select>
+            </div>
+        </div>
+
+        <div class="modal-actions glass-actions">
+            <button class="close-btn" onclick="closeEditModal()">Затвори</button>
+            <button class="save-btn" onclick="saveEdit()">💾 Запази промените</button>
+        </div>
     </div>
+</div>
 
-    <div id="popup">Успешно!</div>
+<div id="popup">Успешно!</div>
 
-    <script>
-        function filterTable() {
-            const input = document.getElementById("searchInput").value.toLowerCase();
-            const rows = document.querySelectorAll("#reservationTable tbody tr");
+<script>
+const currentNotificationCount = {{ notification_count or 0 }};
 
-            rows.forEach((row) => {
-                if (row.querySelector(".empty-state")) return;
-                const text = row.innerText.toLowerCase();
-                row.style.display = text.includes(input) ? "" : "none";
-            });
+function updateNotificationDot() {
+    const dot = document.getElementById("notificationDot");
+    if (!dot) return;
+
+    const seenCount = parseInt(localStorage.getItem("seenNotificationCount") || "0");
+
+    if (currentNotificationCount <= seenCount || currentNotificationCount === 0) {
+        dot.style.display = "none";
+    } else {
+        dot.style.display = "flex";
+        dot.innerText = currentNotificationCount - seenCount;
+    }
+}
+
+function toggleNotifications() {
+    const panel = document.getElementById("notificationsPanel");
+    const dot = document.getElementById("notificationDot");
+
+    if (!panel) return;
+
+    panel.classList.toggle("open");
+
+    if (panel.classList.contains("open")) {
+        localStorage.setItem("seenNotificationCount", currentNotificationCount);
+
+        if (dot) {
+            dot.style.display = "none";
         }
+    }
+}
 
-        function showPopup(text) {
-            const popup = document.getElementById("popup");
-            popup.innerText = text;
-            popup.style.display = "block";
+document.addEventListener("click", function(event) {
+    const wrapper = document.querySelector(".notification-wrapper");
 
-            setTimeout(() => {
-                popup.style.display = "none";
-            }, 1800);
+    if (!wrapper) return;
+
+    if (!wrapper.contains(event.target)) {
+        const panel = document.getElementById("notificationsPanel");
+        if (panel) {
+            panel.classList.remove("open");
         }
+    }
+});
 
-        function deleteReservation(id) {
-            if (!confirm("Сигурен ли си?")) return;
+updateNotificationDot();
+</script>
 
-            fetch("/delete_reservation", {
-                method: "POST",
-                headers: {"Content-Type": "application/json"},
-                body: JSON.stringify({ id: id })
-            })
-            .then(res => res.json())
-            .then(data => {
-                if (data.status === "success") {
-                    showPopup("Изтрито!");
-                    setTimeout(() => location.reload(), 700);
-                } else {
-                    alert(data.message || "Грешка");
-                }
-            });
-        }
+<script>
+    function filterTable() {
+        const input = document.getElementById("searchInput").value.toLowerCase();
+        const rows = document.querySelectorAll("#reservationTable tbody tr");
 
-        function openEditModal(id, name, phone, date, time, people) {
-            document.getElementById("editId").value = id;
-            document.getElementById("editName").value = name;
-            document.getElementById("editPhone").value = phone;
-            document.getElementById("editDate").value = date;
-            document.getElementById("editTime").value = time;
-            document.getElementById("editPeople").value = people;
-            document.getElementById("editModal").style.display = "flex";
-        }
+        rows.forEach((row) => {
+            if (row.querySelector(".empty-state")) return;
+            const text = row.innerText.toLowerCase();
+            row.style.display = text.includes(input) ? "" : "none";
+        });
+    }
 
-        function closeEditModal() {
-            document.getElementById("editModal").style.display = "none";
-        }
+    function showPopup(text) {
+        const popup = document.getElementById("popup");
+        popup.innerText = text;
+        popup.style.display = "block";
 
-        function saveEdit() {
-            const payload = {
-                id: document.getElementById("editId").value,
-                name: document.getElementById("editName").value,
-                phone: document.getElementById("editPhone").value,
-                date: document.getElementById("editDate").value,
-                time: document.getElementById("editTime").value,
-                people: document.getElementById("editPeople").value
-            };
+        setTimeout(() => {
+            popup.style.display = "none";
+        }, 1800);
+    }
 
-            fetch("/edit_reservation", {
-                method: "POST",
-                headers: {"Content-Type": "application/json"},
-                body: JSON.stringify(payload)
-            })
-            .then(res => res.json())
-            .then(data => {
-                if (data.status === "success") {
-                    closeEditModal();
-                    showPopup("Редактирано!");
-                    setTimeout(() => location.reload(), 700);
-                } else {
-                    alert(data.message || "Грешка");
-                }
-            });
-        }
-    </script>
+    function deleteReservation(id) {
+        if (!confirm("Сигурен ли си?")) return;
+
+        fetch("/delete_reservation", {
+            method: "POST",
+            headers: {"Content-Type": "application/json"},
+            body: JSON.stringify({ id: id })
+        })
+        .then(res => res.json())
+        .then(data => {
+            if (data.status === "success") {
+                showPopup("Изтрито!");
+                setTimeout(() => location.reload(), 700);
+            } else {
+                alert(data.message || "Грешка");
+            }
+        });
+    }
+
+    function openEditModal(id, name, phone, date, time, people, status) {
+    document.getElementById("editId").value = id;
+    document.getElementById("editName").value = name;
+    document.getElementById("editPhone").value = phone;
+    document.getElementById("editDate").value = date;
+    document.getElementById("editTime").value = time;
+    document.getElementById("editPeople").value = people;
+    document.getElementById("editStatus").value = status || "confirmed";
+    document.getElementById("editModal").style.display = "flex";
+}
+
+    function closeEditModal() {
+        document.getElementById("editModal").style.display = "none";
+    }
+
+    function saveEdit() {
+        const payload = {
+            id: document.getElementById("editId").value,
+            name: document.getElementById("editName").value,
+            phone: document.getElementById("editPhone").value,
+            date: document.getElementById("editDate").value,
+            time: document.getElementById("editTime").value,
+            people: document.getElementById("editPeople").value,
+            status: document.getElementById("editStatus").value
+};
+
+        fetch("/edit_reservation", {
+            method: "POST",
+            headers: {"Content-Type": "application/json"},
+            body: JSON.stringify(payload)
+        })
+        .then(res => res.json())
+        .then(data => {
+            if (data.status === "success") {
+                closeEditModal();
+                showPopup("Редактирано!");
+                setTimeout(() => location.reload(), 700);
+            } else {
+                alert(data.message || "Грешка");
+            }
+        });
+    }
+</script>
+
 </body>
 </html>

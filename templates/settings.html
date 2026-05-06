@@ -3,150 +3,385 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Настройки</title>
+    <title>Настройки | Reservy</title>
     <link rel="stylesheet" href="/static/style.css">
 </head>
-<body class="dashboard-page">
 
-    <div class="header">
-        <div class="brand-wrap">
-            <div class="brand-icon">⚙️</div>
-            <h1>Настройки на ресторанта</h1>
-        </div>
+<body class="app-layout">
 
-        <div class="header-actions">
-            {% if role == "super_admin" %}
-                <a class="top-btn" href="/restaurants">🏪 Ресторанти</a>
-                <a class="top-btn" href="/create-restaurant">➕ Нов ресторант</a>
-                <a class="top-btn" href="/users">👥 Потребители</a>
-                <a class="top-btn" href="/menu-manager">📋 Меню</a>
-                <a class="top-btn" href="/dashboard">📊 Dashboard</a>
-            {% elif role == "owner" %}
-                <a class="top-btn" href="/users">👥 Потребители</a>
-                <a class="top-btn" href="/menu-manager">📋 Меню</a>
-                <a class="top-btn" href="/dashboard">📊 Dashboard</a>
-            {% elif role == "admin" %}
-                <a class="top-btn" href="/users">👥 Потребители</a>
-                <a class="top-btn" href="/menu-manager">📋 Меню</a>
-                <a class="top-btn" href="/dashboard">📊 Dashboard</a>
-            {% endif %}
-            <a class="logout-btn" href="/logout">🚪 Изход</a>
+<aside class="premium-sidebar">
+    <div class="brand-box">
+        <div class="brand-icon">R</div>
+        <div>
+            <div class="brand-name">reservy</div>
+            <div class="brand-subtitle">SMART RESERVATIONS</div>
         </div>
     </div>
 
-    <div class="container">
-        {% if saved %}
-        <div class="saved-banner" style="margin-bottom: 18px;">✅ Настройките са запазени успешно.</div>
+    <nav class="premium-nav">
+        <a class="premium-nav-link" href="/dashboard">🏠 Табло</a>
+
+        {% if role == "super_admin" %}
+        <a class="premium-nav-link" href="/restaurants">🏢 Бизнеси</a>
         {% endif %}
 
-        <div class="settings-card" style="margin-bottom: 18px;">
-            <div class="settings-grid">
-                <div class="settings-field">
-                    <label>Текущ план</label>
-                    <input type="text" value="{{ tenant_plan|upper }}" readonly>
-                </div>
+        {% if role in ["super_admin","owner","admin"] %}
+        <a class="premium-nav-link" href="/users">👥 Потребители</a>
+        {% endif %}
 
-                <div class="settings-field">
-                    <label>AI Chat</label>
-                    <input type="text" value="{% if tenant_has_ai_chat %}Включен в плана{% else %}Не е включен в плана{% endif %}" readonly>
-                </div>
+        <a class="premium-nav-link" href="/menu-manager">📋 Меню</a>
+        <a class="premium-nav-link active" href="/settings">⚙️ Настройки</a>
+    </nav>
 
-                <div class="settings-field">
-                    <label>Premium Analytics</label>
-                    <input type="text" value="{% if tenant_has_premium_analytics %}Включени{% else %}Не са включени{% endif %}" readonly>
-                </div>
+    <div class="premium-user-box">
+        <div class="premium-avatar">{{ session["user"]["username"][:2]|upper }}</div>
+        <div>
+            <strong>{{ session["user"]["username"] }}</strong>
+            <span>{{ role }}</span>
+        </div>
+    </div>
+</aside>
 
-                <div class="settings-field">
-                    <label>Upsell логика</label>
-                    <input type="text" value="{% if tenant_has_upsell %}Включена{% else %}Не е включена{% endif %}" readonly>
-                </div>
+<main class="premium-main settings-premium-page">
+
+<header class="premium-topbar settings-topbar">
+    <div>
+        <span class="muted-label">Влязъл като</span>
+        <strong>{{ session["user"]["username"] }}</strong>
+        <span class="role-pill role-{{ role }}">{{ role }}</span>
+    </div>
+
+    <div class="topbar-business">
+        {% if active_business %}
+            <span class="muted-label">Активен бизнес</span>
+            <strong>{{ active_business.name }}</strong>
+            <span class="plan-pill">{{ active_business.plan|upper }}</span>
+        {% endif %}
+        <a class="logout-btn" href="/logout">🚪 Изход</a>
+    </div>
+</header>
+
+<form method="POST" action="/settings">
+
+<section class="settings-hero">
+    <div>
+        <h1>⚙️ Настройки</h1>
+        <p>Управлявайте системните настройки, бизнеса, резервациите и chatbot widget-а.</p>
+    </div>
+
+    <button class="settings-main-save" type="submit">💾 Запази промените</button>
+</section>
+
+{% if saved %}
+<div class="settings-success-banner">
+    ✅ Настройките са запазени успешно.
+</div>
+{% endif %}
+
+<section class="settings-nav-cards">
+    <a href="#business-info" class="settings-nav-card">
+        <div class="settings-nav-icon blue">🏪</div>
+        <div>
+            <strong>Общи настройки</strong>
+            <span>Основни настройки на системата и бизнеса</span>
+        </div>
+        <b>›</b>
+    </a>
+
+    <a href="#system-settings" class="settings-nav-card">
+        <div class="settings-nav-icon purple">🔔</div>
+        <div>
+            <strong>Системни настройки</strong>
+            <span>Widget, AI достъп и chatbot статус</span>
+        </div>
+        <b>›</b>
+    </a>
+
+    <a href="#reservation-settings" class="settings-nav-card">
+        <div class="settings-nav-icon green">🛡️</div>
+        <div>
+            <strong>Резервации</strong>
+            <span>Капацитет и работно време</span>
+        </div>
+        <b>›</b>
+    </a>
+
+    <a href="#visual-settings" class="settings-nav-card">
+        <div class="settings-nav-icon orange">🎨</div>
+        <div>
+            <strong>Визуализация</strong>
+            <span>Цвят, заглавие и welcome message</span>
+        </div>
+        <b>›</b>
+    </a>
+
+    <a href="#email-settings" class="settings-nav-card">
+        <div class="settings-nav-icon cyan">🗄️</div>
+        <div>
+            <strong>Имейл / архив</strong>
+            <span>Подготвени секции за следващ етап</span>
+        </div>
+        <b>›</b>
+    </a>
+</section>
+
+<section class="settings-dashboard-grid">
+
+    <div class="settings-panel settings-panel-large" id="business-info">
+        <div class="settings-panel-head">
+            <div>
+                <h2>Информация за бизнеса</h2>
+                <p>Тези данни се използват в публичния сайт и chatbot preview-а.</p>
             </div>
         </div>
 
-        <div class="settings-card">
-            <form method="POST" action="/settings">
-                <div class="settings-grid">
-                    <div class="settings-field">
-                        <label>Име на ресторанта</label>
-                        <input type="text" name="restaurant_name" value="{{ settings.restaurant_name or '' }}">
-                    </div>
+        <div class="settings-form-grid">
+            <div class="settings-field">
+                <label>Име на бизнеса</label>
+                <input type="text" name="restaurant_name" value="{{ settings.restaurant_name or '' }}">
+            </div>
 
-                    <div class="settings-field">
-                        <label>Телефон</label>
-                        <input type="text" name="phone" value="{{ settings.phone or '' }}">
-                    </div>
+            <div class="settings-field">
+                <label>Адрес</label>
+                <input type="text" name="address" value="{{ settings.address or '' }}">
+            </div>
 
-                    <div class="settings-field">
-                        <label>Email</label>
-                        <input type="text" name="email" value="{{ settings.email or '' }}">
-                    </div>
+            {% if role in ["super_admin","owner"] %}
+            <div class="settings-field">
+                <label>Тип бизнес</label>
+                <select name="business_type">
+                    {% for bt in business_type_options %}
+                    <option value="{{ bt.value }}" {% if current_business_type == bt.value %}selected{% endif %}>
+                        {{ bt.label }}
+                    </option>
+                    {% endfor %}
+                </select>
+            </div>
+            {% endif %}
 
-                    <div class="settings-field">
-                        <label>Адрес</label>
-                        <input type="text" name="address" value="{{ settings.address or '' }}">
-                    </div>
+            <div class="settings-field">
+                <label>Работно време</label>
+                <input type="text" value="{{ settings.open_hour or 10 }}:00 - {{ settings.close_hour or 22 }}:00" readonly>
+            </div>
 
-                    <div class="settings-field settings-full">
-                        <label>Welcome message</label>
-                        <textarea name="welcome_message">{{ settings.welcome_message or '' }}</textarea>
-                    </div>
+            <div class="settings-field">
+                <label>Телефон</label>
+                <input type="text" name="phone" value="{{ settings.phone or '' }}">
+            </div>
 
-                    <div class="settings-field">
-                        <label>Макс. капацитет</label>
-                        <input type="number" name="max_capacity" value="{{ settings.max_capacity or 20 }}">
-                    </div>
+            <div class="settings-field">
+                <label>Имейл</label>
+                <input type="text" name="email" value="{{ settings.email or '' }}">
+            </div>
+        </div>
 
-                    <div class="settings-field">
-                        <label>Отваря в</label>
-                        <input type="number" name="open_hour" value="{{ settings.open_hour or 10 }}">
-                    </div>
+        <button class="settings-blue-btn" type="submit">💾 Запази промените</button>
+    </div>
 
-                    <div class="settings-field">
-                        <label>Затваря в</label>
-                        <input type="number" name="close_hour" value="{{ settings.close_hour or 22 }}">
-                    </div>
+    <div class="settings-panel" id="system-settings">
+        <div class="settings-panel-head">
+            <div>
+                <h2>Системни настройки</h2>
+                <p>Реални активни функции за текущия бизнес.</p>
+            </div>
+        </div>
 
-                    <div class="settings-field">
-                        <label>Primary color</label>
-                        <input type="text" name="primary_color" value="{{ settings.primary_color or '#1e88ff' }}">
-                    </div>
-
-                    <div class="settings-field">
-                        <label>Widget title</label>
-                        <input type="text" name="widget_title" value="{{ settings.widget_title or 'AI ChatBot - Ресторант' }}">
-                    </div>
-
-                    <div class="settings-field">
-                        <label>Widget enabled</label>
-                        <select name="widget_enabled">
-                            <option value="1" {% if settings.widget_enabled == 1 %}selected{% endif %}>Да</option>
-                            <option value="0" {% if settings.widget_enabled == 0 %}selected{% endif %}>Не</option>
-                        </select>
-                    </div>
-
-                    {% if can_manage_premium_features and tenant_has_ai_chat %}
-                    <div class="settings-field">
-                        <label>LLM enabled</label>
-                        <select name="llm_enabled">
-                            <option value="1" {% if settings.llm_enabled == 1 %}selected{% endif %}>Да</option>
-                            <option value="0" {% if settings.llm_enabled == 0 %}selected{% endif %}>Не</option>
-                        </select>
-                    </div>
-                    {% endif %}
+        <div class="settings-toggle-list">
+            <label class="settings-toggle-row">
+                <div>
+                    <strong>Chatbot widget</strong>
+                    <span>Показва или скрива chat бутона.</span>
                 </div>
+                <input type="checkbox" name="widget_enabled" value="1" {% if settings.widget_enabled == 1 %}checked{% endif %}>
+                <span class="modern-switch"></span>
+            </label>
 
-                {% if can_manage_premium_features %}
-                <div class="saved-banner" style="margin-top: 18px; margin-bottom: 0;">
-                    🔒 Premium / вътрешни настройки се виждат само от super_admin.
+            {% if role in ["super_admin", "owner"] and tenant_has_ai_chat %}
+            <label class="settings-toggle-row">
+                <div>
+                    <strong>LLM / OpenAI AI</strong>
+                    <span>AI Sales Chatbot с автоматични продажби, препоръки и multilingual support.</span>
                 </div>
-                {% endif %}
+                <input type="checkbox" name="llm_enabled" value="1" {% if settings.llm_enabled == 1 %}checked{% endif %}>
+                <span class="modern-switch"></span>
+            </label>
+            {% endif %}
 
-                <div class="settings-actions">
-                    <button class="save-settings-btn" type="submit">💾 Запази настройките</button>
+            <div class="settings-readonly-row">
+                <div>
+                    <strong>План</strong>
+                    <span>Текущ абонамент</span>
                 </div>
-            </form>
+                <em>{{ tenant_plan|upper }}</em>
+            </div>
+
+            <div class="settings-readonly-row">
+                <div>
+                    <strong>Upsell</strong>
+                    <span>Продажбени предложения</span>
+                </div>
+                <em>{% if tenant_has_upsell %}Активно{% else %}Неактивно{% endif %}</em>
+            </div>
         </div>
     </div>
 
+    <div class="settings-panel" id="reservation-settings">
+        <div class="settings-panel-head">
+            <div>
+                <h2>Настройки на резервациите</h2>
+                <p>Контрол на капацитет и часове.</p>
+            </div>
+        </div>
+
+        <div class="settings-form-grid compact">
+            {% if role in ["super_admin","owner"] %}
+            <div class="settings-field">
+                <label>Максимален капацитет</label>
+                <input type="number" name="max_capacity" value="{{ settings.max_capacity or 20 }}">
+            </div>
+
+            <div class="settings-field">
+                <label>Отваря в</label>
+                <input type="number" name="open_hour" value="{{ settings.open_hour or 10 }}">
+            </div>
+
+            <div class="settings-field">
+                <label>Затваря в</label>
+                <input type="number" name="close_hour" value="{{ settings.close_hour or 22 }}">
+            </div>
+            {% else %}
+            <div class="settings-readonly-row">
+                <div>
+                    <strong>Капацитет</strong>
+                    <span>{{ settings.max_capacity or 20 }} места</span>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <div class="settings-panel settings-panel-large" id="visual-settings">
+        <div class="settings-panel-head">
+            <div>
+                <h2>Визуализация и chatbot</h2>
+                <p>Тези настройки променят клиентския chatbot.</p>
+            </div>
+        </div>
+
+        <div class="settings-form-grid">
+            <div class="settings-field">
+                <label>Widget title</label>
+                <input type="text" name="widget_title" value="{{ settings.widget_title or 'AI ChatBot' }}">
+            </div>
+
+            <div class="settings-field color-field">
+                <label>Primary color</label>
+                <div class="color-input-row">
+                    <input type="text" name="primary_color" value="{{ settings.primary_color or '#1e88ff' }}">
+                    <span style="background: {{ settings.primary_color or '#1e88ff' }};"></span>
+                </div>
+            </div>
+
+            <div class="settings-field settings-full">
+                <label>Welcome message</label>
+                <textarea name="welcome_message">{{ settings.welcome_message or '' }}</textarea>
+            </div>
+        </div>
+    </div>
+
+    <div class="settings-panel" id="email-settings">
+        <div class="settings-panel-head">
+            <div>
+                <h2>Имейл настройки</h2>
+                <p>Подготвено за SMTP интеграция.</p>
+            </div>
+        </div>
+
+        <div class="settings-disabled-box">
+            <strong>SMTP настройки</strong>
+            <span>Тази секция ще я вържем към backend по-късно, за да не правим fake save.</span>
+        </div>
+
+        <button class="settings-muted-btn" type="button" disabled>📨 Тествай връзка</button>
+    </div>
+
+    <div class="settings-panel">
+        <div class="settings-panel-head">
+            <div>
+                <h2>Архивиране и възстановяване</h2>
+                <p>Подготвено за backup/export система.</p>
+            </div>
+        </div>
+
+        <div class="settings-disabled-box">
+            <strong>Backup система</strong>
+            <span>Ще я направим реална, когато стигнем до backend export/restore.</span>
+        </div>
+
+        <div class="settings-action-row">
+            <button class="settings-green-btn" type="button" disabled>⬇️ Създай архив</button>
+            <button class="settings-muted-btn" type="button" disabled>☁️ Възстанови архив</button>
+        </div>
+    </div>
+
+</section>
+
+{% if role == "super_admin" %}
+<div class="settings-admin-note">
+    🔒 Само Super Admin вижда и управлява AI системните настройки.
+</div>
+{% endif %}
+
+<section class="settings-preview-premium">
+    <div class="settings-panel-head">
+        <div>
+            <h2>👀 Chatbot Preview</h2>
+            <p>Бърз визуален преглед как изглежда widget-ът за клиента.</p>
+        </div>
+    </div>
+
+    <div class="settings-preview-layout">
+        <div class="settings-preview-info">
+            <h3>{{ settings.widget_title or 'AI ChatBot' }}</h3>
+            <p>{{ settings.welcome_message or 'Здравейте! С какво мога да помогна?' }}</p>
+
+            <div class="preview-meta-row">
+                <span>📞 {{ settings.phone or '+359 88 123 4567' }}</span>
+                <span>📍 {{ settings.address or 'Адрес' }}</span>
+                <span>🎨 {{ settings.primary_color or '#1e88ff' }}</span>
+            </div>
+        </div>
+
+        <div class="mini-chat-preview">
+            <div class="mini-chat-head" style="background: {{ settings.primary_color or '#1e88ff' }};">
+                <strong>{{ settings.widget_title or 'AI ChatBot' }}</strong>
+                <span>● online</span>
+            </div>
+
+            <div class="mini-chat-body">
+                <div class="mini-bot-message">
+                    {{ settings.welcome_message or 'Здравейте! Как мога да помогна?' }}
+                </div>
+
+                <div class="mini-user-message">
+                    Имате ли свободна маса?
+                </div>
+
+                <div class="mini-bot-message">
+                    Разбира се 😊 За колко човека?
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<footer class="settings-footer">
+    <span>© 2026 Reservy. Всички права запазени.</span>
+    <span>Версия 1.0.0</span>
+</footer>
+
+</form>
+
+</main>
 </body>
 </html>

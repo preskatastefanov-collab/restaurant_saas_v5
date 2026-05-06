@@ -3,117 +3,252 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Ресторанти</title>
+    <title>Бизнеси | Reservy</title>
     <link rel="stylesheet" href="/static/style.css">
 </head>
-<body class="dashboard-page">
 
-    <div class="header">
-        <div class="brand-wrap">
-            <div class="brand-icon">🏪</div>
-            <h1>Всички ресторанти</h1>
-        </div>
+<body class="app-layout">
 
-        <div class="header-actions">
-            <a class="top-btn" href="/dashboard">📊 Dashboard</a>
-            <a class="top-btn" href="/create-restaurant">➕ Нов ресторант</a>
-            <a class="top-btn" href="/users">👥 Потребители</a>
-            <a class="top-btn" href="/menu-manager">📋 Меню</a>
-            <a class="top-btn" href="/settings">⚙️ Настройки</a>
-            <a class="logout-btn" href="/logout">🚪 Изход</a>
+<aside class="premium-sidebar">
+    <div class="brand-box">
+        <div class="brand-icon">R</div>
+        <div>
+            <div class="brand-name">reservy</div>
+            <div class="brand-subtitle">SMART RESERVATIONS</div>
         </div>
     </div>
 
-    <div class="container">
+    <nav class="premium-nav">
+        <a class="premium-nav-link" href="/dashboard">🏠 Табло</a>
+        <a class="premium-nav-link active" href="/restaurants">🏢 Бизнеси</a>
+        <a class="premium-nav-link" href="/users">👥 Потребители</a>
+        <a class="premium-nav-link" href="/menu-manager">📋 Меню</a>
+        <a class="premium-nav-link" href="/settings">⚙️ Настройки</a>
+    </nav>
 
-        <div class="saved-banner" style="margin-bottom: 18px;">
-            🔒 Този екран е само за super_admin. Тук се управляват статусът, планът и основният контрол над ресторантите.
+    <div class="premium-user-box">
+        <div class="premium-avatar">AD</div>
+        <div>
+            <strong>admin</strong>
+            <span>super_admin</span>
         </div>
-
-        <div class="table-card">
-            <table>
-                <thead>
-                    <tr>
-                        <th>ID</th>
-                        <th>Име</th>
-                        <th>Slug</th>
-                        <th>План</th>
-                        <th>AI</th>
-                        <th>Статус</th>
-                        <th>Публичен линк</th>
-                        <th>Създаден</th>
-                        <th>Действие</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% if restaurants %}
-                        {% for r in restaurants %}
-                        <tr>
-                            <td>{{ r.id }}</td>
-                            <td>{{ r.name }}</td>
-                            <td>{{ r.slug }}</td>
-
-                            <td>
-                                {% if r.plan == "premium" %}
-                                    <span class="people-badge" style="background: linear-gradient(180deg, #7b5cff 0%, #5a3ef0 100%);">Premium</span>
-                                {% elif r.plan == "standard" %}
-                                    <span class="people-badge" style="background: linear-gradient(180deg, #f7b733 0%, #fc8f00 100%);">Standard</span>
-                                {% else %}
-                                    <span class="people-badge" style="background: linear-gradient(180deg, #7f8c9b 0%, #5c6773 100%);">Basic</span>
-                                {% endif %}
-                            </td>
-
-                            <td>
-                                {% if r.llm_enabled == 1 %}
-                                    <span class="people-badge" style="background: linear-gradient(180deg, #27c77f 0%, #17a85f 100%);">Включен</span>
-                                {% else %}
-                                    <span class="people-badge" style="background: linear-gradient(180deg, #b8b8b8 0%, #8d8d8d 100%);">Изключен</span>
-                                {% endif %}
-                            </td>
-
-                            <td>
-                                {% if r.is_active == 1 %}
-                                    <span class="people-badge" style="background: linear-gradient(180deg, #27c77f 0%, #17a85f 100%);">Активен</span>
-                                {% else %}
-                                    <span class="people-badge" style="background: linear-gradient(180deg, #ff6666 0%, #f34a4a 100%);">Спрян</span>
-                                {% endif %}
-                            </td>
-
-                            <td>
-                                <a class="top-btn" href="/site/{{ r.slug }}" target="_blank" style="padding: 8px 14px; font-size: 14px;">
-                                    🌐 Отвори
-                                </a>
-                            </td>
-
-                            <td>{{ r.created_at }}</td>
-
-                            <td>
-                                <div class="actions">
-                                    {% if r.is_active == 1 %}
-                                    <form method="POST" action="/restaurants/deactivate" onsubmit="return confirm('Сигурен ли си, че искаш да спреш този ресторант?')">
-                                        <input type="hidden" name="tenant_id" value="{{ r.id }}">
-                                        <button class="action-btn action-delete" type="submit" title="Спри ресторанта">⛔</button>
-                                    </form>
-                                    {% else %}
-                                    <form method="POST" action="/restaurants/activate">
-                                        <input type="hidden" name="tenant_id" value="{{ r.id }}">
-                                        <button class="action-btn action-edit" type="submit" title="Активирай ресторанта">✅</button>
-                                    </form>
-                                    {% endif %}
-                                </div>
-                            </td>
-                        </tr>
-                        {% endfor %}
-                    {% else %}
-                        <tr>
-                            <td colspan="9" class="empty-state">Няма създадени ресторанти</td>
-                        </tr>
-                    {% endif %}
-                </tbody>
-            </table>
-        </div>
-
     </div>
+</aside>
+
+<main class="premium-main">
+
+<header class="premium-topbar">
+    <div>
+        <span class="muted-label">🧾</span>
+        <strong>Всички бизнеси</strong>
+    </div>
+
+    <div class="premium-actions top-actions">
+        <a href="/dashboard">📊 Dashboard</a>
+        <a href="/create-restaurant">➕ Нов бизнес</a>
+        <a href="/users">👥 Потребители</a>
+        <a href="/settings">⚙️ Настройки</a>
+        <a class="logout-btn" href="/logout">🚪 Изход</a>
+    </div>
+</header>
+
+<div class="premium-info-banner">
+    🔒 Само за super_admin. Тук можеш да редактираш, спираш и изтриваш бизнеси.
+</div>
+
+<section class="premium-table-card business-card-premium">
+
+<div class="premium-table-wrap">
+<table class="premium-table business-table">
+<thead>
+<tr>
+    <th>ID</th>
+    <th>Име</th>
+    <th>Slug</th>
+    <th>Тип</th>
+    <th>План</th>
+    <th>AI</th>
+    <th>Статус</th>
+    <th>Линк</th>
+    <th>Създаден</th>
+    <th>Действия</th>
+</tr>
+</thead>
+
+<tbody>
+
+{% for r in restaurants %}
+<tr>
+
+<td>{{ r.id }}</td>
+
+<td>
+    <strong>{{ r.name }}</strong>
+</td>
+
+<td>
+    <span class="muted-text">{{ r.slug }}</span>
+</td>
+
+<td>{{ r.business_type_label }}</td>
+
+<td>
+{% if r.plan == "premium" %}
+<span class="mini-pill purple-pill">Premium</span>
+{% elif r.plan == "standard" %}
+<span class="mini-pill orange-pill">Standard</span>
+{% else %}
+<span class="mini-pill gray-pill">Basic</span>
+{% endif %}
+</td>
+
+<td>
+{% if r.llm_enabled == 1 %}
+<span class="mini-pill green-pill">Включен</span>
+{% else %}
+<span class="mini-pill gray-pill">Изключен</span>
+{% endif %}
+</td>
+
+<td>
+{% if r.is_active == 1 %}
+<span class="mini-pill green-pill">Активен</span>
+{% else %}
+<span class="mini-pill red-pill">Спрян</span>
+{% endif %}
+</td>
+
+<td>
+<a href="/site/{{ r.slug }}" target="_blank" class="mini-open-btn">
+🌐 Отвори
+</a>
+</td>
+
+<td>{{ r.created_at }}</td>
+
+<td>
+<div class="business-actions">
+
+<a href="/switch-tenant/{{ r.id }}" class="mini-enter-btn">
+👉 Влез
+</a>
+
+<button class="square-btn edit-btn"
+onclick="openEditModal('{{ r.id }}')">
+✏️
+</button>
+
+{% if r.is_active == 1 %}
+<form method="POST" action="/restaurants/deactivate">
+<input type="hidden" name="tenant_id" value="{{ r.id }}">
+<button class="square-btn red-btn">⛔</button>
+</form>
+{% else %}
+<form method="POST" action="/restaurants/activate">
+<input type="hidden" name="tenant_id" value="{{ r.id }}">
+<button class="square-btn green-btn">✅</button>
+</form>
+{% endif %}
+
+<form method="POST" action="/restaurants/delete">
+<input type="hidden" name="tenant_id" value="{{ r.id }}">
+<button class="square-btn red-btn">🗑️</button>
+</form>
+
+</div>
+</td>
+
+</tr>
+{% endfor %}
+
+</tbody>
+</table>
+</div>
+
+<div class="business-pagination">
+    <div class="pagination-info">
+        Показване на {{ start_item }} до {{ end_item }} от {{ total_items }} бизнеса
+    </div>
+
+    <div class="pagination-controls">
+        {% if current_page > 1 %}
+            <a class="pagination-btn" href="/restaurants?page={{ current_page - 1 }}">‹</a>
+        {% else %}
+            <span class="pagination-btn disabled">‹</span>
+        {% endif %}
+
+        {% for p in range(1, total_pages + 1) %}
+            <a class="pagination-btn {% if p == current_page %}active{% endif %}" href="/restaurants?page={{ p }}">
+                {{ p }}
+            </a>
+        {% endfor %}
+
+        {% if current_page < total_pages %}
+            <a class="pagination-btn" href="/restaurants?page={{ current_page + 1 }}">›</a>
+        {% else %}
+            <span class="pagination-btn disabled">›</span>
+        {% endif %}
+    </div>
+
+    <div class="pagination-page-select">
+        <span>Страница {{ current_page }} от {{ total_pages }}</span>
+    </div>
+</div>
+
+</section>
+
+{% for r in restaurants %}
+<div class="modal" id="editModal-{{ r.id }}">
+<div class="modal-content premium-modal business-modal">
+
+<div class="premium-modal-header">
+<div class="premium-modal-icon">🏢</div>
+<div>
+<h2>Редакция на бизнес</h2>
+<p>Промени име, slug, план и тип бизнес.</p>
+</div>
+</div>
+
+<form method="POST" action="/restaurants/edit">
+<input type="hidden" name="tenant_id" value="{{ r.id }}">
+
+<input name="name" value="{{ r.name }}" required>
+<input name="slug" value="{{ r.slug }}" required>
+
+<select name="plan">
+<option value="basic">Basic</option>
+<option value="standard">Standard</option>
+<option value="premium">Premium</option>
+</select>
+
+<select name="business_type">
+{% for bt in business_type_options %}
+<option value="{{ bt.value }}">{{ bt.label }}</option>
+{% endfor %}
+</select>
+
+<div class="modal-actions">
+<button class="save-btn">💾 Запази</button>
+<button type="button" class="close-btn"
+onclick="closeEditModal('{{ r.id }}')">❌ Затвори</button>
+</div>
+
+</form>
+</div>
+</div>
+{% endfor %}
+
+</main>
+
+<script>
+function openEditModal(id){
+document.getElementById("editModal-"+id).style.display="flex";
+}
+
+function closeEditModal(id){
+document.getElementById("editModal-"+id).style.display="none";
+}
+</script>
 
 </body>
 </html>

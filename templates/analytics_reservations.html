@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html lang="bg">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Reservation Analytics | Reservy</title>
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+
+<body class="app-layout">
+
+<aside class="premium-sidebar">
+    <div class="brand-box">
+        <div class="brand-icon">R</div>
+        <div>
+            <div class="brand-name">reservy</div>
+            <div class="brand-subtitle">SMART RESERVATIONS</div>
+        </div>
+    </div>
+
+    <nav class="premium-nav">
+        <a class="premium-nav-link" href="/dashboard">🏠 Табло</a>
+        <a class="premium-nav-link" href="/restaurants">🏢 Бизнеси</a>
+        <a class="premium-nav-link" href="/users">👥 Потребители</a>
+        <a class="premium-nav-link" href="/menu-manager">📋 Меню</a>
+        <a class="premium-nav-link" href="/settings">⚙️ Настройки</a>
+        <a class="premium-nav-link" href="/password-requests">🔐 Заявки пароли</a>
+        <a class="premium-nav-link" href="/analytics/chats">💬 Chat Analytics</a>
+        <a class="premium-nav-link active" href="/analytics/reservations">🔖 Reservation Analytics</a>
+    </nav>
+
+    <div class="premium-user-box">
+        <div class="premium-avatar">AD</div>
+        <div>
+            <strong>{{ session["user"]["username"] }}</strong>
+            <span>{{ role }}</span>
+        </div>
+    </div>
+</aside>
+
+<main class="premium-main">
+
+    <header class="premium-topbar">
+        <div>
+            <span class="muted-label">Analytics</span>
+            <strong>Резервации</strong>
+            <span class="role-pill role-{{ role }}">{{ role }}</span>
+        </div>
+
+        <div class="topbar-right-stack">
+            <div class="topbar-actions-row">
+                <a class="logout-btn" href="/dashboard">← Назад</a>
+                <a class="logout-btn" href="/logout">🚪 Изход</a>
+            </div>
+
+            <div class="topbar-business">
+                {% if active_business %}
+                    <span class="muted-label">Активен бизнес</span>
+                    <strong>{{ active_business.name }}</strong>
+                    <span class="plan-pill">{{ active_business.plan|upper }}</span>
+                {% endif %}
+            </div>
+        </div>
+    </header>
+
+    <section class="premium-page-head">
+        <div>
+            <h1>🔖 Reservation Analytics</h1>
+            <p>Следи започнатите, завършените и изгубените резервации от chatbot-а.</p>
+        </div>
+    </section>
+
+    <section class="premium-stats-grid">
+        <div class="premium-stat-card">
+            <div class="stat-icon purple">🔖</div>
+            <h3>Започнати тази седмица</h3>
+            <strong>{{ data.started_week }}</strong>
+            <p>Клиенти, които са започнали резервация</p>
+            <span class="trend blue-trend">started</span>
+        </div>
+
+        <div class="premium-stat-card">
+            <div class="stat-icon green">✅</div>
+            <h3>Завършени тази седмица</h3>
+            <strong>{{ data.created_week }}</strong>
+            <p>Успешно записани резервации</p>
+            <span class="trend green-trend">confirmed</span>
+        </div>
+
+        <div class="premium-stat-card">
+            <div class="stat-icon yellow">⚠️</div>
+            <h3>Отпаднали</h3>
+            <strong>{{ data.started_week - data.created_week }}</strong>
+            <p>Започнали, но незавършени</p>
+            <span class="trend neutral-trend">drop-off</span>
+        </div>
+
+        <div class="premium-stat-card">
+            <div class="stat-icon blue">📈</div>
+            <h3>Conversion</h3>
+            <strong>{{ data.conversion_week }}%</strong>
+            <p>От започнати към завършени</p>
+            <span class="trend green-trend">резултат</span>
+        </div>
+    </section>
+
+    <section class="premium-analytics-grid">
+        <div class="premium-analytics-card purple-soft">
+            <div class="stat-icon purple">🟣</div>
+            <div>
+                <h3>Started</h3>
+                <p>Клиентът е започнал процеса за резервация.</p>
+                <strong>{{ data.started_week }}</strong>
+                <span>тази седмица</span>
+            </div>
+        </div>
+
+        <div class="premium-analytics-card green-soft">
+            <div class="stat-icon green">🟢</div>
+            <div>
+                <h3>Confirmed</h3>
+                <p>Клиентът е потвърдил и резервацията е записана.</p>
+                <strong>{{ data.created_week }}</strong>
+                <span>тази седмица</span>
+            </div>
+        </div>
+
+        <div class="premium-analytics-card blue-soft">
+            <div class="stat-icon blue">🔁</div>
+            <div>
+                <h3>Минала седмица</h3>
+                <p>Сравнение със започнати резервации от предходния период.</p>
+                <strong>{{ data.started_last_week }}</strong>
+                <span>started last week</span>
+            </div>
+        </div>
+    </section>
+
+    <section class="premium-table-card">
+        <div class="premium-section-head">
+            <div>
+                <h2>Последни успешни резервации</h2>
+                <p>Тук виждаш резервациите, които chatbot-ът е успял да запише.</p>
+            </div>
+        </div>
+
+        <input
+            type="text"
+            id="reservationSearchInput"
+            class="premium-search"
+            placeholder="Търси по име, дата, час..."
+            onkeyup="filterReservationTable()"
+        >
+
+        <div class="premium-table-wrap">
+            <table id="reservationAnalyticsTable" class="premium-table">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Създадено</th>
+                        <th>Име</th>
+                        <th>Дата</th>
+                        <th>Час</th>
+                        <th>Хора</th>
+                        <th>Статус</th>
+                    </tr>
+                </thead>
+
+                <tbody>
+                    {% if created_events %}
+                        {% for e in created_events %}
+                        <tr>
+                            <td>{{ e.id }}</td>
+                            <td>{{ e.created_at }}</td>
+                            <td>{{ e.payload_data.name or "—" }}</td>
+                            <td>{{ e.payload_data.date or "—" }}</td>
+                            <td>{{ e.payload_data.time or "—" }}</td>
+                            <td><span class="people-badge">{{ e.payload_data.people or "—" }}</span></td>
+                            <td><span class="status-badge">Потвърдена</span></td>
+                        </tr>
+                        {% endfor %}
+                    {% else %}
+                        <tr>
+                            <td colspan="7" class="empty-state">Все още няма успешни резервации.</td>
+                        </tr>
+                    {% endif %}
+                </tbody>
+            </table>
+        </div>
+    </section>
+
+    <section class="premium-table-card" style="margin-top:24px;">
+        <div class="premium-section-head">
+            <div>
+                <h2>Последни започнати резервации</h2>
+                <p>Това са моментите, в които клиент е започнал резервационен процес.</p>
+            </div>
+        </div>
+
+        <div class="premium-table-wrap">
+            <table class="premium-table">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Дата / час</th>
+                        <th>Стъпка</th>
+                        <th>Тип</th>
+                    </tr>
+                </thead>
+
+                <tbody>
+                    {% if started_events %}
+                        {% for e in started_events %}
+                        <tr>
+                            <td>{{ e.id }}</td>
+                            <td>{{ e.created_at }}</td>
+                            <td>{{ e.payload_data.step or "reservation" }}</td>
+                            <td><span class="status-badge">Started</span></td>
+                        </tr>
+                        {% endfor %}
+                    {% else %}
+                        <tr>
+                            <td colspan="4" class="empty-state">Все още няма започнати резервации.</td>
+                        </tr>
+                    {% endif %}
+                </tbody>
+            </table>
+        </div>
+    </section>
+
+</main>
+
+<script>
+function filterReservationTable() {
+    const input = document.getElementById("reservationSearchInput").value.toLowerCase();
+    const rows = document.querySelectorAll("#reservationAnalyticsTable tbody tr");
+
+    rows.forEach((row) => {
+        if (row.querySelector(".empty-state")) return;
+
+        const text = row.innerText.toLowerCase();
+        row.style.display = text.includes(input) ? "" : "none";
+    });
+}
+</script>
+
+</body>
+</html>

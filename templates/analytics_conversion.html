@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html lang="bg">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Conversion Analytics | Reservy</title>
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+
+<body class="app-layout">
+
+<aside class="premium-sidebar">
+    <div class="brand-box">
+        <div class="brand-icon">R</div>
+        <div>
+            <div class="brand-name">reservy</div>
+            <div class="brand-subtitle">SMART RESERVATIONS</div>
+        </div>
+    </div>
+
+    <nav class="premium-nav">
+        <a class="premium-nav-link" href="/dashboard">🏠 Табло</a>
+        <a class="premium-nav-link" href="/restaurants">🏢 Бизнеси</a>
+        <a class="premium-nav-link" href="/users">👥 Потребители</a>
+        <a class="premium-nav-link" href="/menu-manager">📋 Меню</a>
+        <a class="premium-nav-link" href="/settings">⚙️ Настройки</a>
+        <a class="premium-nav-link" href="/password-requests">🔐 Заявки пароли</a>
+        <a class="premium-nav-link" href="/analytics/chats">💬 Chat Analytics</a>
+        <a class="premium-nav-link" href="/analytics/reservations">🔖 Reservation Analytics</a>
+        <a class="premium-nav-link active" href="/analytics/conversion">📈 Conversion Analytics</a>
+    </nav>
+
+    <div class="premium-user-box">
+        <div class="premium-avatar">AD</div>
+        <div>
+            <strong>{{ session["user"]["username"] }}</strong>
+            <span>{{ role }}</span>
+        </div>
+    </div>
+</aside>
+
+<main class="premium-main">
+
+    <header class="premium-topbar">
+        <div>
+            <span class="muted-label">Analytics</span>
+            <strong>Conversion %</strong>
+            <span class="role-pill role-{{ role }}">{{ role }}</span>
+        </div>
+
+        <div class="topbar-right-stack">
+            <div class="topbar-actions-row">
+                <a class="logout-btn" href="/dashboard">← Назад</a>
+                <a class="logout-btn" href="/logout">🚪 Изход</a>
+            </div>
+
+            <div class="topbar-business">
+                {% if active_business %}
+                    <span class="muted-label">Активен бизнес</span>
+                    <strong>{{ active_business.name }}</strong>
+                    <span class="plan-pill">{{ active_business.plan|upper }}</span>
+                {% endif %}
+            </div>
+        </div>
+    </header>
+
+    <section class="premium-page-head">
+        <div>
+            <h1>📈 Conversion Analytics</h1>
+            <p>Показва колко клиенти започват резервация и колко от тях реално я завършват.</p>
+        </div>
+    </section>
+
+    <section class="premium-stats-grid">
+        <div class="premium-stat-card">
+            <div class="stat-icon green">📈</div>
+            <h3>Conversion тази седмица</h3>
+            <strong>{{ data.conversion_week }}%</strong>
+            <p>Започнати → завършени</p>
+            <span class="trend green-trend">основен резултат</span>
+        </div>
+
+        <div class="premium-stat-card">
+            <div class="stat-icon blue">🔖</div>
+            <h3>Започнати</h3>
+            <strong>{{ data.started_week }}</strong>
+            <p>Тази седмица</p>
+            <span class="trend blue-trend">интерес</span>
+        </div>
+
+        <div class="premium-stat-card">
+            <div class="stat-icon purple">✅</div>
+            <h3>Успешни</h3>
+            <strong>{{ data.created_week }}</strong>
+            <p>Потвърдени резервации</p>
+            <span class="trend green-trend">реален резултат</span>
+        </div>
+
+        <div class="premium-stat-card">
+            <div class="stat-icon yellow">🏆</div>
+            <h3>Тази година</h3>
+            <strong>{{ data.created_year }}</strong>
+            <p>Общо успешни резервации</p>
+            <span class="trend neutral-trend">year total</span>
+        </div>
+    </section>
+
+    <section class="premium-analytics-grid">
+        <div class="premium-analytics-card green-soft">
+            <div class="stat-icon green">🚀</div>
+            <div>
+                <h3>Тази седмица</h3>
+                <p>Колко добре chatbot-ът превръща интереса в реални резервации.</p>
+                <strong>{{ data.conversion_week }}%</strong>
+                <span>{{ data.created_week }} успешни от {{ data.started_week }} започнати</span>
+            </div>
+        </div>
+
+        <div class="premium-analytics-card blue-soft">
+            <div class="stat-icon blue">🔁</div>
+            <div>
+                <h3>Миналата седмица</h3>
+                <p>Сравнение с предходния период.</p>
+                <strong>{{ data.conversion_last_week }}%</strong>
+                <span>{{ data.created_last_week }} успешни от {{ data.started_last_week }} започнати</span>
+            </div>
+        </div>
+
+        <div class="premium-analytics-card purple-soft">
+            <div class="stat-icon purple">📆</div>
+            <div>
+                <h3>Този месец</h3>
+                <p>Месечен conversion резултат.</p>
+                <strong>{{ data.conversion_month }}%</strong>
+                <span>{{ data.created_month }} успешни от {{ data.started_month }} започнати</span>
+            </div>
+        </div>
+    </section>
+
+    <section class="premium-table-card">
+        <div class="premium-section-head">
+            <div>
+                <h2>Conversion Funnel</h2>
+                <p>Таблица за сравнение по периоди — започнати, успешни и conversion процент.</p>
+            </div>
+        </div>
+
+        <div class="premium-table-wrap">
+            <table class="premium-table">
+                <thead>
+                    <tr>
+                        <th>Период</th>
+                        <th>Започнати</th>
+                        <th>Успешни</th>
+                        <th>Отпаднали</th>
+                        <th>Conversion</th>
+                        <th>Оценка</th>
+                    </tr>
+                </thead>
+
+                <tbody>
+                    <tr>
+                        <td>Тази седмица</td>
+                        <td>{{ data.started_week }}</td>
+                        <td>{{ data.created_week }}</td>
+                        <td>{{ data.started_week - data.created_week }}</td>
+                        <td><span class="status-badge">{{ data.conversion_week }}%</span></td>
+                        <td>Активен период</td>
+                    </tr>
+
+                    <tr>
+                        <td>Миналата седмица</td>
+                        <td>{{ data.started_last_week }}</td>
+                        <td>{{ data.created_last_week }}</td>
+                        <td>{{ data.started_last_week - data.created_last_week }}</td>
+                        <td><span class="status-badge">{{ data.conversion_last_week }}%</span></td>
+                        <td>Сравнение</td>
+                    </tr>
+
+                    <tr>
+                        <td>Този месец</td>
+                        <td>{{ data.started_month }}</td>
+                        <td>{{ data.created_month }}</td>
+                        <td>{{ data.started_month - data.created_month }}</td>
+                        <td><span class="status-badge">{{ data.conversion_month }}%</span></td>
+                        <td>Месечен резултат</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </section>
+
+    <section class="premium-table-card" style="margin-top:24px;">
+        <div class="premium-section-head">
+            <div>
+                <h2>Как да се чете тази страница?</h2>
+                <p>Това е sales analytics секция — показва дали chatbot-ът реално носи бизнес резултат.</p>
+            </div>
+        </div>
+
+        <div class="premium-analytics-grid">
+            <div class="premium-analytics-card blue-soft">
+                <div class="stat-icon blue">1</div>
+                <div>
+                    <h3>Started</h3>
+                    <p>Клиентът е започнал резервация през chatbot-а.</p>
+                </div>
+            </div>
+
+            <div class="premium-analytics-card purple-soft">
+                <div class="stat-icon purple">2</div>
+                <div>
+                    <h3>Confirmed</h3>
+                    <p>Клиентът е потвърдил резервацията и тя е записана.</p>
+                </div>
+            </div>
+
+            <div class="premium-analytics-card green-soft">
+                <div class="stat-icon green">3</div>
+                <div>
+                    <h3>Conversion</h3>
+                    <p>Процентът показва колко от започнатите резервации са завършени успешно.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+</main>
+
+</body>
+</html>

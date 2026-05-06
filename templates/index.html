@@ -3,20 +3,85 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{{ widget_title }}</title>
+    <title>{{ widget_title }} | Reservy</title>
     <link rel="stylesheet" href="/static/style.css">
 </head>
-<body class="widget-page">
 
-    <div class="demo-page">
-        <div class="demo-content">
-            <h1>Restaurant Website Demo</h1>
-            <p>
-                Това е примерен сайт. Chatbot widget-ът стои долу вдясно и може
-                да се вгради в реален сайт.
-            </p>
+<body class="widget-page premium-public-page">
+
+    <section class="public-hero">
+        <div class="public-hero-card">
+            <div class="demo-badge">AI Business Assistant</div>
+
+            <h1>{{ widget_title }}</h1>
+
+            {% if business_type == "restaurant" %}
+                <p>Разгледайте менюто, попитайте за препоръки или направете резервация директно през AI chatbot-а.</p>
+            {% elif business_type == "cafe" %}
+                <p>Вижте кафе, напитки, десерти, работно време или направете резервация през chatbot-а.</p>
+            {% elif business_type == "bar" or business_type == "pub" %}
+                <p>Разгледайте напитки, коктейли, мезета, контакти или резервирайте маса през AI асистента.</p>
+            {% elif business_type == "pizzeria" %}
+                <p>Вижте пици, сосове, напитки, контакти или направете резервация през chatbot-а.</p>
+            {% elif business_type == "fast_food" %}
+                <p>Разгледайте менюто, цените, комбо предложенията и информацията за поръчка.</p>
+            {% elif business_type == "bakery" %}
+                <p>Вижте продукти, наличности, работно време и контакти чрез AI помощника.</p>
+            {% elif business_type == "sweet_shop" %}
+                <p>Разгледайте торти, десерти, заявки и контакти чрез chatbot-а.</p>
+            {% elif business_type == "food_truck" %}
+                <p>Вижте менюто, локацията и работното време директно през AI асистента.</p>
+            {% else %}
+                <p>Chatbot widget-ът долу вдясно помага на клиентите с информация, меню и контакти.</p>
+            {% endif %}
+
+            <div class="demo-feature-grid">
+                <div>📋 Меню</div>
+                <div>📞 Контакти</div>
+                <div>📅 Резервации</div>
+                <div>🤖 AI помощник</div>
+            </div>
+
+            <div class="public-hero-actions">
+                <button type="button" onclick="openChatFromHero()">💬 Отвори чатбота</button>
+                <span>{{ business_label }}</span>
+            </div>
         </div>
-    </div>
+
+        <div class="public-preview-card">
+            <div class="preview-top">
+                <div class="preview-avatar">
+                    {% if business_type == "restaurant" %}🍽️
+                    {% elif business_type == "cafe" %}☕
+                    {% elif business_type == "bar" %}🍸
+                    {% elif business_type == "pub" %}🍺
+                    {% elif business_type == "pizzeria" %}🍕
+                    {% elif business_type == "fast_food" %}🍔
+                    {% elif business_type == "bakery" %}🥐
+                    {% elif business_type == "sweet_shop" %}🍰
+                    {% elif business_type == "food_truck" %}🚚
+                    {% else %}💬
+                    {% endif %}
+                </div>
+                <div>
+                    <strong>AI асистент</strong>
+                    <span>Онлайн сега</span>
+                </div>
+            </div>
+
+            <div class="preview-message bot-preview">
+                Здравейте 😊 Мога да помогна с меню, препоръки, контакти или резервация.
+            </div>
+
+            <div class="preview-message user-preview">
+                Какво препоръчвате?
+            </div>
+
+            <div class="preview-message bot-preview">
+                Ето няколко подходящи предложения от менюто. Искате ли да ви покажа и снимка?
+            </div>
+        </div>
+    </section>
 
     {% if widget_enabled == 1 %}
     <button
@@ -31,14 +96,32 @@
     <div id="chatWidget" class="chat-widget hidden">
         <div id="chatHeader" class="chat-header" style="background: {{ primary_color }};">
             <div class="chat-header-left">
-                <div class="chat-avatar">🍽️</div>
+                <div class="chat-avatar">
+                    {% if business_type == "restaurant" %}🍽️
+                    {% elif business_type == "cafe" %}☕
+                    {% elif business_type == "bar" %}🍸
+                    {% elif business_type == "pub" %}🍺
+                    {% elif business_type == "pizzeria" %}🍕
+                    {% elif business_type == "fast_food" %}🍔
+                    {% elif business_type == "bakery" %}🥐
+                    {% elif business_type == "sweet_shop" %}🍰
+                    {% elif business_type == "food_truck" %}🚚
+                    {% else %}💬
+                    {% endif %}
+                </div>
+
                 <div>
                     <div class="chat-title">{{ widget_title }}</div>
-                    <div class="chat-status">Онлайн</div>
+                    <div class="chat-status">● Онлайн / Online</div>
                 </div>
             </div>
 
             <div class="chat-header-actions">
+                <div class="chat-lang-switch">
+                    <button id="langBgBtn" class="lang-btn" type="button">BG</button>
+                    <button id="langEnBtn" class="lang-btn" type="button">EN</button>
+                </div>
+
                 <button id="minimizeBtn" class="icon-btn" aria-label="Минимизирай">—</button>
             </div>
         </div>
@@ -50,7 +133,7 @@
             <input
                 id="userInput"
                 type="text"
-                placeholder="Напиши съобщение..."
+                placeholder="Напишете съобщение..."
                 autocomplete="off"
             >
             <button id="send-btn" class="send-btn" aria-label="Изпрати">➤</button>
@@ -65,8 +148,24 @@
             widgetTitle: {{ widget_title | tojson }},
             primaryColor: {{ primary_color | tojson }},
             widgetEnabled: {{ widget_enabled | tojson }},
+            tenantPlan: {{ tenant_plan | tojson }},
+            businessType: {{ business_type | tojson }},
+            businessLabel: {{ business_label | tojson }},
             chatEndpoint: {{ ("/chat/" ~ tenant_slug) | tojson }}
         };
+
+        function openChatFromHero() {
+            const launcher = document.getElementById("chatLauncher");
+            const widget = document.getElementById("chatWidget");
+
+            if (widget) {
+                widget.classList.remove("hidden");
+            }
+
+            if (launcher) {
+                launcher.style.display = "none";
+            }
+        }
     </script>
 
     <script src="/static/script.js"></script>
