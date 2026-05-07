@@ -216,12 +216,7 @@ def clear_chat_sessions():
 
 @app.route("/")
 def home():
-    tenant = get_default_tenant()
-
-    if not tenant:
-        return "Няма активен бизнес."
-
-    return redirect(f"/site/{tenant['slug']}")
+    return render_template("landing.html")
 
 
 @app.route("/site/<slug>")
