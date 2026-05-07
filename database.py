@@ -180,6 +180,8 @@ def init_db():
     add_column_if_missing(c, "tenants", "plan", "plan TEXT DEFAULT 'basic'")
     add_column_if_missing(c, "tenants", "business_type", "business_type TEXT DEFAULT 'restaurant'")
     add_column_if_missing(c, "tenants", "is_active", "is_active INTEGER DEFAULT 1")
+    add_column_if_missing(c, "tenants", "is_demo", "is_demo INTEGER DEFAULT 0")
+
 
     add_column_if_missing(c, "tenant_settings", "website", "website TEXT DEFAULT ''")
     add_column_if_missing(c, "tenant_settings", "working_hours", "working_hours TEXT DEFAULT ''")
@@ -214,9 +216,15 @@ def seed_data():
     c = conn.cursor()
 
     c.execute("""
-    INSERT OR IGNORE INTO tenants (id, name, slug, business_type, plan, is_active)
-    VALUES (1, ?, 'demo-restaurant', 'restaurant', 'premium', 1)
+    INSERT OR IGNORE INTO tenants (id, name, slug, business_type, plan, is_active, is_demo)
+    VALUES (1, ?, 'demo-restaurant', 'restaurant', 'premium', 1, 1)
     """, (DEFAULT_TENANT_NAME,))
+    
+    c.execute("""
+    UPDATE tenants
+    SET is_demo = 1
+    WHERE id = 1 OR slug = 'demo-restaurant'
+    """)
 
     c.execute("""
     INSERT OR IGNORE INTO tenant_settings (

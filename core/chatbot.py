@@ -1397,7 +1397,7 @@ People: {c['people']}
     def finalize_reservation(self):
         c = self.context
 
-        create_reservation(
+        reservation_result = create_reservation(
             tenant_id=self.tenant_id,
             name=c["name"],
             phone=c["phone"],
@@ -1413,7 +1413,8 @@ People: {c['people']}
             "name": c["name"],
             "date": c["date"],
             "time": c["time"],
-            "people": c["people"]
+            "people": c["people"],
+            "demo": bool(reservation_result and reservation_result.get("demo"))
         })
 
         data = {
@@ -1430,6 +1431,35 @@ People: {c['people']}
         self.context = self.empty_context()
         self.context["chat_history"] = old_history
         self.context["language"] = old_language
+
+        buttons = [
+            self.tr("Меню", "Menu"),
+            self.tr("Контакти", "Contact"),
+            self.tr("Нова резервация", "New reservation")
+        ]
+
+        if reservation_result and reservation_result.get("demo"):
+            return self.make_response(
+                self.tr(
+                    f"""✅ Демо резервацията е завършена успешно!
+
+📌 {data['name']}
+📅 {data['date']}
+⏰ {data['time']}
+👥 {data['people']} човека
+
+ℹ️ Това е DEMO режим — резервацията не е записана като реална.""",
+                    f"""✅ Demo reservation completed successfully!
+
+📌 {data['name']}
+📅 {data['date']}
+⏰ {data['time']}
+👥 {data['people']} people
+
+ℹ️ This is DEMO mode — the reservation was not saved as a real booking."""
+                ),
+                buttons
+            )
 
         return self.make_response(
             self.tr(
@@ -1450,9 +1480,5 @@ People: {c['people']}
 
 We are expecting you 😊"""
             ),
-            [
-                self.tr("Меню", "Menu"),
-                self.tr("Контакти", "Contact"),
-                self.tr("Нова резервация", "New reservation")
-            ]
+            buttons
         )
