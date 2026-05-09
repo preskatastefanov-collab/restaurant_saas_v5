@@ -216,8 +216,48 @@ def clear_chat_sessions():
 
 @app.route("/")
 def home():
-    return render_template("landing.html")
+    return render_template(
+        "landing.html",
+        demo_success=request.args.get("demo_success") == "1",
+        demo_error=request.args.get("demo_error") == "1"
+    )
 
+@app.route("/demo-request", methods=["POST"])
+def demo_request():
+    business_name = request.form.get("business_name", "").strip()
+    contact_name = request.form.get("contact_name", "").strip()
+    phone = request.form.get("phone", "").strip()
+    email = request.form.get("email", "").strip()
+    business_type = request.form.get("business_type", "").strip()
+    message = request.form.get("message", "").strip()
+
+    if not business_name or not phone:
+        return redirect("/?demo_error=1#demo-request")
+
+    db = get_db()
+    db.execute("""
+        INSERT INTO demo_requests (
+            business_name,
+            contact_name,
+            phone,
+            email,
+            business_type,
+            message,
+            status
+        )
+        VALUES (?, ?, ?, ?, ?, ?, 'new')
+    """, (
+        business_name,
+        contact_name,
+        phone,
+        email,
+        business_type,
+        message
+    ))
+    db.commit()
+    db.close()
+
+    return redirect("/?demo_success=1#demo-request")
 
 @app.route("/site/<slug>")
 def public_site(slug):
@@ -377,6 +417,54 @@ def password_requests():
         active_business=get_active_tenant_info()
     )
 
+@app.route("/demo-requests")
+def demo_requests():
+    user = current_user()
+
+    if not user:
+        return redirect("/login")
+
+    if not has_role("super_admin"):
+        return redirect("/dashboard")
+
+    db = get_db()
+    rows = db.execute("""
+        SELECT *
+        FROM demo_requests
+        ORDER BY id DESC
+    """).fetchall()
+    db.close()
+
+    return render_template(
+        "demo_requests.html",
+        requests=[dict(r) for r in rows],
+        role=user["role"],
+        active_business=get_active_tenant_info()
+    )
+
+
+@app.route("/demo-requests/mark-done", methods=["POST"])
+def mark_demo_request_done():
+    user = current_user()
+
+    if not user:
+        return redirect("/login")
+
+    if not has_role("super_admin"):
+        return redirect("/dashboard")
+
+    request_id = safe_int(request.form.get("request_id"))
+
+    db = get_db()
+    db.execute("""
+        UPDATE demo_requests
+        SET status = 'done'
+        WHERE id = ?
+    """, (request_id,))
+    db.commit()
+    db.close()
+
+    return redirect("/demo-requests")
 
 @app.route("/password-requests/mark-done", methods=["POST"])
 def mark_password_request_done():

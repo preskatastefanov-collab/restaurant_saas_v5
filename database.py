@@ -107,6 +107,20 @@ def init_db():
     """)
 
     c.execute("""
+    CREATE TABLE IF NOT EXISTS demo_requests (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        business_name TEXT NOT NULL,
+        contact_name TEXT DEFAULT '',
+        phone TEXT NOT NULL,
+        email TEXT DEFAULT '',
+        business_type TEXT DEFAULT '',
+        message TEXT DEFAULT '',
+        status TEXT DEFAULT 'new',
+        created_at TEXT DEFAULT CURRENT_TIMESTAMP
+    )
+    """)
+
+    c.execute("""
     CREATE TABLE IF NOT EXISTS reservations (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         tenant_id INTEGER NOT NULL,
