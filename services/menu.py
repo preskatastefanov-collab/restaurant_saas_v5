@@ -57,6 +57,9 @@ def bg_to_en(value):
 
     if not has_cyrillic(text):
         return text
+    
+    if text in STATIC_BG_EN:
+        return STATIC_BG_EN[text]
 
     try:
         from openai import OpenAI
@@ -122,12 +125,12 @@ def normalize_item_row(item):
     item = dict(item)
     item["image_url"] = clean_image_url(item.get("image_url"))
 
-    item["name_en"] = item.get("name_en") or item.get("name") or ""
-    item["description_en"] = item.get("description_en") or item.get("description") or ""
-    item["category_name_en"] = item.get("category_name_en") or item.get("category_name") or ""
-    item["upsell_drink_en"] = item.get("upsell_drink_en") or item.get("upsell_drink") or ""
-    item["upsell_dessert_en"] = item.get("upsell_dessert_en") or item.get("upsell_dessert") or ""
-    item["upsell_side_en"] = item.get("upsell_side_en") or item.get("upsell_side") or ""
+    item["name_en"] = get_en_or_translate(item.get("name_en"), item.get("name"))
+    item["description_en"] = get_en_or_translate(item.get("description_en"), item.get("description"))
+    item["category_name_en"] = get_en_or_translate(item.get("category_name_en"), item.get("category_name"))
+    item["upsell_drink_en"] = get_en_or_translate(item.get("upsell_drink_en"), item.get("upsell_drink"))
+    item["upsell_dessert_en"] = get_en_or_translate(item.get("upsell_dessert_en"), item.get("upsell_dessert"))
+    item["upsell_side_en"] = get_en_or_translate(item.get("upsell_side_en"), item.get("upsell_side"))
 
     return item
 
@@ -146,7 +149,7 @@ def get_menu_categories(tenant_id):
 
     for row in rows:
         cat = dict(row)
-        cat["name_en"] = cat.get("name_en") or cat.get("name") or ""
+        cat["name_en"] = get_en_or_translate(cat.get("name_en"), cat.get("name"))
         result.append(cat)
 
     return result
@@ -395,6 +398,36 @@ def get_items_by_price_range(tenant_id, max_price=None, min_price=None, limit=8)
     result.sort(key=lambda x: safe_float(x.get("price")))
     return result[:limit]
 
+STATIC_BG_EN = {
+    "Коктейли": "Cocktails",
+    "Бира": "Beer",
+    "Мезета": "Appetizers",
+    "Кафе": "Coffee",
+    "Десерти": "Desserts",
+    "Закуски": "Breakfast",
+    "Мохито": "Mojito",
+    "Наливна бира": "Draft beer",
+    "Крафт бира": "Craft beer",
+    "Плато мезета": "Appetizer platter",
+    "Ядки": "Nuts",
+    "Еспресо": "Espresso",
+    "Капучино": "Cappuccino",
+    "Чийзкейк": "Cheesecake",
+    "Шоколадова торта": "Chocolate cake",
+    "Кроасан": "Croissant",
+    "Сандвич": "Sandwich",
+    "Ром, лайм, мента, сода": "Rum, lime, mint and soda",
+    "Студена наливна бира": "Cold draft beer",
+    "Подбрана крафт бира": "Selected craft beer",
+    "Подбрани мезета за компания": "Selected appetizers for sharing",
+    "Микс печени ядки": "Mixed roasted nuts",
+    "Класическо еспресо": "Classic espresso",
+    "Капучино с млечна пяна": "Cappuccino with milk foam",
+    "Домашен чийзкейк": "Homemade cheesecake",
+    "Богата шоколадова торта": "Rich chocolate cake",
+    "Маслен кроасан": "Butter croissant",
+    "Свеж сандвич със сирене и зеленчуци": "Fresh sandwich with cheese and vegetables",
+}
 
 def get_popular_menu_items(tenant_id, business_type="restaurant", limit=6):
     return get_all_menu_items(tenant_id)[:limit]
