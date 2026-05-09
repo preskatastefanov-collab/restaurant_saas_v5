@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="bg">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Demo заявки | Reservy</title>
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+
+<body class="app-layout">
+
+<aside class="premium-sidebar">
+    <div class="brand-box">
+        <div class="brand-icon">R</div>
+        <div>
+            <div class="brand-name">reservy</div>
+            <div class="brand-subtitle">SMART RESERVATIONS</div>
+        </div>
+    </div>
+
+    <nav class="premium-nav">
+        <a class="premium-nav-link" href="/dashboard">🏠 Табло</a>
+        <a class="premium-nav-link" href="/restaurants">🏢 Бизнеси</a>
+        <a class="premium-nav-link" href="/users">👥 Потребители</a>
+        <a class="premium-nav-link" href="/menu-manager">📋 Меню</a>
+        <a class="premium-nav-link" href="/settings">⚙️ Настройки</a>
+        <a class="premium-nav-link active" href="/demo-requests">🚀 Demo заявки</a>
+        <a class="premium-nav-link" href="/password-requests">🔐 Заявки пароли</a>
+    </nav>
+
+    <div class="premium-user-box">
+        <div class="premium-avatar">AD</div>
+        <div>
+            <strong>{{ session["user"]["username"] }}</strong>
+            <span>{{ role }}</span>
+        </div>
+    </div>
+</aside>
+
+<main class="premium-main">
+
+    <header class="premium-topbar">
+        <div>
+            <span class="muted-label">Влязъл като</span>
+            <strong>{{ session["user"]["username"] }}</strong>
+            <span class="role-pill role-{{ role }}">{{ role }}</span>
+        </div>
+
+        <a class="logout-btn" href="/logout">🚪 Изход</a>
+    </header>
+
+    <section class="premium-table-card">
+        <div class="premium-section-head">
+            <div>
+                <h2>🚀 Demo заявки</h2>
+                <p>Тук виждаш бизнесите, които са оставили заявка за демо от landing страницата.</p>
+            </div>
+        </div>
+
+        <div class="premium-table-wrap">
+            <table class="premium-table">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Бизнес</th>
+                        <th>Контакт</th>
+                        <th>Телефон</th>
+                        <th>Email</th>
+                        <th>Тип</th>
+                        <th>Съобщение</th>
+                        <th>Статус</th>
+                        <th>Дата</th>
+                        <th>Действие</th>
+                    </tr>
+                </thead>
+
+                <tbody>
+                    {% if requests %}
+                        {% for r in requests %}
+                        <tr>
+                            <td>{{ r.id }}</td>
+                            <td><strong>{{ r.business_name }}</strong></td>
+                            <td>{{ r.contact_name or "—" }}</td>
+                            <td>{{ r.phone }}</td>
+                            <td>{{ r.email or "—" }}</td>
+                            <td>{{ r.business_type or "—" }}</td>
+                            <td>{{ r.message or "—" }}</td>
+                            <td>
+                                {% if r.status == "done" %}
+                                    <span class="people-badge badge-green">Обработена</span>
+                                {% else %}
+                                    <span class="people-badge badge-orange">Нова</span>
+                                {% endif %}
+                            </td>
+                            <td>{{ r.created_at }}</td>
+                            <td>
+                                {% if r.status != "done" %}
+                                <form method="POST" action="/demo-requests/mark-done">
+                                    <input type="hidden" name="request_id" value="{{ r.id }}">
+                                    <button class="save-btn" type="submit">✅ Маркирай</button>
+                                </form>
+                                {% else %}
+                                    —
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    {% else %}
+                        <tr>
+                            <td colspan="10" class="empty-state">Няма demo заявки</td>
+                        </tr>
+                    {% endif %}
+                </tbody>
+            </table>
+        </div>
+    </section>
+
+</main>
+
+</body>
+</html>
