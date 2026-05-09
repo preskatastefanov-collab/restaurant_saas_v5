@@ -210,6 +210,163 @@ def init_db():
     conn.commit()
     conn.close()
 
+def seed_demo_tenants(c):
+    demo_tenants = [
+        {
+            "name": "Demo Bar",
+            "slug": "demo-bar",
+            "business_type": "bar",
+            "widget_title": "Bar AI Chatbot",
+            "welcome": "👋 Здравейте! Мога да помогна с напитки, коктейли, мезета или резервация.",
+            "color": "#7c3aed",
+            "categories": {
+                "Коктейли": [
+                    ("Мохито", "Ром, лайм, мента, сода", 8.90, "Плато мезета", "", ""),
+                    ("Aperol Spritz", "Aperol, prosecco и сода", 9.90, "Плато мезета", "", ""),
+                ],
+                "Бира": [
+                    ("Наливна бира", "Студена наливна бира", 5.50, "", "", "Плато мезета"),
+                    ("Крафт бира", "Подбрана крафт бира", 7.50, "", "", "Ядки"),
+                ],
+                "Мезета": [
+                    ("Плато мезета", "Подбрани мезета за компания", 18.90, "Наливна бира", "", ""),
+                    ("Ядки", "Микс печени ядки", 6.90, "Крафт бира", "", ""),
+                ],
+            }
+        },
+        {
+            "name": "Demo Cafe",
+            "slug": "demo-cafe",
+            "business_type": "cafe",
+            "widget_title": "Cafe AI Chatbot",
+            "welcome": "👋 Здравейте! Мога да помогна с кафе, десерти, закуски или резервация.",
+            "color": "#10b981",
+            "categories": {
+                "Кафе": [
+                    ("Еспресо", "Класическо еспресо", 2.90, "", "Кроасан", ""),
+                    ("Капучино", "Капучино с млечна пяна", 4.20, "", "Чийзкейк", ""),
+                ],
+                "Десерти": [
+                    ("Чийзкейк", "Домашен чийзкейк", 7.50, "Капучино", "", ""),
+                    ("Шоколадова торта", "Богата шоколадова торта", 8.50, "Лате", "", ""),
+                ],
+                "Закуски": [
+                    ("Кроасан", "Маслен кроасан", 4.90, "Капучино", "", ""),
+                    ("Сандвич", "Свеж сандвич със сирене и зеленчуци", 6.90, "Лимонада", "", ""),
+                ],
+            }
+        }
+    ]
+
+    for demo in demo_tenants:
+        existing = c.execute("""
+            SELECT id FROM tenants
+            WHERE slug = ?
+            LIMIT 1
+        """, (demo["slug"],)).fetchone()
+
+        if existing:
+            demo_tenant_id = existing["id"]
+
+            c.execute("""
+                UPDATE tenants
+                SET is_demo = 1,
+                    plan = 'premium',
+                    business_type = ?,
+                    is_active = 1
+                WHERE id = ?
+            """, (demo["business_type"], demo_tenant_id))
+        else:
+            c.execute("""
+                INSERT INTO tenants (name, slug, business_type, plan, is_active, is_demo)
+                VALUES (?, ?, ?, 'premium', 1, 1)
+            """, (demo["name"], demo["slug"], demo["business_type"]))
+
+            demo_tenant_id = c.lastrowid
+
+        c.execute("""
+            INSERT OR IGNORE INTO tenant_settings (
+                tenant_id,
+                restaurant_name,
+                phone,
+                email,
+                address,
+                website,
+                working_hours,
+                welcome_message,
+                max_capacity,
+                open_hour,
+                close_hour,
+                primary_color,
+                widget_title,
+                widget_enabled,
+                llm_enabled
+            )
+            VALUES (?, ?, '+359 88 000 0000', 'demo@reservy.bg',
+                    'Демо адрес, България',
+                    'https://reservy.bg',
+                    'Понеделник - Неделя: 09:00 - 23:00',
+                    ?, 40, 9, 23, ?, ?, 1, 1)
+        """, (
+            demo_tenant_id,
+            demo["name"],
+            demo["welcome"],
+            demo["color"],
+            demo["widget_title"]
+        ))
+
+        c.execute("""
+            UPDATE tenant_settings
+            SET restaurant_name = ?,
+                welcome_message = ?,
+                primary_color = ?,
+                widget_title = ?,
+                llm_enabled = 1
+            WHERE tenant_id = ?
+        """, (
+            demo["name"],
+            demo["welcome"],
+            demo["color"],
+            demo["widget_title"],
+            demo_tenant_id
+        ))
+
+        existing_categories = c.execute("""
+            SELECT COUNT(*) AS total
+            FROM menu_categories
+            WHERE tenant_id = ?
+        """, (demo_tenant_id,)).fetchone()["total"]
+
+        if existing_categories == 0:
+            for cat_index, (cat_name, items) in enumerate(demo["categories"].items(), start=1):
+                c.execute("""
+                    INSERT INTO menu_categories (tenant_id, name, sort_order, is_active, name_en)
+                    VALUES (?, ?, ?, 1, '')
+                """, (demo_tenant_id, cat_name, cat_index))
+
+                category_id = c.lastrowid
+
+                for item_index, item in enumerate(items, start=1):
+                    name, description, price, upsell_drink, upsell_dessert, upsell_side = item
+
+                    c.execute("""
+                        INSERT INTO menu_items (
+                            tenant_id, category_id, name, description, price,
+                            image_url, upsell_drink, upsell_dessert, upsell_side,
+                            is_active, sort_order
+                        )
+                        VALUES (?, ?, ?, ?, ?, '', ?, ?, ?, 1, ?)
+                    """, (
+                        demo_tenant_id,
+                        category_id,
+                        name,
+                        description,
+                        price,
+                        upsell_drink,
+                        upsell_dessert,
+                        upsell_side,
+                        item_index
+                    ))
 
 def seed_data():
     conn = get_db()
@@ -225,6 +382,55 @@ def seed_data():
     SET is_demo = 1
     WHERE id = 1 OR slug = 'demo-restaurant'
     """)
+
+    demo_tenants = [
+    {
+        "name": "Demo Bar",
+        "slug": "demo-bar",
+        "business_type": "bar",
+        "widget_title": "Bar AI Chatbot",
+        "welcome": "👋 Здравейте! Мога да помогна с напитки, коктейли, мезета или резервация.",
+        "color": "#7c3aed",
+        "categories": {
+            "Коктейли": [
+                ("Мохито", "Ром, лайм, мента, сода", 8.90, "Плато мезета", "", ""),
+                ("Aperol Spritz", "Aperol, prosecco и сода", 9.90, "Плато мезета", "", ""),
+            ],
+            "Бира": [
+                ("Наливна бира", "Студена наливна бира", 5.50, "", "", "Плато мезета"),
+                ("Крафт бира", "Подбрана крафт бира", 7.50, "", "", "Ядки"),
+            ],
+            "Мезета": [
+                ("Плато мезета", "Подбрани мезета за компания", 18.90, "Наливна бира", "", ""),
+                ("Ядки", "Микс печени ядки", 6.90, "Крафт бира", "", ""),
+            ],
+        }
+    },
+    {
+        "name": "Demo Cafe",
+        "slug": "demo-cafe",
+        "business_type": "cafe",
+        "widget_title": "Cafe AI Chatbot",
+        "welcome": "👋 Здравейте! Мога да помогна с кафе, десерти, закуски или резервация.",
+        "color": "#10b981",
+        "categories": {
+            "Кафе": [
+                ("Еспресо", "Класическо еспресо", 2.90, "", "Кроасан", ""),
+                ("Капучино", "Капучино с млечна пяна", 4.20, "", "Чийзкейк", ""),
+            ],
+            "Десерти": [
+                ("Чийзкейк", "Домашен чийзкейк", 7.50, "Капучино", "", ""),
+                ("Шоколадова торта", "Богата шоколадова торта", 8.50, "Лате", "", ""),
+            ],
+            "Закуски": [
+                ("Кроасан", "Маслен кроасан", 4.90, "Капучино", "", ""),
+                ("Сандвич", "Свеж сандвич със сирене и зеленчуци", 6.90, "Лимонада", "", ""),
+            ],
+        }
+    }
+]
+
+
 
     c.execute("""
     INSERT OR IGNORE INTO tenant_settings (
@@ -396,6 +602,8 @@ def seed_data():
                 upsell_side_en = COALESCE(NULLIF(upsell_side_en, ''), ?)
             WHERE id = ?
         """, (drink_en, dessert_en, side_en, row["id"]))
+
+    seed_demo_tenants(c)
 
     conn.commit()
     conn.close()
