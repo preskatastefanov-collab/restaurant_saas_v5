@@ -431,16 +431,26 @@ button {
 .premium-sidebar {
     width: 280px;
     min-height: 100vh;
+    height: 100vh;
+
     position: fixed;
     left: 0;
     top: 0;
+
     background: linear-gradient(180deg, #07152e 0%, #061126 100%);
     color: white;
+
     padding: 28px 22px;
+
     display: flex;
     flex-direction: column;
+
     box-shadow: 18px 0 55px rgba(7,20,46,0.22);
+
     z-index: 1000;
+
+    overflow-y: auto;
+    overflow-x: hidden;
 }
 
 .brand-box {
@@ -484,13 +494,19 @@ button {
 .premium-nav-link {
     min-height: 56px;
     padding: 0 18px;
+
     border-radius: 17px;
+
     display: flex;
     align-items: center;
     gap: 12px;
+
     color: rgba(255,255,255,0.82);
+
     font-size: 17px;
     font-weight: 800;
+
+    transition: 0.2s ease;
 }
 
 .premium-nav-link.active,
@@ -502,9 +518,13 @@ button {
 
 .premium-user-box {
     margin-top: auto;
+
     padding: 18px;
+
     border-radius: 22px;
+
     background: rgba(255,255,255,0.06);
+
     display: flex;
     align-items: center;
     gap: 12px;
@@ -1004,6 +1024,7 @@ button {
 }
 
 @media (max-width: 1080px) {
+
     .premium-sidebar {
         position: relative;
         width: 100%;
@@ -5162,4 +5183,21 @@ box-shadow:0 8px 20px rgba(255,45,45,.28);
         justify-content: center;
         text-align: center;
     }
+}
+
+.premium-sidebar::-webkit-scrollbar {
+    width: 6px;
+}
+
+.premium-sidebar::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.premium-sidebar::-webkit-scrollbar-thumb {
+    background: rgba(255,255,255,0.18);
+    border-radius: 999px;
+}
+
+.premium-sidebar::-webkit-scrollbar-thumb:hover {
+    background: rgba(255,255,255,0.32);
 }
