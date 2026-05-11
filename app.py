@@ -146,6 +146,43 @@ def is_super_admin():
 def can_manage_premium_features():
     return has_role("super_admin")
 
+def require_login():
+    user = current_user()
+    return user is not None
+
+
+def can_access_premium_analytics(tenant_id):
+    return is_super_admin() or (
+        has_role("owner") and tenant_has_feature(tenant_id, "premium_analytics")
+    )
+
+
+def can_use_ai_settings(tenant_id):
+    return is_super_admin() and tenant_has_feature(tenant_id, "ai_chat")
+
+
+def can_use_upsell_settings(tenant_id):
+    return is_super_admin() and tenant_has_feature(tenant_id, "upsell")
+
+
+def can_manage_business():
+    return has_role("super_admin", "owner")
+
+
+def can_manage_menu():
+    return has_role("super_admin", "owner", "admin")
+
+
+def can_manage_users():
+    return has_role("super_admin", "owner", "admin")
+
+
+def can_manage_demo_requests():
+    return has_role("super_admin")
+
+
+def can_manage_password_requests():
+    return has_role("super_admin")
 
 def get_active_tenant_id():
     user = current_user()
@@ -399,7 +436,7 @@ def password_requests():
     if not user:
         return redirect("/login")
 
-    if not has_role("super_admin"):
+    if not can_manage_password_requests():
         return redirect("/dashboard")
 
     db = get_db()
@@ -424,7 +461,7 @@ def demo_requests():
     if not user:
         return redirect("/login")
 
-    if not has_role("super_admin"):
+    if not can_manage_demo_requests():
         return redirect("/dashboard")
 
     db = get_db()
@@ -926,10 +963,10 @@ def analytics_chats():
     if not user:
         return redirect("/login")
 
-    if not has_role("super_admin", "owner"):
-        return redirect("/dashboard")
-
     tenant_id = get_active_tenant_id()
+
+    if not can_access_premium_analytics(tenant_id):
+        return redirect("/dashboard")
 
     return render_template(
         "analytics_chats.html",
@@ -947,10 +984,10 @@ def analytics_reservations():
     if not user:
         return redirect("/login")
 
-    if not has_role("super_admin", "owner"):
-        return redirect("/dashboard")
-
     tenant_id = get_active_tenant_id()
+
+    if not can_access_premium_analytics(tenant_id):
+        return redirect("/dashboard")
 
     return render_template(
         "analytics_reservations.html",
@@ -969,10 +1006,10 @@ def analytics_conversion():
     if not user:
         return redirect("/login")
 
-    if not has_role("super_admin", "owner"):
-        return redirect("/dashboard")
-
     tenant_id = get_active_tenant_id()
+
+    if not can_access_premium_analytics(tenant_id):
+        return redirect("/dashboard")
 
     return render_template(
         "analytics_conversion.html",
@@ -1082,7 +1119,7 @@ def settings():
             open_hour = safe_int(existing_settings.get("open_hour", 10), 10)
             close_hour = safe_int(existing_settings.get("close_hour", 22), 22)
 
-        if has_role("super_admin") and tenant_has_ai_chat:
+        if can_use_ai_settings(tenant_id):
             llm_enabled = safe_int(
                 request.form.get(
                     "llm_enabled",

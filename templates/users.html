@@ -9,35 +9,7 @@
 
 <body class="app-layout">
 
-<aside class="premium-sidebar">
-    <div class="brand-box">
-        <div class="brand-icon">R</div>
-        <div>
-            <div class="brand-name">reservy</div>
-            <div class="brand-subtitle">SMART RESERVATIONS</div>
-        </div>
-    </div>
-
-    <nav class="premium-nav">
-        <a class="premium-nav-link" href="/dashboard">🏠 Табло</a>
-
-        {% if role == "super_admin" %}
-        <a class="premium-nav-link" href="/restaurants">🏢 Бизнеси</a>
-        {% endif %}
-
-        <a class="premium-nav-link active" href="/users">👥 Потребители</a>
-        <a class="premium-nav-link" href="/menu-manager">📋 Меню</a>
-        <a class="premium-nav-link" href="/settings">⚙️ Настройки</a>
-    </nav>
-
-    <div class="premium-user-box">
-        <div class="premium-avatar">{{ session["user"]["username"][:2]|upper }}</div>
-        <div>
-            <strong>{{ session["user"]["username"] }}</strong>
-            <span>{{ role }}</span>
-        </div>
-    </div>
-</aside>
+{% include "partials/sidebar.html" %}
 
 <main class="premium-main">
 

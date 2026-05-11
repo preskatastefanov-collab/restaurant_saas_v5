@@ -1,0 +1,93 @@
+<aside class="premium-sidebar">
+
+    <div class="brand-box">
+        <div class="brand-icon">R</div>
+
+        <div>
+            <div class="brand-name">reservy</div>
+            <div class="brand-subtitle">SMART RESERVATIONS</div>
+        </div>
+    </div>
+
+    <nav class="premium-nav">
+
+        <a class="premium-nav-link {% if request.path == '/dashboard' %}active{% endif %}"
+           href="/dashboard">
+            🏠 Табло
+        </a>
+
+        {% if role == "super_admin" %}
+        <a class="premium-nav-link {% if request.path == '/restaurants' %}active{% endif %}"
+           href="/restaurants">
+            🏢 Бизнеси
+        </a>
+        {% endif %}
+
+        {% if role in ["super_admin", "owner", "admin"] %}
+        <a class="premium-nav-link {% if request.path == '/users' %}active{% endif %}"
+           href="/users">
+            👥 Потребители
+        </a>
+        {% endif %}
+
+        {% if role in ["super_admin", "owner", "admin"] %}
+        <a class="premium-nav-link {% if request.path == '/menu-manager' %}active{% endif %}"
+           href="/menu-manager">
+            📋 Меню
+        </a>
+        {% endif %}
+
+        {% if role in ["super_admin", "owner", "admin"] %}
+        <a class="premium-nav-link {% if request.path == '/settings' %}active{% endif %}"
+           href="/settings">
+            ⚙️ Настройки
+        </a>
+        {% endif %}
+
+        {% if role == "super_admin" %}
+        <a class="premium-nav-link {% if request.path == '/demo-requests' %}active{% endif %}"
+           href="/demo-requests">
+            🚀 Demo заявки
+        </a>
+        {% endif %}
+
+        {% if role == "super_admin" %}
+        <a class="premium-nav-link {% if request.path == '/password-requests' %}active{% endif %}"
+           href="/password-requests">
+            🔐 Заявки пароли
+        </a>
+        {% endif %}
+
+        {% if role in ["super_admin", "owner"] %}
+        <a class="premium-nav-link {% if request.path == '/analytics/chats' %}active{% endif %}"
+           href="/analytics/chats">
+            💬 Chat Analytics
+        </a>
+
+        <a class="premium-nav-link {% if request.path == '/analytics/reservations' %}active{% endif %}"
+           href="/analytics/reservations">
+            📅 Reservation Analytics
+        </a>
+
+        <a class="premium-nav-link {% if request.path == '/analytics/conversion' %}active{% endif %}"
+           href="/analytics/conversion">
+            📈 Conversion
+        </a>
+        {% endif %}
+
+    </nav>
+
+    <div class="premium-user-box">
+
+        <div class="premium-avatar">
+            {{ session["user"]["username"][:2].upper() }}
+        </div>
+
+        <div>
+            <strong>{{ session["user"]["username"] }}</strong>
+            <span>{{ role }}</span>
+        </div>
+
+    </div>
+
+</aside>

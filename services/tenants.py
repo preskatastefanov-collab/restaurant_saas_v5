@@ -93,6 +93,10 @@ PLAN_FEATURES = {
         "export",
         "menu_manager",
         "user_management_basic",
+        "ai_chat",
+        "smart_food_answers",
+        "better_fallback",
+        "smart_quick_replies",
     },
     "premium": {
         "widget",
@@ -123,18 +127,23 @@ def normalize_plan(plan):
     return plan if plan in VALID_PLANS else "basic"
 
 def can_use_ai(tenant_id):
-    from services.tenants import get_tenant_settings
+    return tenant_has_feature(tenant_id, "ai_chat")
 
-    settings = get_tenant_settings(tenant_id)
 
-    plan = settings.get("plan", "basic")
+def can_use_upsell(tenant_id):
+    return tenant_has_feature(tenant_id, "upsell")
 
-    return plan == "premium"
 
-def can_use_analytics(tenant_id):
-    settings = get_tenant_settings(tenant_id)
-    plan = settings.get("plan", "basic")
-    return plan in ["standard", "premium"]
+def can_use_product_images(tenant_id):
+    return tenant_has_feature(tenant_id, "product_images")
+
+
+def can_use_premium_analytics(tenant_id):
+    return tenant_has_feature(tenant_id, "premium_analytics")
+
+
+def can_use_sales_recommendations(tenant_id):
+    return tenant_has_feature(tenant_id, "sales_recommendations")
 
 def normalize_business_type(business_type):
     business_type = (business_type or "restaurant").strip().lower()
