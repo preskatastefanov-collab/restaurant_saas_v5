@@ -5268,3 +5268,73 @@ body.landing-page .landing-hero-visual {
         grid-template-columns: 1fr;
     }
 }
+
+/* ===== AI ROBOT ORB HERO FIX ===== */
+
+.ai-robot-orb {
+    position: absolute;
+    left: 70px;
+    top: 235px;
+    width: 135px;
+    height: 135px;
+    border-radius: 50%;
+    background:
+        radial-gradient(circle at 35% 28%, rgba(125, 200, 255, 0.95), rgba(37, 99, 235, 0.72) 42%, rgba(15, 23, 42, 0.98) 74%);
+    border: 2px solid rgba(56, 189, 248, 0.95);
+    box-shadow:
+        0 0 22px rgba(56, 189, 248, 0.95),
+        0 0 65px rgba(37, 99, 235, 0.75),
+        0 0 110px rgba(79, 70, 229, 0.45);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 3;
+}
+
+.ai-robot-orb::before {
+    content: "";
+    position: absolute;
+    inset: -16px;
+    border-radius: 50%;
+    border: 2px solid rgba(59, 130, 246, 0.55);
+    box-shadow: 0 0 40px rgba(37, 99, 235, 0.55);
+}
+
+.ai-robot-face {
+    width: 82px;
+    height: 58px;
+    border-radius: 26px;
+    background: #020617;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    box-shadow: inset 0 0 18px rgba(56, 189, 248, 0.18);
+}
+
+.ai-robot-eyes {
+    display: flex;
+    gap: 18px;
+}
+
+.ai-robot-eyes span {
+    width: 15px;
+    height: 15px;
+    border-radius: 50%;
+    background: #22d3ee;
+    box-shadow: 0 0 14px rgba(34, 211, 238, 0.95);
+}
+
+.ai-robot-mouth {
+    width: 28px;
+    height: 10px;
+    border-bottom: 3px solid #22d3ee;
+    border-radius: 0 0 20px 20px;
+}
+
+@media (max-width: 980px) {
+    .ai-robot-orb {
+        display: none;
+    }
+}
