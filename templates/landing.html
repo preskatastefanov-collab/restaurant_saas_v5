@@ -317,49 +317,177 @@
 </div>
 </section>
 
-<section class="landing-section" id="pricing">
-    <div class="landing-section-head">
-        <span>Планове</span>
-        <h2>Ясни SaaS планове за различни бизнеси</h2>
-        <p>Това ще можеш да показваш на реални клиенти при продажба.</p>
+<section class="landing-section pricing-premium-section" id="pricing">
+    <div class="landing-section-head pricing-premium-head">
+        <span>ПЛАНОВЕ</span>
+        <h2>Ясни SaaS планове за<br>различни бизнеси</h2>
+        <p>Планове създадени за реални ресторанти, барове и кафенета.</p>
+
+        <div class="pricing-offer-row">
+            <div class="pricing-offer-pill">🏷️ Първият месец -20% намаление</div>
+            <div class="pricing-offer-pill purple">🎁 7 дни безплатен trial</div>
+        </div>
     </div>
 
-    <div class="landing-pricing-grid">
-        <div class="landing-price-card">
+    <div class="landing-pricing-grid pricing-premium-grid">
+        <div class="landing-price-card pricing-premium-card">
             <h3>Basic</h3>
             <strong>Старт</strong>
+
             <ul>
                 <li>Chat widget</li>
                 <li>Меню</li>
                 <li>Контакти</li>
                 <li>Резервации</li>
             </ul>
+
+            <div class="pricing-line"></div>
+
+            <div class="price-box">
+                <div>
+                    <span class="old-price">49 €</span>
+                    <span class="discount-pill">-20%</span>
+                </div>
+                <strong>39 €</strong>
+                <p>/месец</p>
+            </div>
+
+            <a href="#demo-request" class="pricing-btn">Избери план</a>
+            <div class="trial-note">🛡️ 7 дни безплатен trial</div>
+
+            <button class="pricing-more-btn" type="button" onclick="togglePlanFeatures('basic')">
+                ℹ️ Покажи всички функции <span>⌄</span>
+            </button>
         </div>
 
-        <div class="landing-price-card highlighted">
-            <div class="popular-pill">Най-подходящ</div>
+        <div class="landing-price-card pricing-premium-card highlighted">
+            <div class="popular-pill">Най-популярен</div>
+
             <h3>Standard</h3>
             <strong>AI пакет</strong>
+
             <ul>
                 <li>Всичко от Basic</li>
                 <li>AI отговори</li>
                 <li>Smart food answers</li>
                 <li>По-добри fallback отговори</li>
             </ul>
+
+            <div class="pricing-line"></div>
+
+            <div class="price-box">
+                <div>
+                    <span class="old-price">99 €</span>
+                    <span class="discount-pill">-20%</span>
+                </div>
+                <strong>79 €</strong>
+                <p>/месец</p>
+            </div>
+
+            <a href="#demo-request" class="pricing-btn purple-btn">Избери план</a>
+            <div class="trial-note">🛡️ 7 дни безплатен trial</div>
+
+            <button class="pricing-more-btn" type="button" onclick="togglePlanFeatures('standard')">
+                ℹ️ Покажи всички функции <span>⌄</span>
+            </button>
         </div>
 
-        <div class="landing-price-card premium">
+        <div class="landing-price-card pricing-premium-card premium">
             <h3>Premium</h3>
             <strong>Sales пакет</strong>
+
             <ul>
                 <li>Всичко от Standard</li>
                 <li>Upsell</li>
                 <li>Product images</li>
                 <li>Premium analytics</li>
             </ul>
+
+            <div class="pricing-line"></div>
+
+            <div class="price-box">
+                <div>
+                    <span class="old-price">199 €</span>
+                    <span class="discount-pill">-20%</span>
+                </div>
+                <strong>159 €</strong>
+                <p>/месец</p>
+            </div>
+
+            <a href="#demo-request" class="pricing-btn">Избери план</a>
+            <div class="trial-note">🛡️ 7 дни безплатен trial</div>
+
+            <button class="pricing-more-btn" type="button" onclick="togglePlanFeatures('premium')">
+                ℹ️ Покажи всички функции <span>⌄</span>
+            </button>
         </div>
     </div>
+
+    <div class="pricing-feature-details-grid">
+        <div class="pricing-feature-panel" id="features-basic">
+            <h3>Всички функции в Basic</h3>
+            <ul>
+                <li>Chat widget</li>
+                <li>Меню</li>
+                <li>Контакти</li>
+                <li>Резервации</li>
+                <li>Dashboard</li>
+                <li>Export</li>
+                <li>Menu manager</li>
+                <li>Basic user management</li>
+            </ul>
+        </div>
+
+        <div class="pricing-feature-panel standard-panel" id="features-standard">
+            <h3>Всички функции в Standard</h3>
+            <ul>
+                <li>Всичко от Basic</li>
+                <li>AI Chat</li>
+                <li>Smart food answers</li>
+                <li>Better fallback отговори</li>
+                <li>Smart quick replies</li>
+                <li>Dashboard</li>
+                <li>Export</li>
+                <li>Menu manager</li>
+            </ul>
+        </div>
+
+        <div class="pricing-feature-panel premium-panel" id="features-premium">
+            <h3>Всички функции в Premium</h3>
+            <ul>
+                <li>Всичко от Standard</li>
+                <li>Upsell</li>
+                <li>Premium analytics</li>
+                <li>Advanced AI logic</li>
+                <li>Recommended dishes</li>
+                <li>Product images</li>
+                <li>Sales recommendations</li>
+                <li>Priority features</li>
+            </ul>
+        </div>
+    </div>
+
+    <div class="pricing-bottom-note">
+        ℹ️ Всички планове включват безплатна демонстрация и поддръжка 24/7.
+    </div>
 </section>
+
+<script>
+function togglePlanFeatures(plan) {
+    const panels = document.querySelectorAll(".pricing-feature-panel");
+    const target = document.getElementById("features-" + plan);
+
+    panels.forEach(panel => {
+        if (panel !== target) {
+            panel.classList.remove("open");
+        }
+    });
+
+    if (target) {
+        target.classList.toggle("open");
+    }
+}
+</script>
 
 <section class="landing-demo-request" id="demo-request">
     <div class="landing-demo-request-text">
