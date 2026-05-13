@@ -1670,16 +1670,18 @@ def menu_manager():
     tenant_id = get_active_tenant_id()
 
     return render_template(
-        "menu_manager.html",
-        categories=get_menu_categories(tenant_id),
-        menu_data=get_full_menu(tenant_id, include_inactive=True),
-        saved=request.args.get("saved") == "1",
-        role=user["role"],
-        can_manage_premium_features=can_manage_premium_features(),
-        is_super_admin=is_super_admin(),
-        tenant_plan=get_tenant_plan(tenant_id),
-        active_business=get_active_tenant_info(),
-    )
+    "menu_manager.html",
+    categories=get_menu_categories(tenant_id),
+    menu_data=get_full_menu(tenant_id, include_inactive=True),
+    saved=request.args.get("saved") == "1",
+    role=user["role"],
+    can_manage_premium_features=can_manage_premium_features(),
+    is_super_admin=is_super_admin(),
+    tenant_plan=get_tenant_plan(tenant_id),
+    tenant_has_product_images=tenant_has_feature(tenant_id, "product_images"),
+    tenant_has_upsell=tenant_has_feature(tenant_id, "upsell"),
+    active_business=get_active_tenant_info(),
+)
 
 
 @app.route("/menu-manager/add-category", methods=["POST"])
@@ -1725,10 +1727,20 @@ def add_menu_item_route():
     upsell_drink = request.form.get("upsell_drink", "").strip()
     upsell_dessert = request.form.get("upsell_dessert", "").strip()
     upsell_side = request.form.get("upsell_side", "").strip()
-    sort_order = safe_int(request.form.get("sort_order", 0), 0)
+    can_use_upsell = tenant_has_feature(tenant_id, "upsell")
+    can_use_product_images = tenant_has_feature(tenant_id, "product_images")
 
-    image_url = request.form.get("image_url", "").strip()
-    uploaded_image = save_menu_image(request.files.get("image_file"))
+    if not can_use_upsell:
+        upsell_drink = ""
+        upsell_dessert = ""
+        upsell_side = ""
+        sort_order = safe_int(request.form.get("sort_order", 0), 0)
+
+        image_url = ""
+
+    if can_use_product_images:
+        image_url = request.form.get("image_url", "").strip()
+        uploaded_image = save_menu_image(request.files.get("image_file"))
 
     if uploaded_image:
         image_url = uploaded_image
@@ -1801,9 +1813,19 @@ def edit_menu_item_route():
     upsell_drink = request.form.get("upsell_drink", "").strip()
     upsell_dessert = request.form.get("upsell_dessert", "").strip()
     upsell_side = request.form.get("upsell_side", "").strip()
+    can_use_upsell = tenant_has_feature(tenant_id, "upsell")
+    can_use_product_images = tenant_has_feature(tenant_id, "product_images")
 
-    image_url = request.form.get("image_url", "").strip()
-    uploaded_image = save_menu_image(request.files.get("image_file"))
+    if not can_use_upsell:
+        upsell_drink = ""
+        upsell_dessert = ""
+        upsell_side = ""
+
+        image_url = ""
+
+    if can_use_product_images:
+        image_url = request.form.get("image_url", "").strip()
+        uploaded_image = save_menu_image(request.files.get("image_file"))
 
     if uploaded_image:
         image_url = uploaded_image

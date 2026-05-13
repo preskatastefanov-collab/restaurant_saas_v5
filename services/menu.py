@@ -1,5 +1,5 @@
 from database import get_db
-
+from services.tenants import tenant_has_feature
 
 def normalize_text(value):
     return " ".join((value or "").strip().lower().split())
@@ -121,16 +121,33 @@ def get_en_or_translate(en_value, bg_value):
     return bg_to_en(bg_value)
 
 
-def normalize_item_row(item):
+def normalize_item_row(item, tenant_id=None):
     item = dict(item)
-    item["image_url"] = clean_image_url(item.get("image_url"))
+
+    can_use_product_images = True
+    can_use_upsell = True
+
+    if tenant_id:
+        can_use_product_images = tenant_has_feature(tenant_id, "product_images")
+        can_use_upsell = tenant_has_feature(tenant_id, "upsell")
+
+    item["image_url"] = clean_image_url(item.get("image_url")) if can_use_product_images else ""
 
     item["name_en"] = get_en_or_translate(item.get("name_en"), item.get("name"))
     item["description_en"] = get_en_or_translate(item.get("description_en"), item.get("description"))
     item["category_name_en"] = get_en_or_translate(item.get("category_name_en"), item.get("category_name"))
-    item["upsell_drink_en"] = get_en_or_translate(item.get("upsell_drink_en"), item.get("upsell_drink"))
-    item["upsell_dessert_en"] = get_en_or_translate(item.get("upsell_dessert_en"), item.get("upsell_dessert"))
-    item["upsell_side_en"] = get_en_or_translate(item.get("upsell_side_en"), item.get("upsell_side"))
+
+    if can_use_upsell:
+        item["upsell_drink_en"] = get_en_or_translate(item.get("upsell_drink_en"), item.get("upsell_drink"))
+        item["upsell_dessert_en"] = get_en_or_translate(item.get("upsell_dessert_en"), item.get("upsell_dessert"))
+        item["upsell_side_en"] = get_en_or_translate(item.get("upsell_side_en"), item.get("upsell_side"))
+    else:
+        item["upsell_drink"] = ""
+        item["upsell_dessert"] = ""
+        item["upsell_side"] = ""
+        item["upsell_drink_en"] = ""
+        item["upsell_dessert_en"] = ""
+        item["upsell_side_en"] = ""
 
     return item
 
@@ -176,7 +193,7 @@ def get_menu_items_by_category(tenant_id, category_id, include_inactive=False):
         """, (tenant_id, category_id)).fetchall()
 
     db.close()
-    return [normalize_item_row(r) for r in rows]
+    return [normalize_item_row(r, tenant_id=tenant_id) for r in rows]
 
 
 def get_full_menu(tenant_id, include_inactive=False):
@@ -212,7 +229,7 @@ def get_all_menu_items(tenant_id):
     """, (tenant_id,)).fetchall()
     db.close()
 
-    return [normalize_item_row(r) for r in rows]
+    return [normalize_item_row(r, tenant_id=tenant_id) for r in rows]
 
 
 def get_search_aliases():
@@ -812,6 +829,18 @@ def create_menu_item(
     upsell_dessert_en="",
     upsell_side_en=""
 ):
+    
+    if not tenant_has_feature(tenant_id, "product_images"):
+        image_url = ""
+
+    if not tenant_has_feature(tenant_id, "upsell"):
+        upsell_drink = ""
+        upsell_dessert = ""
+        upsell_side = ""
+        upsell_drink_en = ""
+        upsell_dessert_en = ""
+        upsell_side_en = ""
+
     image_url = clean_image_url(image_url)
 
     name_en = get_en_or_translate(name_en, name)
@@ -863,7 +892,7 @@ def get_menu_item_by_id(item_id, tenant_id):
         LIMIT 1
     """, (item_id, tenant_id)).fetchone()
     db.close()
-    return normalize_item_row(row) if row else None
+    return normalize_item_row(row, tenant_id=tenant_id) if row else None
 
 
 def update_menu_category(category_id, tenant_id, name, sort_order=0, name_en=""):
@@ -899,6 +928,18 @@ def update_menu_item(
     upsell_dessert_en="",
     upsell_side_en=""
 ):
+    if not tenant_has_feature(tenant_id, "product_images"):
+        current_item = get_menu_item_by_id(item_id, tenant_id)
+        image_url = current_item.get("image_url", "") if current_item else ""
+
+    if not tenant_has_feature(tenant_id, "upsell"):
+        upsell_drink = ""
+        upsell_dessert = ""
+        upsell_side = ""
+        upsell_drink_en = ""
+        upsell_dessert_en = ""
+        upsell_side_en = ""
+        
     image_url = clean_image_url(image_url)
 
     name_en = get_en_or_translate(name_en, name)

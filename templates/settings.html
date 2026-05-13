@@ -185,13 +185,28 @@
             </div>
 
             <div class="settings-readonly-row">
-                <div>
-                    <strong>Upsell</strong>
-                    <span>Продажбени предложения</span>
-                </div>
-                <em>{% if tenant_has_upsell %}Активно{% else %}Неактивно{% endif %}</em>
-            </div>
-        </div>
+    <div>
+        <strong>AI Chat</strong>
+        <span>Smart food answers и AI отговори</span>
+    </div>
+    <em>{% if tenant_has_ai_chat %}Активно{% else %}Неактивно{% endif %}</em>
+</div>
+
+<div class="settings-readonly-row">
+    <div>
+        <strong>Upsell</strong>
+        <span>Продажбени предложения</span>
+    </div>
+    <em>{% if tenant_has_upsell %}Активно{% else %}Неактивно{% endif %}</em>
+</div>
+
+<div class="settings-readonly-row">
+    <div>
+        <strong>Premium analytics</strong>
+        <span>Разширени анализи и conversion статистики</span>
+    </div>
+    <em>{% if tenant_has_premium_analytics %}Активно{% else %}Неактивно{% endif %}</em>
+</div>
     </div>
 
     <div class="settings-panel" id="reservation-settings">
@@ -297,7 +312,7 @@
 
 {% if role == "super_admin" %}
 <div class="settings-admin-note">
-    🔒 Само Super Admin вижда и управлява AI системните настройки.
+    🔒 Super Admin управлява плановете от секция „Бизнеси“. Тук настройките се заключват автоматично според Basic / Standard / Premium.
 </div>
 {% endif %}
 

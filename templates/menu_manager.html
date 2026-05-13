@@ -11,6 +11,8 @@
 {% include "partials/sidebar.html" %}
 
 <main class="premium-main menu-premium-page">
+    {% set can_use_product_images = tenant_has_product_images %}
+    {% set can_use_upsell = tenant_has_upsell %}
 
 <header class="premium-topbar">
     <div>
@@ -81,29 +83,40 @@
         </div>
     </div>
 
-    <div class="menu-stat-card">
-        <div class="menu-stat-icon purple">🖼️</div>
-        <div>
-            <strong>{{ ns.with_images }}</strong>
-            <span>Със снимка</span>
-        </div>
+    {% if can_use_product_images %}
+<div class="menu-stat-card">
+    <div class="menu-stat-icon purple">🖼️</div>
+    <div>
+        <strong>{{ ns.with_images }}</strong>
+        <span>Със снимка</span>
     </div>
+</div>
+{% endif %}
 
-    <div class="menu-stat-card">
-        <div class="menu-stat-icon orange">💸</div>
-        <div>
-            <strong>{{ ns.with_upsell }}</strong>
-            <span>С upsell</span>
-        </div>
+{% if can_use_upsell %}
+<div class="menu-stat-card">
+    <div class="menu-stat-icon orange">💸</div>
+    <div>
+        <strong>{{ ns.with_upsell }}</strong>
+        <span>С upsell</span>
     </div>
+</div>
+{% endif %}
+
 </section>
 
 <section class="menu-tabs">
     <button class="menu-tab active" type="button" data-filter="all">Всички</button>
     <button class="menu-tab" type="button" data-filter="active">Активни</button>
     <button class="menu-tab" type="button" data-filter="inactive">Скрити</button>
-    <button class="menu-tab" type="button" data-filter="images">Със снимки</button>
-    <button class="menu-tab" type="button" data-filter="upsell">Upsell</button>
+    {% if can_use_product_images %}
+<button class="menu-tab" type="button" data-filter="images">Със снимки</button>
+{% endif %}
+
+{% if can_use_upsell %}
+<button class="menu-tab" type="button" data-filter="upsell">Upsell</button>
+{% endif %}
+
 </section>
 
 <section class="menu-workspace">
@@ -357,31 +370,34 @@
                     <input type="number" name="sort_order" value="0">
                 </div>
 
-                <div class="settings-field">
-                    <label>Снимка от линк</label>
-                    <input type="text" name="image_url">
-                </div>
+                {% if can_use_product_images %}
+<div class="settings-field">
+    <label>Снимка от линк</label>
+    <input type="text" name="image_url">
+</div>
 
-                <div class="settings-field">
-                    <label>Качи снимка</label>
-                    <input type="file" name="image_file" accept="image/*">
-                </div>
+<div class="settings-field">
+    <label>Качи снимка</label>
+    <input type="file" name="image_file" accept="image/*">
+</div>
+{% endif %}
 
-                <div class="settings-field">
-                    <label>Upsell напитка</label>
-                    <input type="text" name="upsell_drink">
-                </div>
+{% if can_use_upsell %}
+<div class="settings-field">
+    <label>Upsell напитка</label>
+    <input type="text" name="upsell_drink">
+</div>
 
-                <div class="settings-field">
-                    <label>Upsell десерт</label>
-                    <input type="text" name="upsell_dessert">
-                </div>
+<div class="settings-field">
+    <label>Upsell десерт</label>
+    <input type="text" name="upsell_dessert">
+</div>
 
-                <div class="settings-field">
-                    <label>Upsell добавка</label>
-                    <input type="text" name="upsell_side">
-                </div>
-            </div>
+<div class="settings-field">
+    <label>Upsell добавка</label>
+    <input type="text" name="upsell_side">
+</div>
+{% endif %}
 
             <div class="modal-actions">
                 <button class="save-btn" type="submit">➕ Добави</button>
@@ -470,37 +486,41 @@
                     <input type="number" name="sort_order" value="{{ item['sort_order'] or 0 }}">
                 </div>
 
-                <div class="settings-field">
-                    <label>Снимка от линк</label>
-                    <input type="text" name="image_url" value="{{ item['image_url'] or '' }}">
-                </div>
+                {% if can_use_product_images %}
+<div class="settings-field">
+    <label>Снимка от линк</label>
+    <input type="text" name="image_url" value="{{ item['image_url'] or '' }}">
+</div>
 
-                <div class="settings-field">
-                    <label>Качи нова снимка</label>
-                    <input type="file" name="image_file" accept="image/*">
-                </div>
+<div class="settings-field">
+    <label>Качи нова снимка</label>
+    <input type="file" name="image_file" accept="image/*">
+</div>
 
-                {% if item["image_url"] %}
-                <div class="settings-field settings-full">
-                    <label>Текуща снимка</label>
-                    <img class="menu-preview" src="{{ item['image_url'] }}" alt="{{ item['name'] }}">
-                </div>
-                {% endif %}
+{% if item["image_url"] %}
+<div class="settings-field settings-full">
+    <label>Текуща снимка</label>
+    <img class="menu-preview" src="{{ item['image_url'] }}" alt="{{ item['name'] }}">
+</div>
+{% endif %}
+{% endif %}
 
-                <div class="settings-field">
-                    <label>Upsell напитка</label>
-                    <input type="text" name="upsell_drink" value="{{ item['upsell_drink'] or '' }}">
-                </div>
+{% if can_use_upsell %}
+<div class="settings-field">
+    <label>Upsell напитка</label>
+    <input type="text" name="upsell_drink" value="{{ item['upsell_drink'] or '' }}">
+</div>
 
-                <div class="settings-field">
-                    <label>Upsell десерт</label>
-                    <input type="text" name="upsell_dessert" value="{{ item['upsell_dessert'] or '' }}">
-                </div>
+<div class="settings-field">
+    <label>Upsell десерт</label>
+    <input type="text" name="upsell_dessert" value="{{ item['upsell_dessert'] or '' }}">
+</div>
 
-                <div class="settings-field">
-                    <label>Upsell добавка</label>
-                    <input type="text" name="upsell_side" value="{{ item['upsell_side'] or '' }}">
-                </div>
+<div class="settings-field">
+    <label>Upsell добавка</label>
+    <input type="text" name="upsell_side" value="{{ item['upsell_side'] or '' }}">
+</div>
+{% endif %}
             </div>
 
             <div class="modal-actions">

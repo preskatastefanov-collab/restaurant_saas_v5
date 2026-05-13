@@ -237,7 +237,7 @@
 </div>
     </section>
 
-    {% if role == "super_admin" or role == "owner" %}
+    {% if tenant_has_premium_analytics %}
     <div class="premium-info-banner">
         📊 Analytics показателите са за активния бизнес.
     </div>
