@@ -6161,3 +6161,242 @@ body.landing-page .pricing-feature-panel.premium-panel {
         grid-template-columns: 1fr;
     }
 }
+
+/* ===== DEMO REQUEST PREMIUM REDESIGN ===== */
+
+body.landing-page .demo-request-premium {
+    margin-top: 110px;
+    padding: 0;
+    min-height: 720px;
+    display: grid;
+    grid-template-columns: 0.92fr 1.08fr;
+    gap: 70px;
+    align-items: center;
+    background:
+        radial-gradient(circle at 24% 72%, rgba(37,99,235,0.20), transparent 30%),
+        radial-gradient(circle at 73% 22%, rgba(124,58,237,0.16), transparent 28%);
+    border: none;
+    box-shadow: none;
+}
+
+body.landing-page .demo-request-premium-left {
+    position: relative;
+}
+
+body.landing-page .demo-request-kicker {
+    display: block;
+    margin-bottom: 22px;
+    color: #3b82f6;
+    font-size: 16px;
+    font-weight: 950;
+    letter-spacing: 6px;
+}
+
+body.landing-page .demo-request-premium-left h2 {
+    max-width: 640px;
+    margin: 0 0 26px;
+    color: white;
+    font-size: clamp(46px, 5vw, 70px);
+    line-height: 1.08;
+    letter-spacing: -2px;
+    font-weight: 950;
+    text-shadow: 0 18px 60px rgba(0,0,0,0.42);
+}
+
+body.landing-page .demo-request-premium-left p {
+    max-width: 620px;
+    margin: 0;
+    color: rgba(255,255,255,0.84);
+    font-size: 25px;
+    line-height: 1.45;
+    font-weight: 500;
+}
+
+body.landing-page .demo-request-orb-wrap {
+    position: relative;
+    width: 520px;
+    max-width: 100%;
+    height: 260px;
+    margin-top: 58px;
+}
+
+body.landing-page .demo-request-orb-wrap::before,
+body.landing-page .demo-request-orb-wrap::after {
+    content: "";
+    position: absolute;
+    inset: 20px 0;
+    border-radius: 50%;
+    border: 1px solid rgba(59,130,246,0.28);
+    transform: rotate(-12deg);
+    filter: drop-shadow(0 0 18px rgba(37,99,235,0.55));
+}
+
+body.landing-page .demo-request-orb-wrap::after {
+    inset: 42px 28px;
+    transform: rotate(16deg);
+    border-color: rgba(124,58,237,0.34);
+}
+
+body.landing-page .demo-request-chat-orb {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    width: 190px;
+    height: 140px;
+    transform: translate(-50%, -50%);
+    border-radius: 44px;
+    border: 7px solid rgba(129,185,255,0.98);
+    box-shadow:
+        0 0 24px rgba(96,165,250,0.95),
+        0 0 80px rgba(37,99,235,0.78),
+        0 0 130px rgba(124,58,237,0.52);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 18px;
+    background:
+        radial-gradient(circle at 50% 40%, rgba(96,165,250,0.28), transparent 48%),
+        rgba(3,10,28,0.55);
+}
+
+body.landing-page .demo-request-chat-orb::after {
+    content: "";
+    position: absolute;
+    left: 42px;
+    bottom: -34px;
+    width: 44px;
+    height: 44px;
+    border-left: 7px solid rgba(129,185,255,0.98);
+    border-bottom: 7px solid rgba(129,185,255,0.98);
+    border-radius: 0 0 0 18px;
+    transform: skewX(-18deg);
+    filter: drop-shadow(0 0 18px rgba(96,165,250,0.8));
+}
+
+body.landing-page .demo-request-chat-orb span {
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    background: #8bbcff;
+    box-shadow: 0 0 22px rgba(147,197,253,0.95);
+}
+
+body.landing-page .demo-request-premium-right {
+    width: 100%;
+}
+
+body.landing-page .premium-demo-form {
+    padding: 36px;
+    border-radius: 30px;
+    background:
+        radial-gradient(circle at top left, rgba(37,99,235,0.16), transparent 34%),
+        rgba(3,10,28,0.82);
+    border: 1px solid rgba(96,165,250,0.32);
+    box-shadow:
+        inset 0 0 0 1px rgba(255,255,255,0.02),
+        0 0 40px rgba(37,99,235,0.12),
+        0 30px 95px rgba(0,0,0,0.35);
+    gap: 16px;
+}
+
+body.landing-page .premium-demo-form input,
+body.landing-page .premium-demo-form select,
+body.landing-page .premium-demo-form textarea {
+    min-height: 68px;
+    border-radius: 18px;
+    padding: 0 24px;
+    background: rgba(15,23,42,0.72);
+    border: 1px solid rgba(96,165,250,0.26);
+    color: white;
+    font-size: 23px;
+    font-weight: 500;
+    outline: none;
+}
+
+body.landing-page .premium-demo-form textarea {
+    min-height: 142px;
+    padding-top: 22px;
+    resize: vertical;
+}
+
+body.landing-page .premium-demo-form input::placeholder,
+body.landing-page .premium-demo-form textarea::placeholder {
+    color: rgba(255,255,255,0.58);
+}
+
+body.landing-page .premium-demo-form select {
+    color: rgba(255,255,255,0.68);
+}
+
+body.landing-page .premium-demo-form input:focus,
+body.landing-page .premium-demo-form select:focus,
+body.landing-page .premium-demo-form textarea:focus {
+    border-color: rgba(96,165,250,0.76);
+    box-shadow: 0 0 0 4px rgba(37,99,235,0.16);
+}
+
+body.landing-page .premium-demo-form button {
+    min-height: 82px;
+    margin-top: 8px;
+    border-radius: 18px;
+    background: linear-gradient(135deg, #3b82f6, #4f46e5, #6d28d9);
+    color: white;
+    font-size: 32px;
+    font-weight: 950;
+    box-shadow:
+        0 18px 55px rgba(37,99,235,0.34),
+        0 0 34px rgba(124,58,237,0.24);
+}
+
+body.landing-page .premium-demo-benefits {
+    margin-top: 34px;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 22px 42px;
+}
+
+body.landing-page .premium-demo-benefits span {
+    color: rgba(255,255,255,0.92);
+    font-size: 23px;
+    line-height: 1.3;
+    font-weight: 500;
+}
+
+@media (max-width: 980px) {
+    body.landing-page .demo-request-premium {
+        grid-template-columns: 1fr;
+        gap: 38px;
+        min-height: auto;
+    }
+
+    body.landing-page .premium-demo-benefits {
+        grid-template-columns: 1fr;
+    }
+}
+
+@media (max-width: 560px) {
+    body.landing-page .demo-request-premium-left h2 {
+        font-size: 40px;
+    }
+
+    body.landing-page .demo-request-premium-left p,
+    body.landing-page .premium-demo-benefits span {
+        font-size: 18px;
+    }
+
+    body.landing-page .premium-demo-form {
+        padding: 22px;
+    }
+
+    body.landing-page .premium-demo-form input,
+    body.landing-page .premium-demo-form select,
+    body.landing-page .premium-demo-form textarea {
+        font-size: 17px;
+        min-height: 58px;
+    }
+
+    body.landing-page .premium-demo-form button {
+        min-height: 64px;
+        font-size: 24px;
+    }
+}

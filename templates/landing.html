@@ -489,50 +489,63 @@ function togglePlanFeatures(plan) {
 }
 </script>
 
-<section class="landing-demo-request" id="demo-request">
-    <div class="landing-demo-request-text">
-        <span class="landing-badge">Заяви демо</span>
-        <h2>Искаш такъв AI chatbot за твоето заведение?</h2>
+<section class="landing-demo-request demo-request-premium" id="demo-request">
+    <div class="landing-demo-request-text demo-request-premium-left">
+        <span class="demo-request-kicker">ЗАЯВИ ДЕМО</span>
+
+        <h2>Искаш такъв AI chatbot<br>за твоето заведение?</h2>
+
         <p>
             Остави данни и ще се свържем с теб за кратко демо.
-            Подходящо е за ресторанти, барове, кафенета, пицарии и други заведения.
+            Подходящо е за ресторанти, барове, кафенета, пицарии
+            и други заведения.
         </p>
 
-        <div class="demo-request-benefits">
+        <div class="demo-request-orb-wrap">
+            <div class="demo-request-chat-orb">
+                <span></span>
+                <span></span>
+                <span></span>
+            </div>
+        </div>
+    </div>
+
+    <div class="demo-request-premium-right">
+        <form class="demo-request-form premium-demo-form" method="POST" action="/demo-request">
+            {% if demo_success %}
+                <div class="demo-form-success">✅ Заявката е изпратена успешно. Ще се свържем с Вас.</div>
+            {% endif %}
+
+            {% if demo_error %}
+                <div class="demo-form-error">⚠️ Моля, въведете име на бизнес и телефон.</div>
+            {% endif %}
+
+            <input name="business_name" placeholder="Име на заведението *" required>
+            <input name="contact_name" placeholder="Вашето име">
+            <input name="phone" placeholder="Телефон *" required>
+            <input name="email" placeholder="Email">
+
+            <select name="business_type">
+                <option value="">Тип бизнес</option>
+                <option value="restaurant">Ресторант</option>
+                <option value="bar">Бар</option>
+                <option value="cafe">Кафене</option>
+                <option value="pizzeria">Пицария</option>
+                <option value="fast_food">Бързо хранене</option>
+                <option value="other">Друго</option>
+            </select>
+
+            <textarea name="message" placeholder="Кратко съобщение или какво искате да автоматизирате"></textarea>
+
+            <button type="submit">🚀 Заяви демо</button>
+        </form>
+
+        <div class="demo-request-benefits premium-demo-benefits">
             <span>✅ Безплатна демонстрация</span>
             <span>✅ Персонализирано меню</span>
             <span>✅ AI препоръки и резервации</span>
         </div>
     </div>
-
-    <form class="demo-request-form" method="POST" action="/demo-request">
-        {% if demo_success %}
-            <div class="demo-form-success">✅ Заявката е изпратена успешно. Ще се свържем с Вас.</div>
-        {% endif %}
-
-        {% if demo_error %}
-            <div class="demo-form-error">⚠️ Моля, въведете име на бизнес и телефон.</div>
-        {% endif %}
-
-        <input name="business_name" placeholder="Име на заведението *" required>
-        <input name="contact_name" placeholder="Вашето име">
-        <input name="phone" placeholder="Телефон *" required>
-        <input name="email" placeholder="Email">
-
-        <select name="business_type">
-            <option value="">Тип бизнес</option>
-            <option value="restaurant">Ресторант</option>
-            <option value="bar">Бар</option>
-            <option value="cafe">Кафене</option>
-            <option value="pizzeria">Пицария</option>
-            <option value="fast_food">Бързо хранене</option>
-            <option value="other">Друго</option>
-        </select>
-
-        <textarea name="message" placeholder="Кратко съобщение или какво искате да автоматизирате"></textarea>
-
-        <button type="submit">🚀 Заяви демо</button>
-    </form>
 </section>
 
 <section class="landing-final-cta">
