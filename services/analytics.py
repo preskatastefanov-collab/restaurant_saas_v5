@@ -1,9 +1,13 @@
+from services.tenants import tenant_has_feature
 from database import get_db
 import json
 from datetime import datetime, timedelta
 
 
 def log_event(tenant_id, event_type, payload=None):
+    if not tenant_has_feature(tenant_id, "premium_analytics"):
+        return
+
     payload_text = ""
 
     if payload is not None:

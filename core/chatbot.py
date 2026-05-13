@@ -486,6 +486,20 @@ class ChatBot:
     def is_menu_category_message(self, text):
         text = self.translate_common_english_items(text)
         return find_menu_category_match(self.tenant_id, text) is not None
+    
+    def is_exact_category_choice(self, text):
+        search_text = self.translate_common_english_items(text).lower().strip()
+        category = find_menu_category_match(self.tenant_id, search_text)
+
+        if not category:
+            return False
+
+        names = [
+            (category.get("name") or "").lower().strip(),
+            (category.get("name_en") or "").lower().strip(),
+        ]
+
+        return search_text in names
 
     def is_reservation_in_progress(self):
         c = self.context
@@ -799,6 +813,9 @@ class ChatBot:
 
             tenant_has_ai_chat = tenant_has_feature(self.tenant_id, "ai_chat")
             tenant_has_upsell = tenant_has_feature(self.tenant_id, "upsell")
+            tenant_has_smart_food_answers = tenant_has_feature(self.tenant_id, "smart_food_answers")
+            tenant_has_product_images = tenant_has_feature(self.tenant_id, "product_images")
+            tenant_has_sales_recommendations = tenant_has_feature(self.tenant_id, "sales_recommendations")
 
             llm_enabled = 1 if (
                 tenant_has_ai_chat and
@@ -846,11 +863,24 @@ class ChatBot:
                     self.default_buttons()
                 )
 
-            followup_response = self.handle_upsell_followup(normalized_message)
+            followup_response = None
+
+            if tenant_has_product_images or tenant_has_upsell:
+                followup_response = self.handle_upsell_followup(normalized_message)
+
             if followup_response:
                 return followup_response
 
             if self.looks_like_image_request(normalized_message):
+                if not tenant_has_product_images:
+                    return self.make_response(
+                        self.tr(
+                            "📸 Снимките на продуктите са налични в Premium плана.\n\nМога да ви покажа менюто или да помогна с резервация 😊",
+                            "📸 Product photos are available in the Premium plan.\n\nI can show you the menu or help with a reservation 😊"
+                        ),
+                        self.default_buttons()
+                    )
+
                 item = self.find_item_by_text(normalized_message) or self.context.get("last_recommended_item")
 
                 if item:
@@ -896,8 +926,30 @@ class ChatBot:
                 )
             if exact_item_response:
                 return exact_item_response
-
+            
+            if (
+                not tenant_has_smart_food_answers
+                and self.looks_like_food_question(normalized_message)
+                and not self.is_exact_category_choice(normalized_message)
+            ):
+                return self.make_response(
+                    self.tr(
+                        "🍽️ Можете да разгледате менюто или да изберете категория 😊",
+                        "🍽️ You can browse the menu or choose a category 😊"
+                    ),
+                    [self.tr("Меню", "Menu"), self.tr("Контакти", "Contact")]
+                )
+            
             if self.looks_like_recommendation_question(normalized_message):
+                if not tenant_has_smart_food_answers:
+                    return self.make_response(
+                        self.tr(
+                            "📋 Мога да ви покажа менюто и категориите.\n\nSmart AI препоръките са налични в Standard и Premium плана.",
+                            "📋 I can show you the menu and categories.\n\nSmart AI recommendations are available in the Standard and Premium plan."
+                        ),
+                        [self.tr("Меню", "Menu"), self.tr("Контакти", "Contact")]
+                    )
+
                 smart_response = self.handle_smart_recommendations(
                     normalized_message,
                     upsell_enabled=tenant_has_upsell
@@ -968,6 +1020,15 @@ class ChatBot:
                     return llm_response
 
             if self.looks_like_food_question(normalized_message):
+                if not tenant_has_smart_food_answers:
+                    return self.make_response(
+                        self.tr(
+                            "📋 Мога да ви покажа менюто по категории.\n\nЗа AI препоръки според вкус, бюджет или предпочитания е нужен Standard или Premium план.",
+                            "📋 I can show you the menu categories.\n\nAI recommendations by taste, budget or preferences require the Standard or Premium plan."
+                        ),
+                        [self.tr("Меню", "Menu"), self.tr("Контакти", "Contact")]
+                    )
+
                 smart_response = self.handle_smart_recommendations(
                     normalized_message,
                     upsell_enabled=tenant_has_upsell
