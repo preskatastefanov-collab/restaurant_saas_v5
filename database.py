@@ -116,9 +116,17 @@ def init_db():
         business_type TEXT DEFAULT '',
         message TEXT DEFAULT '',
         status TEXT DEFAULT 'new',
+        plan_interest TEXT DEFAULT '',
+        budget TEXT DEFAULT '',
+        lead_source TEXT DEFAULT '',
+        priority TEXT DEFAULT 'normal',
+        admin_note TEXT DEFAULT '',
+        handled_by TEXT DEFAULT '',
+        next_contact TEXT DEFAULT '',
+        updated_at TEXT DEFAULT '',
         created_at TEXT DEFAULT CURRENT_TIMESTAMP
-    )
-    """)
+)
+""")
 
     c.execute("""
     CREATE TABLE IF NOT EXISTS reservations (
@@ -223,6 +231,14 @@ def init_db():
     add_column_if_missing(c, "password_reset_requests", "admin_note", "admin_note TEXT DEFAULT ''")
     add_column_if_missing(c, "password_reset_requests", "handled_by", "handled_by TEXT DEFAULT ''")
     add_column_if_missing(c, "password_reset_requests", "updated_at", "updated_at TEXT DEFAULT ''")
+    add_column_if_missing(c, "demo_requests", "plan_interest", "plan_interest TEXT DEFAULT ''")
+    add_column_if_missing(c, "demo_requests", "budget", "budget TEXT DEFAULT ''")
+    add_column_if_missing(c, "demo_requests", "lead_source", "lead_source TEXT DEFAULT ''")
+    add_column_if_missing(c, "demo_requests", "priority", "priority TEXT DEFAULT 'normal'")
+    add_column_if_missing(c, "demo_requests", "admin_note", "admin_note TEXT DEFAULT ''")
+    add_column_if_missing(c, "demo_requests", "handled_by", "handled_by TEXT DEFAULT ''")
+    add_column_if_missing(c, "demo_requests", "next_contact", "next_contact TEXT DEFAULT ''")
+    add_column_if_missing(c, "demo_requests", "updated_at", "updated_at TEXT DEFAULT ''")
 
     conn.commit()
     conn.close()

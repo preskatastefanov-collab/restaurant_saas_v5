@@ -479,6 +479,104 @@ def demo_requests():
         active_business=get_active_tenant_info()
     )
 
+@app.route("/demo-requests/mark-done", methods=["POST"])
+def mark_demo_request_done():
+    user = current_user()
+
+    if not user:
+        return redirect("/login")
+
+    if not has_role("super_admin"):
+        return redirect("/dashboard")
+
+    request_id = safe_int(request.form.get("request_id"))
+
+    db = get_db()
+    db.execute("""
+        UPDATE demo_requests
+        SET status = 'client',
+            handled_by = ?,
+            updated_at = CURRENT_TIMESTAMP
+        WHERE id = ?
+    """, (user["username"], request_id))
+    db.commit()
+    db.close()
+
+    return redirect("/demo-requests")
+
+@app.route("/demo-requests/edit", methods=["POST"])
+def edit_demo_request():
+    user = current_user()
+
+    if not user:
+        return redirect("/login")
+
+    if not can_manage_demo_requests():
+        return redirect("/dashboard")
+
+    request_id = safe_int(request.form.get("request_id"))
+
+    db = get_db()
+    db.execute("""
+        UPDATE demo_requests
+        SET business_name = ?,
+            contact_name = ?,
+            phone = ?,
+            email = ?,
+            business_type = ?,
+            message = ?,
+            status = ?,
+            plan_interest = ?,
+            budget = ?,
+            lead_source = ?,
+            priority = ?,
+            admin_note = ?,
+            handled_by = ?,
+            next_contact = ?,
+            updated_at = CURRENT_TIMESTAMP
+        WHERE id = ?
+    """, (
+        request.form.get("business_name", "").strip(),
+        request.form.get("contact_name", "").strip(),
+        request.form.get("phone", "").strip(),
+        request.form.get("email", "").strip(),
+        request.form.get("business_type", "").strip(),
+        request.form.get("message", "").strip(),
+        request.form.get("status", "new").strip(),
+        request.form.get("plan_interest", "").strip(),
+        request.form.get("budget", "").strip(),
+        request.form.get("lead_source", "").strip(),
+        request.form.get("priority", "normal").strip(),
+        request.form.get("admin_note", "").strip(),
+        user["username"],
+        request.form.get("next_contact", "").strip(),
+        request_id
+    ))
+
+    db.commit()
+    db.close()
+
+    return redirect("/demo-requests")
+
+
+@app.route("/demo-requests/delete", methods=["POST"])
+def delete_demo_request():
+    user = current_user()
+
+    if not user:
+        return redirect("/login")
+
+    if not can_manage_demo_requests():
+        return redirect("/dashboard")
+
+    request_id = safe_int(request.form.get("request_id"))
+
+    db = get_db()
+    db.execute("DELETE FROM demo_requests WHERE id = ?", (request_id,))
+    db.commit()
+    db.close()
+
+    return redirect("/demo-requests")
 
 @app.route("/password-requests/mark-done", methods=["POST"])
 def mark_password_request_done():

@@ -7118,3 +7118,92 @@ body.landing-page .landing-footer {
     font-size: 15px;
     padding: 0 12px;
 }
+
+/* ===== DEMO REQUESTS CRM ===== */
+
+.demo-requests-page .premium-table-card {
+    overflow: hidden;
+}
+
+.demo-requests-page .premium-table-wrap {
+    width: 100%;
+    overflow-x: auto !important;
+    overflow-y: hidden;
+    border-radius: 24px;
+}
+
+.demo-requests-page .premium-table {
+    min-width: 1750px;
+    width: 1750px;
+    table-layout: fixed;
+}
+
+.demo-requests-page .premium-table th,
+.demo-requests-page .premium-table td {
+    padding: 17px 10px;
+    text-align: center;
+    vertical-align: middle;
+    white-space: normal;
+    word-break: break-word;
+    font-size: 14px;
+}
+
+.demo-requests-page .premium-table th {
+    font-size: 15px;
+}
+
+.demo-requests-page .premium-row-actions {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 7px;
+    flex-wrap: nowrap;
+}
+
+.demo-requests-page .premium-row-actions form {
+    margin: 0;
+}
+
+.demo-requests-page .premium-row-actions button,
+.demo-requests-page .premium-row-actions a {
+    width: 44px;
+    height: 44px;
+    min-width: 44px;
+    border-radius: 14px;
+    border: none;
+    background: linear-gradient(180deg, #4f9cff, #2677f2);
+    color: white;
+    font-size: 19px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    text-decoration: none;
+}
+
+.demo-requests-page .premium-row-actions button.delete {
+    background: linear-gradient(180deg, #ff6666, #ef4444);
+}
+
+.crm-badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 38px;
+    min-width: 110px;
+    padding: 0 12px;
+    border-radius: 999px;
+    color: white;
+    font-size: 14px;
+    font-weight: 900;
+}
+
+.crm-new { background: linear-gradient(180deg, #8b5cf6, #6d28d9); }
+.crm-contacted { background: linear-gradient(180deg, #3b82f6, #2563eb); }
+.crm-demo { background: linear-gradient(180deg, #f59e0b, #d97706); }
+.crm-negotiation { background: linear-gradient(180deg, #f97316, #ea580c); }
+.crm-client { background: linear-gradient(180deg, #22c55e, #16a34a); }
+.crm-rejected { background: linear-gradient(180deg, #ef4444, #dc2626); }
+
+.priority-high { background: linear-gradient(180deg, #ef4444, #dc2626); }
+.priority-normal { background: linear-gradient(180deg, #f59e0b, #d97706); }
+.priority-low { background: linear-gradient(180deg, #22c55e, #16a34a); }

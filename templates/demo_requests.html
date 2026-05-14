@@ -1,121 +1,466 @@
 <!DOCTYPE html>
 <html lang="bg">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Demo заявки | Reservy</title>
-    <link rel="stylesheet" href="/static/style.css">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Demo заявки | Reservy</title>
+<link rel="stylesheet" href="/static/style.css">
 </head>
 
-<body class="app-layout">
+<body class="app-layout demo-requests-page">
 
-<aside class="premium-sidebar">
-    <div class="brand-box">
-        <div class="brand-icon">R</div>
-        <div>
-            <div class="brand-name">reservy</div>
-            <div class="brand-subtitle">SMART RESERVATIONS</div>
-        </div>
-    </div>
-
-    <nav class="premium-nav">
-        <a class="premium-nav-link" href="/dashboard">🏠 Табло</a>
-        <a class="premium-nav-link" href="/restaurants">🏢 Бизнеси</a>
-        <a class="premium-nav-link" href="/users">👥 Потребители</a>
-        <a class="premium-nav-link" href="/menu-manager">📋 Меню</a>
-        <a class="premium-nav-link" href="/settings">⚙️ Настройки</a>
-        <a class="premium-nav-link active" href="/demo-requests">🚀 Demo заявки</a>
-        <a class="premium-nav-link" href="/password-requests">🔐 Заявки пароли</a>
-    </nav>
-
-    <div class="premium-user-box">
-        <div class="premium-avatar">AD</div>
-        <div>
-            <strong>{{ session["user"]["username"] }}</strong>
-            <span>{{ role }}</span>
-        </div>
-    </div>
-</aside>
+{% include "partials/sidebar.html" %}
 
 <main class="premium-main">
 
-    <header class="premium-topbar">
-        <div>
-            <span class="muted-label">Влязъл като</span>
-            <strong>{{ session["user"]["username"] }}</strong>
-            <span class="role-pill role-{{ role }}">{{ role }}</span>
-        </div>
+<header class="premium-topbar">
+    <div>
+        <span class="muted-label">Влязъл като</span>
+        <strong>{{ session["user"]["username"] }}</strong>
+        <span class="role-pill role-{{ role }}">{{ role }}</span>
+    </div>
 
-        <a class="logout-btn" href="/logout">🚪 Изход</a>
-    </header>
+    <a class="logout-btn" href="/logout">🚪 Изход</a>
+</header>
 
-    <section class="premium-table-card">
-        <div class="premium-section-head">
-            <div>
-                <h2>🚀 Demo заявки</h2>
-                <p>Тук виждаш бизнесите, които са оставили заявка за демо от landing страницата.</p>
-            </div>
-        </div>
+<section class="premium-table-card">
 
-        <div class="premium-table-wrap">
-            <table class="premium-table">
-                <thead>
-                    <tr>
-                        <th>ID</th>
-                        <th>Бизнес</th>
-                        <th>Контакт</th>
-                        <th>Телефон</th>
-                        <th>Email</th>
-                        <th>Тип</th>
-                        <th>Съобщение</th>
-                        <th>Статус</th>
-                        <th>Дата</th>
-                        <th>Действие</th>
-                    </tr>
-                </thead>
+<div class="premium-section-head">
+<div>
+<h2>🚀 Demo CRM</h2>
+<p>Бизнеси, които са поискали демо или разговор.</p>
+</div>
+</div>
 
-                <tbody>
-                    {% if requests %}
-                        {% for r in requests %}
-                        <tr>
-                            <td>{{ r.id }}</td>
-                            <td><strong>{{ r.business_name }}</strong></td>
-                            <td>{{ r.contact_name or "—" }}</td>
-                            <td>{{ r.phone }}</td>
-                            <td>{{ r.email or "—" }}</td>
-                            <td>{{ r.business_type or "—" }}</td>
-                            <td>{{ r.message or "—" }}</td>
-                            <td>
-                                {% if r.status == "done" %}
-                                    <span class="people-badge badge-green">Обработена</span>
-                                {% else %}
-                                    <span class="people-badge badge-orange">Нова</span>
-                                {% endif %}
-                            </td>
-                            <td>{{ r.created_at }}</td>
-                            <td>
-                                {% if r.status != "done" %}
-                                <form method="POST" action="/demo-requests/mark-done">
-                                    <input type="hidden" name="request_id" value="{{ r.id }}">
-                                    <button class="save-btn" type="submit">✅ Маркирай</button>
-                                </form>
-                                {% else %}
-                                    —
-                                {% endif %}
-                            </td>
-                        </tr>
-                        {% endfor %}
-                    {% else %}
-                        <tr>
-                            <td colspan="10" class="empty-state">Няма demo заявки</td>
-                        </tr>
-                    {% endif %}
-                </tbody>
-            </table>
-        </div>
-    </section>
+<div class="premium-table-wrap">
 
+<table class="premium-table">
+
+<thead>
+<tr>
+<th>ID</th>
+<th>Бизнес</th>
+<th>Контакт</th>
+<th>Телефон</th>
+<th>Email</th>
+<th>Тип</th>
+<th>План</th>
+<th>Приоритет</th>
+<th>Статус</th>
+<th>Бележка</th>
+<th>Обработил</th>
+<th>Следващ контакт</th>
+<th>Дата</th>
+<th>Действия</th>
+</tr>
+</thead>
+
+<tbody>
+
+{% if requests %}
+{% for r in requests %}
+
+<tr>
+
+<td>{{r.id}}</td>
+
+<td>
+<strong>{{r.business_name}}</strong>
+</td>
+
+<td>{{r.contact_name or "—"}}</td>
+
+<td>
+<a href="tel:{{r.phone}}">
+{{r.phone}}
+</a>
+</td>
+
+<td>
+
+{% if r.email %}
+<a href="mailto:{{r.email}}">
+{{r.email}}
+</a>
+{% else %}
+—
+{% endif %}
+
+</td>
+
+<td>{{r.business_type or "—"}}</td>
+
+<td>{{r.plan_interest or "—"}}</td>
+
+<td>
+
+{% if r.priority=="high" %}
+<span class="crm-badge priority-high">Висок</span>
+
+{% elif r.priority=="low" %}
+<span class="crm-badge priority-low">Нисък</span>
+
+{% else %}
+<span class="crm-badge priority-normal">Нормален</span>
+{% endif %}
+
+</td>
+
+<td>
+
+{% if r.status=="new" %}
+<span class="crm-badge crm-new">Нова</span>
+
+{% elif r.status=="contacted" %}
+<span class="crm-badge crm-contacted">Контакт</span>
+
+{% elif r.status=="demo" %}
+<span class="crm-badge crm-demo">Demo</span>
+
+{% elif r.status=="negotiation" %}
+<span class="crm-badge crm-negotiation">Преговор</span>
+
+{% elif r.status=="client" %}
+<span class="crm-badge crm-client">Клиент</span>
+
+{% elif r.status=="rejected" %}
+<span class="crm-badge crm-rejected">Отказ</span>
+
+{% endif %}
+
+</td>
+
+<td>{{r.admin_note or "—"}}</td>
+
+<td>{{r.handled_by or "—"}}</td>
+
+<td>{{r.next_contact or "—"}}</td>
+
+<td>{{r.created_at}}</td>
+
+<td>
+
+<div class="premium-row-actions">
+
+<button
+type="button"
+
+onclick='openDemoModal({{
+{
+"id":r.id,
+"business_name":r.business_name,
+"contact_name":r.contact_name,
+"phone":r.phone,
+"email":r.email,
+"business_type":r.business_type,
+"message":r.message,
+"status":r.status,
+"plan_interest":r.plan_interest,
+"priority":r.priority,
+"admin_note":r.admin_note,
+"handled_by":r.handled_by,
+"next_contact":r.next_contact
+}|tojson
+}})'
+
+>
+
+✏️
+
+</button>
+
+<a href="tel:{{r.phone}}">
+📞
+</a>
+
+<form
+method="POST"
+action="/demo-requests/delete"
+onsubmit="return confirm('Изтриване?')"
+>
+
+<input
+type="hidden"
+name="request_id"
+value="{{r.id}}"
+>
+
+<button
+class="delete"
+type="submit"
+>
+
+🗑️
+
+</button>
+
+</form>
+
+</div>
+
+</td>
+
+</tr>
+
+{% endfor %}
+{% else %}
+
+<tr>
+<td colspan="14" class="empty-state">
+
+Няма demo заявки
+
+</td>
+</tr>
+
+{% endif %}
+
+</tbody>
+
+</table>
+
+</div>
+</section>
 </main>
+
+
+<div id="demoModal" class="modal">
+
+<div class="modal-content premium-modal">
+
+<div class="premium-modal-header">
+
+<div class="premium-modal-icon">
+🚀
+</div>
+
+<div>
+<h2>Редакция</h2>
+<p>CRM информация за клиента</p>
+</div>
+
+</div>
+
+
+<form method="POST" action="/demo-requests/edit">
+
+<input
+id="editRequestId"
+name="request_id"
+type="hidden"
+>
+
+
+<div class="settings-form-grid">
+
+<div class="settings-field">
+<label>Бизнес</label>
+<input id="businessName" name="business_name">
+</div>
+
+
+<div class="settings-field">
+<label>Контакт</label>
+<input id="contactName" name="contact_name">
+</div>
+
+
+<div class="settings-field">
+<label>Телефон</label>
+<input id="phone" name="phone">
+</div>
+
+
+<div class="settings-field">
+<label>Email</label>
+<input id="email" name="email">
+</div>
+
+
+<div class="settings-field">
+
+<label>План</label>
+
+<select
+id="plan"
+name="plan_interest"
+>
+
+<option value="">---</option>
+<option>Basic</option>
+<option>Standard</option>
+<option>Premium</option>
+
+</select>
+
+</div>
+
+
+
+<div class="settings-field">
+
+<label>Приоритет</label>
+
+<select
+id="priority"
+name="priority"
+>
+
+<option value="low">
+Нисък
+</option>
+
+<option value="normal">
+Нормален
+</option>
+
+<option value="high">
+Висок
+</option>
+
+</select>
+
+</div>
+
+
+<div class="settings-field">
+
+<label>Статус</label>
+
+<select
+id="status"
+name="status"
+>
+
+<option value="new">Нова</option>
+<option value="contacted">Контакт</option>
+<option value="demo">Demo</option>
+<option value="negotiation">Преговор</option>
+<option value="client">Клиент</option>
+<option value="rejected">Отказ</option>
+
+</select>
+
+</div>
+
+
+<div class="settings-field settings-full">
+
+<label>Админ бележка</label>
+
+<textarea
+id="adminNote"
+name="admin_note"
+></textarea>
+
+</div>
+
+
+<div class="settings-field">
+
+<label>Следващ контакт</label>
+
+<input
+id="nextContact"
+name="next_contact"
+type="date"
+>
+
+</div>
+
+
+</div>
+
+
+<div class="modal-actions">
+
+<button
+class="save-btn"
+type="submit"
+>
+
+💾 Запази
+
+</button>
+
+
+<button
+class="close-btn"
+type="button"
+onclick="closeDemoModal()"
+>
+
+Затвори
+
+</button>
+
+</div>
+
+</form>
+
+</div>
+</div>
+
+
+<script>
+
+function openDemoModal(data){
+
+document.getElementById(
+"demoModal"
+).style.display="flex";
+
+document.getElementById(
+"editRequestId"
+).value=data.id||"";
+
+document.getElementById(
+"businessName"
+).value=data.business_name||"";
+
+document.getElementById(
+"contactName"
+).value=data.contact_name||"";
+
+document.getElementById(
+"phone"
+).value=data.phone||"";
+
+document.getElementById(
+"email"
+).value=data.email||"";
+
+document.getElementById(
+"priority"
+).value=data.priority||"normal";
+
+document.getElementById(
+"status"
+).value=data.status||"new";
+
+document.getElementById(
+"plan"
+).value=data.plan_interest||"";
+
+document.getElementById(
+"adminNote"
+).value=data.admin_note||"";
+
+document.getElementById(
+"nextContact"
+).value=data.next_contact||"";
+
+}
+
+function closeDemoModal(){
+
+document.getElementById(
+"demoModal"
+).style.display="none";
+
+}
+
+</script>
 
 </body>
 </html>
