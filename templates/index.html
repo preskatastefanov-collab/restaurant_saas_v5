@@ -93,52 +93,49 @@
         <span class="launcher-icon">💬</span>
     </button>
 
-    <div id="chatWidget" class="chat-widget hidden">
-        <div id="chatHeader" class="chat-header" style="background: {{ primary_color }};">
-            <div class="chat-header-left">
-                <div class="chat-avatar">
-                    {% if business_type == "restaurant" %}🍽️
-                    {% elif business_type == "cafe" %}☕
-                    {% elif business_type == "bar" %}🍸
-                    {% elif business_type == "pub" %}🍺
-                    {% elif business_type == "pizzeria" %}🍕
-                    {% elif business_type == "fast_food" %}🍔
-                    {% elif business_type == "bakery" %}🥐
-                    {% elif business_type == "sweet_shop" %}🍰
-                    {% elif business_type == "food_truck" %}🚚
-                    {% else %}💬
-                    {% endif %}
-                </div>
-
-                <div>
-                    <div class="chat-title">{{ widget_title }}</div>
-                    <div class="chat-status">● Онлайн / Online</div>
-                </div>
-            </div>
-
-            <div class="chat-header-actions">
-                <div class="chat-lang-switch">
-                    <button id="langBgBtn" class="lang-btn" type="button">BG</button>
-                    <button id="langEnBtn" class="lang-btn" type="button">EN</button>
-                </div>
-
-                <button id="minimizeBtn" class="icon-btn" aria-label="Минимизирай">—</button>
+    <div id="chatWidget" class="chat-widget hidden premium-chat-widget">
+    <div id="chatHeader" class="chat-header premium-chat-header">
+        <div class="chat-brand-block">
+            <div class="mini-reservy-logo">R</div>
+            <div class="mini-reservy-text">
+                <strong>reservy</strong>
+                <span>AI BUSINESS ASSISTANT</span>
             </div>
         </div>
 
-        <div id="chatLog" class="chat-log"></div>
-        <div id="chatQuickActions" class="chat-quick-actions"></div>
+        <div class="chat-business-block">
+            <div class="chat-title">{{ widget_title }}</div>
+            <div class="chat-status">● Онлайн / Online</div>
+        </div>
 
-        <div class="chat-input-wrap">
-            <input
-                id="userInput"
-                type="text"
-                placeholder="Напишете съобщение..."
-                autocomplete="off"
-            >
-            <button id="send-btn" class="send-btn" aria-label="Изпрати">➤</button>
+        <div class="chat-header-actions">
+            <div class="chat-lang-switch">
+                <button id="langBgBtn" class="lang-btn" type="button">BG</button>
+                <button id="langEnBtn" class="lang-btn" type="button">EN</button>
+            </div>
+
+            <button id="minimizeBtn" class="icon-btn" aria-label="Минимизирай">—</button>
         </div>
     </div>
+
+    <div id="chatLog" class="chat-log premium-chat-log"></div>
+    <div id="chatQuickActions" class="chat-quick-actions premium-chat-actions"></div>
+
+    <div class="chat-input-wrap premium-chat-input-wrap">
+        <input
+            id="userInput"
+            type="text"
+            placeholder="Напишете съобщение..."
+            autocomplete="off"
+        >
+        <button id="send-btn" class="send-btn premium-send-btn" aria-label="Изпрати">➤</button>
+    </div>
+
+    <div class="premium-chat-footer">
+        <span class="footer-r">R</span>
+        <span>reservy</span>
+    </div>
+</div>
     {% endif %}
 
     <script>

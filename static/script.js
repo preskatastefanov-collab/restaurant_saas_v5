@@ -140,9 +140,8 @@ function applyWidgetStyles() {
         chatLauncher.style.background = CHATBOT_CONFIG.primaryColor;
     }
 
-    if (chatHeader && CHATBOT_CONFIG.primaryColor) {
-        chatHeader.style.background = CHATBOT_CONFIG.primaryColor;
-    }
+    // Premium widget дизайнът вече се управлява от CSS.
+    // Не сменяме header background тук, за да не разваля dark premium стила.
 }
 
 function openWidget() {
