@@ -267,11 +267,13 @@ def demo_request():
     email = request.form.get("email", "").strip()
     business_type = request.form.get("business_type", "").strip()
     message = request.form.get("message", "").strip()
+    plan_interest = request.form.get("plan_interest", "").strip()
 
     if not business_name or not phone:
         return redirect("/?demo_error=1#demo-request")
 
     db = get_db()
+
     db.execute("""
         INSERT INTO demo_requests (
             business_name,
@@ -280,17 +282,20 @@ def demo_request():
             email,
             business_type,
             message,
+            plan_interest,
             status
         )
-        VALUES (?, ?, ?, ?, ?, ?, 'new')
+        VALUES (?, ?, ?, ?, ?, ?, ?, 'new')
     """, (
         business_name,
         contact_name,
         phone,
         email,
         business_type,
-        message
+        message,
+        plan_interest
     ))
+
     db.commit()
     db.close()
 

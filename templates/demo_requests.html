@@ -90,7 +90,17 @@
 
 <td>{{r.business_type or "—"}}</td>
 
-<td>{{r.plan_interest or "—"}}</td>
+<td>
+    {% if r.plan_interest == "basic" %}
+        <span class="crm-badge priority-low">Basic</span>
+    {% elif r.plan_interest == "standard" %}
+        <span class="crm-badge priority-normal">Standard</span>
+    {% elif r.plan_interest == "premium" %}
+        <span class="crm-badge priority-high">Premium</span>
+    {% else %}
+        —
+    {% endif %}
+</td>
 
 <td>
 
@@ -287,9 +297,9 @@ name="plan_interest"
 >
 
 <option value="">---</option>
-<option>Basic</option>
-<option>Standard</option>
-<option>Premium</option>
+<option value="basic">Basic</option>
+<option value="standard">Standard</option>
+<option value="premium">Premium</option>
 
 </select>
 

@@ -352,7 +352,7 @@
                 <p>/месец</p>
             </div>
 
-            <a href="#demo-request" class="pricing-btn">Избери план</a>
+            <a href="#demo-request" class="pricing-btn" onclick="selectPlan('basic')">Избери план</a>
             <div class="trial-note">🛡️ 7 дни безплатен trial</div>
 
             <button class="pricing-more-btn" type="button" onclick="togglePlanFeatures('basic')">
@@ -384,7 +384,7 @@
                 <p>/месец</p>
             </div>
 
-            <a href="#demo-request" class="pricing-btn purple-btn">Избери план</a>
+            <a href="#demo-request" class="pricing-btn purple-btn" onclick="selectPlan('standard')">Избери план</a>
             <div class="trial-note">🛡️ 7 дни безплатен trial</div>
 
             <button class="pricing-more-btn" type="button" onclick="togglePlanFeatures('standard')">
@@ -414,7 +414,7 @@
                 <p>/месец</p>
             </div>
 
-            <a href="#demo-request" class="pricing-btn">Избери план</a>
+            <a href="#demo-request" class="pricing-btn" onclick="selectPlan('premium')">Избери план</a>
             <div class="trial-note">🛡️ 7 дни безплатен trial</div>
 
             <button class="pricing-more-btn" type="button" onclick="togglePlanFeatures('premium')">
@@ -487,6 +487,21 @@ function togglePlanFeatures(plan) {
         target.classList.toggle("open");
     }
 }
+
+function selectPlan(plan) {
+    const input = document.getElementById("planInterestInput");
+
+    if (input) {
+        input.value = plan;
+    }
+
+    setTimeout(() => {
+        const firstField = document.querySelector("#demo-request input[name='business_name']");
+        if (firstField) {
+            firstField.focus();
+        }
+    }, 300);
+}
 </script>
 
 <section class="landing-demo-request demo-request-premium" id="demo-request">
@@ -512,6 +527,7 @@ function togglePlanFeatures(plan) {
 
     <div class="demo-request-premium-right">
         <form class="demo-request-form premium-demo-form" method="POST" action="/demo-request">
+            <input type="hidden" id="planInterestInput" name="plan_interest" value="">
             {% if demo_success %}
                 <div class="demo-form-success">✅ Заявката е изпратена успешно. Ще се свържем с Вас.</div>
             {% endif %}
