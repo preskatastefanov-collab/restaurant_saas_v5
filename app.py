@@ -480,29 +480,6 @@ def demo_requests():
     )
 
 
-@app.route("/demo-requests/mark-done", methods=["POST"])
-def mark_demo_request_done():
-    user = current_user()
-
-    if not user:
-        return redirect("/login")
-
-    if not has_role("super_admin"):
-        return redirect("/dashboard")
-
-    request_id = safe_int(request.form.get("request_id"))
-
-    db = get_db()
-    db.execute("""
-        UPDATE demo_requests
-        SET status = 'done'
-        WHERE id = ?
-    """, (request_id,))
-    db.commit()
-    db.close()
-
-    return redirect("/demo-requests")
-
 @app.route("/password-requests/mark-done", methods=["POST"])
 def mark_password_request_done():
     user = current_user()
@@ -518,7 +495,79 @@ def mark_password_request_done():
     db = get_db()
     db.execute("""
         UPDATE password_reset_requests
-        SET status = 'done'
+        SET status = 'done',
+            handled_by = ?,
+            updated_at = CURRENT_TIMESTAMP
+        WHERE id = ?
+    """, (user["username"], request_id))
+    db.commit()
+    db.close()
+
+    return redirect("/password-requests")
+
+@app.route("/password-requests/edit", methods=["POST"])
+def edit_password_request():
+    user = current_user()
+
+    if not user:
+        return redirect("/login")
+
+    if not has_role("super_admin"):
+        return redirect("/dashboard")
+
+    request_id = safe_int(request.form.get("request_id"))
+    username = request.form.get("username", "").strip()
+    contact = request.form.get("contact", "").strip()
+    message = request.form.get("message", "").strip()
+    admin_note = request.form.get("admin_note", "").strip()
+    status = request.form.get("status", "new").strip()
+
+    if status not in ["new", "processing", "waiting", "done", "rejected"]:
+        status = "new"
+
+    if not request_id or not username or not contact:
+        return redirect("/password-requests")
+
+    db = get_db()
+    db.execute("""
+        UPDATE password_reset_requests
+        SET username = ?,
+            contact = ?,
+            message = ?,
+            admin_note = ?,
+            status = ?,
+            handled_by = ?,
+            updated_at = CURRENT_TIMESTAMP
+        WHERE id = ?
+    """, (
+        username,
+        contact,
+        message,
+        admin_note,
+        status,
+        user["username"],
+        request_id
+    ))
+    db.commit()
+    db.close()
+
+    return redirect("/password-requests")
+
+@app.route("/password-requests/delete", methods=["POST"])
+def delete_password_request():
+    user = current_user()
+
+    if not user:
+        return redirect("/login")
+
+    if not has_role("super_admin"):
+        return redirect("/dashboard")
+
+    request_id = safe_int(request.form.get("request_id"))
+
+    db = get_db()
+    db.execute("""
+        DELETE FROM password_reset_requests
         WHERE id = ?
     """, (request_id,))
     db.commit()

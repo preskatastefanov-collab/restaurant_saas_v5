@@ -2007,10 +2007,6 @@ box-shadow:0 8px 20px rgba(255,45,45,.28);
 .business-table th:nth-child(10),
 .business-table td:nth-child(10){width:14%;}
 
-.premium-table-wrap{
-    overflow-x:hidden !important;
-}
-
 .mini-pill{
     min-height:34px;
     padding:0 12px;
@@ -2589,11 +2585,6 @@ box-shadow:0 8px 20px rgba(255,45,45,.28);
 .users-modern-table{
     min-width:760px;
 }
-
-.premium-table-wrap{
-    overflow-x:auto !important;
-}
-
 }
 
 /* ================= SETTINGS PREMIUM PAGE FINAL ================= */
@@ -7019,4 +7010,111 @@ body.landing-page .landing-footer {
 .premium-chat-footer{
     height:34px !important;
     font-size:13px !important;
+}
+
+/* ===== PASSWORD REQUESTS CLEAN FINAL ===== */
+
+.password-requests-page .premium-table-card {
+    overflow: hidden;
+}
+
+.password-requests-page .premium-table-wrap {
+    width: 100%;
+    overflow-x: auto !important;
+    overflow-y: hidden;
+    border-radius: 24px;
+}
+
+.password-requests-page .premium-table {
+    min-width: 1420px;
+    width: 1420px;
+    table-layout: fixed;
+}
+
+.password-requests-page .premium-table th,
+.password-requests-page .premium-table td {
+    padding: 18px 10px;
+    text-align: center;
+    vertical-align: middle;
+    white-space: normal;
+    word-break: break-word;
+    font-size: 15px;
+}
+
+.password-requests-page .premium-table th {
+    font-size: 16px;
+}
+
+.password-requests-page .premium-table th:nth-child(1),
+.password-requests-page .premium-table td:nth-child(1) {
+    width: 55px;
+}
+
+.password-requests-page .premium-table th:nth-child(2),
+.password-requests-page .premium-table td:nth-child(2) {
+    width: 110px;
+}
+
+.password-requests-page .premium-table th:nth-child(3),
+.password-requests-page .premium-table td:nth-child(3) {
+    width: 145px;
+}
+
+.password-requests-page .premium-table th:nth-child(4),
+.password-requests-page .premium-table td:nth-child(4) {
+    width: 230px;
+}
+
+.password-requests-page .premium-table th:nth-child(5),
+.password-requests-page .premium-table td:nth-child(5) {
+    width: 150px;
+}
+
+.password-requests-page .premium-table th:nth-child(6),
+.password-requests-page .premium-table td:nth-child(6) {
+    width: 150px;
+}
+
+.password-requests-page .premium-table th:nth-child(7),
+.password-requests-page .premium-table td:nth-child(7) {
+    width: 110px;
+}
+
+.password-requests-page .premium-table th:nth-child(8),
+.password-requests-page .premium-table td:nth-child(8),
+.password-requests-page .premium-table th:nth-child(9),
+.password-requests-page .premium-table td:nth-child(9) {
+    width: 125px;
+    font-size: 14px;
+}
+
+.password-requests-page .premium-table th:nth-child(10),
+.password-requests-page .premium-table td:nth-child(10) {
+    width: 190px;
+}
+
+.password-requests-page .premium-row-actions {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 7px;
+    flex-wrap: nowrap;
+}
+
+.password-requests-page .premium-row-actions form {
+    margin: 0;
+}
+
+.password-requests-page .premium-row-actions button {
+    width: 44px;
+    height: 44px;
+    min-width: 44px;
+    border-radius: 14px;
+}
+
+.password-requests-page .people-badge {
+    min-width: 120px;
+    height: 44px;
+    font-size: 15px;
+    padding: 0 12px;
 }

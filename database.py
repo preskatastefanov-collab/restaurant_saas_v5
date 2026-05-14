@@ -220,6 +220,9 @@ def init_db():
     add_column_if_missing(c, "menu_items", "upsell_drink_en", "upsell_drink_en TEXT DEFAULT ''")
     add_column_if_missing(c, "menu_items", "upsell_dessert_en", "upsell_dessert_en TEXT DEFAULT ''")
     add_column_if_missing(c, "menu_items", "upsell_side_en", "upsell_side_en TEXT DEFAULT ''")
+    add_column_if_missing(c, "password_reset_requests", "admin_note", "admin_note TEXT DEFAULT ''")
+    add_column_if_missing(c, "password_reset_requests", "handled_by", "handled_by TEXT DEFAULT ''")
+    add_column_if_missing(c, "password_reset_requests", "updated_at", "updated_at TEXT DEFAULT ''")
 
     conn.commit()
     conn.close()
