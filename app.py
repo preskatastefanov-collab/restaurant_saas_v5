@@ -97,8 +97,9 @@ ALLOWED_IMAGE_EXTENSIONS = {"png", "jpg", "jpeg", "webp", "gif"}
 
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 
-init_db()
-seed_data()
+with app.app_context():
+    init_db()
+    seed_data()
 
 
 def allowed_image_file(filename):
