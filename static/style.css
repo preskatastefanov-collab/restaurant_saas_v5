@@ -7197,13 +7197,60 @@ body.landing-page .landing-footer {
     font-weight: 900;
 }
 
-.crm-new { background: linear-gradient(180deg, #8b5cf6, #6d28d9); }
-.crm-contacted { background: linear-gradient(180deg, #3b82f6, #2563eb); }
-.crm-demo { background: linear-gradient(180deg, #f59e0b, #d97706); }
-.crm-negotiation { background: linear-gradient(180deg, #f97316, #ea580c); }
-.crm-client { background: linear-gradient(180deg, #22c55e, #16a34a); }
-.crm-rejected { background: linear-gradient(180deg, #ef4444, #dc2626); }
+.crm-new {
+    background: linear-gradient(180deg, #8b5cf6, #6d28d9);
+}
 
-.priority-high { background: linear-gradient(180deg, #ef4444, #dc2626); }
-.priority-normal { background: linear-gradient(180deg, #f59e0b, #d97706); }
-.priority-low { background: linear-gradient(180deg, #22c55e, #16a34a); }
+.priority-high {
+    background: linear-gradient(180deg, #ef4444, #dc2626);
+}
+
+.priority-normal {
+    background: linear-gradient(180deg, #8b5cf6, #6d28d9);
+}
+
+.crm-contacted {
+    background: linear-gradient(180deg, #3b82f6, #2563eb);
+}
+
+.crm-demo {
+    background: linear-gradient(180deg, #f59e0b, #d97706);
+}
+
+.crm-negotiation {
+    background: linear-gradient(180deg, #f97316, #ea580c);
+}
+
+.crm-client {
+    background: linear-gradient(180deg, #22c55e, #16a34a);
+}
+
+.crm-rejected {
+    background: linear-gradient(180deg, #ef4444, #dc2626);
+}
+
+.priority-low {
+    background: linear-gradient(180deg, #22c55e, #16a34a);
+}
+
+.demo-form-success{
+    background: rgba(34,197,94,0.15);
+    border: 1px solid rgba(34,197,94,0.4);
+    color: #86efac;
+    padding: 16px 18px;
+    border-radius: 16px;
+    margin-bottom: 18px;
+    font-weight: 700;
+    font-size: 15px;
+}
+
+.demo-form-error{
+    background: rgba(239,68,68,0.15);
+    border: 1px solid rgba(239,68,68,0.4);
+    color: #fca5a5;
+    padding: 16px 18px;
+    border-radius: 16px;
+    margin-bottom: 18px;
+    font-weight: 700;
+    font-size: 15px;
+}

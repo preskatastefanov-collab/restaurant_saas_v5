@@ -270,7 +270,7 @@ def demo_request():
     plan_interest = request.form.get("plan_interest", "").strip()
 
     if not business_name or not phone:
-        return redirect("/?demo_error=1#demo-request")
+        return redirect("/?demo_error=1#demo")
 
     db = get_db()
 
@@ -299,7 +299,7 @@ def demo_request():
     db.commit()
     db.close()
 
-    return redirect("/?demo_success=1#demo-request")
+    return redirect("/?demo_success=1#demo")
 
 @app.route("/site/<slug>")
 def public_site(slug):
