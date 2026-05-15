@@ -1,4 +1,10 @@
-<aside class="premium-sidebar">
+<button class="mobile-sidebar-toggle" onclick="toggleSidebar()">
+    ☰
+</button>
+
+<div class="sidebar-overlay" onclick="closeSidebar()"></div>
+
+<aside class="premium-sidebar" id="premiumSidebar">
 
     <div class="brand-box">
         <div class="brand-icon">R</div>
@@ -98,3 +104,15 @@
     </div>
 
 </aside>
+
+<script>
+function toggleSidebar() {
+    document.getElementById("premiumSidebar").classList.toggle("mobile-open");
+    document.querySelector(".sidebar-overlay").classList.toggle("show");
+}
+
+function closeSidebar() {
+    document.getElementById("premiumSidebar").classList.remove("mobile-open");
+    document.querySelector(".sidebar-overlay").classList.remove("show");
+}
+</script>
