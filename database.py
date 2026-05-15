@@ -146,6 +146,20 @@ def init_db():
     """)
 
     c.execute("""
+    CREATE TABLE IF NOT EXISTS banned_customers (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        tenant_id INTEGER NOT NULL,
+        phone TEXT NOT NULL,
+        reason TEXT DEFAULT '',
+        created_by TEXT DEFAULT '',
+        is_active INTEGER DEFAULT 1,
+        created_at TEXT DEFAULT CURRENT_TIMESTAMP,
+        updated_at TEXT DEFAULT '',
+        FOREIGN KEY (tenant_id) REFERENCES tenants(id)
+    )
+    """)
+
+    c.execute("""
     CREATE TABLE IF NOT EXISTS analytics (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         tenant_id INTEGER,
@@ -239,6 +253,11 @@ def init_db():
     add_column_if_missing(c, "demo_requests", "handled_by", "handled_by TEXT DEFAULT ''")
     add_column_if_missing(c, "demo_requests", "next_contact", "next_contact TEXT DEFAULT ''")
     add_column_if_missing(c, "demo_requests", "updated_at", "updated_at TEXT DEFAULT ''")
+
+    add_column_if_missing(c, "banned_customers", "reason", "reason TEXT DEFAULT ''")
+    add_column_if_missing(c, "banned_customers", "created_by", "created_by TEXT DEFAULT ''")
+    add_column_if_missing(c, "banned_customers", "is_active", "is_active INTEGER DEFAULT 1")
+    add_column_if_missing(c, "banned_customers", "updated_at", "updated_at TEXT DEFAULT ''")
 
     conn.commit()
     conn.close()

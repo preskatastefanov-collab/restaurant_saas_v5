@@ -7254,3 +7254,111 @@ body.landing-page .landing-footer {
     font-weight: 700;
     font-size: 15px;
 }
+
+/* ===== BLACKLIST PREMIUM PAGE ===== */
+
+.blacklist-page .premium-table-card {
+    overflow: hidden;
+}
+
+.blacklist-stats-grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 22px;
+    margin-bottom: 24px;
+}
+
+.blacklist-search {
+    max-width: 360px;
+}
+
+.blacklist-page .premium-table {
+    min-width: 1050px;
+    table-layout: fixed;
+}
+
+.blacklist-page .premium-table th,
+.blacklist-page .premium-table td {
+    padding: 18px 12px;
+    vertical-align: middle;
+}
+
+.blacklist-page .premium-table th:nth-child(1),
+.blacklist-page .premium-table td:nth-child(1) {
+    width: 70px;
+}
+
+.blacklist-page .premium-table th:nth-child(2),
+.blacklist-page .premium-table td:nth-child(2) {
+    width: 170px;
+}
+
+.blacklist-page .premium-table th:nth-child(3),
+.blacklist-page .premium-table td:nth-child(3) {
+    width: 300px;
+}
+
+.blacklist-page .premium-table th:nth-child(4),
+.blacklist-page .premium-table td:nth-child(4) {
+    width: 150px;
+}
+
+.blacklist-page .premium-table th:nth-child(5),
+.blacklist-page .premium-table td:nth-child(5) {
+    width: 160px;
+}
+
+.blacklist-page .premium-table th:nth-child(6),
+.blacklist-page .premium-table td:nth-child(6) {
+    width: 180px;
+}
+
+.blacklist-page .premium-table th:nth-child(7),
+.blacklist-page .premium-table td:nth-child(7) {
+    width: 190px;
+}
+
+.blacklist-actions {
+    align-items: center;
+    flex-wrap: nowrap;
+}
+
+.blacklist-actions form {
+    margin: 0;
+}
+
+.blacklist-actions button {
+    width: 46px;
+    height: 44px;
+    min-width: 46px;
+}
+
+.blacklist-actions .delete {
+    background: linear-gradient(180deg, #ff6666, #ef4444);
+}
+
+.status-red {
+    background: #fee2e2;
+    color: #b91c1c;
+}
+
+.status-green {
+    background: #dcfce7;
+    color: #15803d;
+}
+
+.stat-icon.red {
+    background: linear-gradient(135deg, #ef4444, #dc2626);
+    color: white;
+}
+
+@media (max-width: 900px) {
+    .blacklist-stats-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .blacklist-search {
+        max-width: 100%;
+        width: 100%;
+    }
+}

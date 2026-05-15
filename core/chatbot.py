@@ -13,6 +13,7 @@ from services.tenants import (
     get_business_type_label,
 )
 from services.reservations import get_reservations_for_date, create_reservation
+from services.blacklist import is_phone_banned
 from services.analytics import log_event
 from services.menu import (
     get_menu_categories,
@@ -1374,6 +1375,25 @@ class ChatBot:
                     "📞 Please send a valid phone number, for example 0898123456"
                 ),
                 []
+            )
+        
+        if is_phone_banned(self.tenant_id, c["phone"]):
+            old_history = self.context.get("chat_history", [])
+            old_language = self.context.get("language", "bg")
+
+            self.context = self.empty_context()
+            self.context["chat_history"] = old_history
+            self.context["language"] = old_language
+
+            return self.make_response(
+                self.tr(
+                    "❌ За съжаление не можем да приемем резервация от този телефонен номер.\n\nАко смятате, че това е грешка, свържете се с заведението.",
+                    "❌ „Unfortunately, we cannot accept reservations from this phone number.If you believe this is a mistake, please contact our venue.“"
+                ),
+                [
+                    self.tr("Контакти", "Contact"),
+                    self.tr("Меню", "Menu")
+                ]
             )
 
         if not c.get("confirmed"):

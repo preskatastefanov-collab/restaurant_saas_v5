@@ -59,6 +59,13 @@
         {% endif %}
 
         {% if role in ["super_admin", "owner"] %}
+        <a class="premium-nav-link {% if request.path == '/blacklist' %}active{% endif %}"
+            href="/blacklist">
+            🚫 Ban list
+        </a>
+        {% endif %}
+
+        {% if role in ["super_admin", "owner"] %}
         <a class="premium-nav-link {% if request.path == '/analytics/chats' %}active{% endif %}"
            href="/analytics/chats">
             💬 Chat Analytics

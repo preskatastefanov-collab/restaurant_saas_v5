@@ -1,0 +1,256 @@
+<!DOCTYPE html>
+<html lang="bg">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ban list | Reservy</title>
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+
+<body class="app-layout blacklist-page">
+
+{% include "partials/sidebar.html" %}
+
+<main class="premium-main">
+
+    <header class="premium-topbar">
+        <div>
+            <span class="muted-label">Влязъл като</span>
+            <strong>{{ session["user"]["username"] }}</strong>
+            <span class="role-pill role-{{ role }}">{{ role }}</span>
+        </div>
+
+        <div class="topbar-business">
+            {% if active_business %}
+                <span class="muted-label">Активен бизнес</span>
+                <strong>{{ active_business.name }}</strong>
+                <span class="plan-pill">{{ active_business.plan|upper }}</span>
+            {% endif %}
+            <a class="logout-btn" href="/logout">🚪 Изход</a>
+        </div>
+    </header>
+
+    <section class="premium-page-head">
+        <div>
+            <h1>🚫 Ban list</h1>
+            <p>Блокирани телефонни номера, които не могат да правят резервации през chatbot-а.</p>
+        </div>
+
+        <div class="premium-actions">
+            <a href="/dashboard">← Назад към табло</a>
+        </div>
+    </section>
+
+    {% if request.args.get("saved") == "1" %}
+        <div class="settings-success-banner">✅ Промените са запазени успешно.</div>
+    {% endif %}
+
+    {% set active_count = namespace(value=0) %}
+    {% set inactive_count = namespace(value=0) %}
+
+    {% for b in banned_customers %}
+        {% if b.is_active == 1 %}
+            {% set active_count.value = active_count.value + 1 %}
+        {% else %}
+            {% set inactive_count.value = inactive_count.value + 1 %}
+        {% endif %}
+    {% endfor %}
+
+    <section class="blacklist-stats-grid">
+        <div class="premium-stat-card">
+            <div class="stat-icon red">🚫</div>
+            <h3>Активни ban номера</h3>
+            <strong>{{ active_count.value }}</strong>
+            <p>Автоматично блокирани</p>
+        </div>
+
+        <div class="premium-stat-card">
+            <div class="stat-icon green">✅</div>
+            <h3>Unbanned</h3>
+            <strong>{{ inactive_count.value }}</strong>
+            <p>Премахнати блокировки</p>
+        </div>
+
+        <div class="premium-stat-card">
+            <div class="stat-icon blue">📞</div>
+            <h3>Общо записи</h3>
+            <strong>{{ banned_customers|length }}</strong>
+            <p>История на ban list</p>
+        </div>
+    </section>
+
+    <section class="premium-table-card">
+        <div class="premium-section-head">
+            <div>
+                <h2>➕ Добави номер</h2>
+                <p>Добави телефон и причина за блокиране.</p>
+            </div>
+        </div>
+
+        <form method="POST" action="/blacklist/add" class="settings-form-grid">
+            <div class="settings-field">
+                <label>Телефон</label>
+                <input type="text" name="phone" placeholder="Например: 0898123456" required>
+            </div>
+
+            <div class="settings-field settings-full">
+                <label>Причина</label>
+                <input type="text" name="reason" placeholder="Например: fake резервации, не идва, spam...">
+            </div>
+
+            <div class="settings-field">
+                <label>&nbsp;</label>
+                <button class="save-btn" type="submit">🚫 Добави в ban list</button>
+            </div>
+        </form>
+    </section>
+
+    <section class="premium-table-card">
+        <div class="premium-section-head">
+            <div>
+                <h2>Блокирани номера</h2>
+                <p>Активните номера се блокират автоматично при опит за резервация.</p>
+            </div>
+
+            <input id="blacklistSearch" class="premium-search blacklist-search" type="text" placeholder="Търси по телефон, причина или админ...">
+        </div>
+
+        <div class="premium-table-wrap">
+            <table class="premium-table" id="blacklistTable">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Телефон</th>
+                        <th>Причина</th>
+                        <th>Добавен от</th>
+                        <th>Статус</th>
+                        <th>Дата</th>
+                        <th>Действие</th>
+                    </tr>
+                </thead>
+
+                <tbody>
+                    {% if banned_customers %}
+                        {% for b in banned_customers %}
+                        <tr>
+                            <td>{{ b.id }}</td>
+                            <td><strong>{{ b.phone }}</strong></td>
+                            <td>{{ b.reason or "—" }}</td>
+                            <td>{{ b.created_by or "—" }}</td>
+                            <td>
+                                {% if b.is_active == 1 %}
+                                    <span class="status-badge status-red">Активен ban</span>
+                                {% else %}
+                                    <span class="status-badge status-green">Unbanned</span>
+                                {% endif %}
+                            </td>
+                            <td>{{ b.created_at }}</td>
+                            <td>
+                                <div class="premium-row-actions blacklist-actions">
+                                    <button type="button" onclick='openBlacklistModal({{ {
+                                        "id": b.id,
+                                        "phone": b.phone,
+                                        "reason": b.reason or "",
+                                        "is_active": b.is_active
+                                    } | tojson }})'>✏️</button>
+
+                                    {% if b.is_active == 1 %}
+                                    <form method="POST" action="/blacklist/unban" onsubmit="return confirm('Да премахнем ли ban-а?')">
+                                        <input type="hidden" name="ban_id" value="{{ b.id }}">
+                                        <button type="submit">✅</button>
+                                    </form>
+                                    {% endif %}
+
+                                    <form method="POST" action="/blacklist/delete" onsubmit="return confirm('Сигурен ли си, че искаш да изтриеш този запис?')">
+                                        <input type="hidden" name="ban_id" value="{{ b.id }}">
+                                        <button class="delete" type="submit">🗑️</button>
+                                    </form>
+                                </div>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    {% else %}
+                        <tr>
+                            <td colspan="7" class="empty-state">Няма блокирани номера</td>
+                        </tr>
+                    {% endif %}
+                </tbody>
+            </table>
+        </div>
+    </section>
+
+</main>
+
+<div id="blacklistModal" class="modal">
+    <div class="modal-content premium-modal">
+        <div class="premium-modal-header">
+            <div class="premium-modal-icon">🚫</div>
+            <div>
+                <h2>Редакция на ban запис</h2>
+                <p>Промени телефон, причина или статус.</p>
+            </div>
+        </div>
+
+        <form method="POST" action="/blacklist/edit">
+            <input type="hidden" id="editBanId" name="ban_id">
+
+            <div class="settings-form-grid">
+                <div class="settings-field">
+                    <label>Телефон</label>
+                    <input type="text" id="editBanPhone" name="phone" required>
+                </div>
+
+                <div class="settings-field">
+                    <label>Статус</label>
+                    <select id="editBanStatus" name="is_active">
+                        <option value="1">Активен ban</option>
+                        <option value="0">Unbanned</option>
+                    </select>
+                </div>
+
+                <div class="settings-field settings-full">
+                    <label>Причина</label>
+                    <textarea id="editBanReason" name="reason"></textarea>
+                </div>
+            </div>
+
+            <div class="modal-actions">
+                <button class="save-btn" type="submit">💾 Запази</button>
+                <button class="close-btn" type="button" onclick="closeBlacklistModal()">Затвори</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+function openBlacklistModal(data) {
+    document.getElementById("editBanId").value = data.id || "";
+    document.getElementById("editBanPhone").value = data.phone || "";
+    document.getElementById("editBanReason").value = data.reason || "";
+    document.getElementById("editBanStatus").value = String(data.is_active ?? 1);
+    document.getElementById("blacklistModal").style.display = "flex";
+}
+
+function closeBlacklistModal() {
+    document.getElementById("blacklistModal").style.display = "none";
+}
+
+document.getElementById("blacklistSearch").addEventListener("input", function () {
+    const value = this.value.toLowerCase();
+    const rows = document.querySelectorAll("#blacklistTable tbody tr");
+
+    rows.forEach(row => {
+        row.style.display = row.innerText.toLowerCase().includes(value) ? "" : "none";
+    });
+});
+
+window.onclick = function(event) {
+    const modal = document.getElementById("blacklistModal");
+    if (event.target === modal) {
+        closeBlacklistModal();
+    }
+};
+</script>
+
+</body>
+</html>

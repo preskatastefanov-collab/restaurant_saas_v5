@@ -67,6 +67,14 @@ from services.analytics import (
     get_analytics_page_data,
 )
 
+from services.blacklist import (
+    list_banned_customers,
+    add_banned_customer,
+    unban_customer,
+    is_phone_banned,
+    normalize_phone,
+)
+
 from services.menu import (
     get_menu_categories,
     get_full_menu,
@@ -183,6 +191,9 @@ def can_manage_demo_requests():
 
 def can_manage_password_requests():
     return has_role("super_admin")
+
+def can_manage_blacklist():
+    return has_role("super_admin", "owner")
 
 def get_active_tenant_id():
     user = current_user()
@@ -925,6 +936,7 @@ def dashboard():
         role=user["role"],
         can_manage_premium_features=can_manage_premium_features(),
         is_super_admin=is_super_admin(),
+        can_manage_blacklist=can_manage_blacklist(),
         tenant_plan=tenant_plan,
         tenant_has_ai_chat=tenant_has_feature(tenant_id, "ai_chat"),
         tenant_has_premium_analytics=tenant_has_feature(tenant_id, "premium_analytics"),
@@ -1808,6 +1820,227 @@ def users_delete():
 
     return redirect("/users?success=deleted")
 
+@app.route("/blacklist")
+def blacklist_page():
+    user = current_user()
+
+    if not user:
+        return redirect("/login")
+
+    if not has_role("super_admin", "owner"):
+        return redirect("/dashboard")
+
+    tenant_id = get_active_tenant_id()
+
+    db = get_db()
+
+    banned_customers = db.execute("""
+        SELECT *
+        FROM banned_customers
+        WHERE tenant_id = ?
+        ORDER BY id DESC
+    """, (tenant_id,)).fetchall()
+
+    db.close()
+
+    return render_template(
+        "blacklist.html",
+        banned_customers=[dict(x) for x in banned_customers],
+        role=user["role"],
+        active_business=get_active_tenant_info(),
+    )
+
+
+@app.route("/blacklist/add", methods=["POST"])
+def blacklist_add():
+    user = current_user()
+
+    if not user:
+        return redirect("/login")
+
+    if not has_role("super_admin", "owner"):
+        return redirect("/dashboard")
+
+    tenant_id = get_active_tenant_id()
+
+    phone = request.form.get("phone", "").strip()
+    reason = request.form.get("reason", "").strip()
+
+    if not phone:
+        return redirect("/blacklist")
+
+    db = get_db()
+
+    db.execute("""
+        INSERT INTO banned_customers (
+            tenant_id,
+            phone,
+            reason,
+            created_by,
+            is_active
+        )
+        VALUES (?, ?, ?, ?, 1)
+    """, (
+        tenant_id,
+        phone,
+        reason,
+        user["username"]
+    ))
+
+    db.commit()
+    db.close()
+
+    return redirect("/blacklist?saved=1")
+
+
+@app.route("/blacklist/unban", methods=["POST"])
+def blacklist_unban():
+    user = current_user()
+
+    if not user:
+        return redirect("/login")
+
+    if not has_role("super_admin", "owner"):
+        return redirect("/dashboard")
+
+    tenant_id = get_active_tenant_id()
+    ban_id = safe_int(request.form.get("ban_id"))
+
+    db = get_db()
+
+    db.execute("""
+        UPDATE banned_customers
+        SET is_active = 0
+        WHERE id = ?
+        AND tenant_id = ?
+    """, (ban_id, tenant_id))
+
+    db.commit()
+    db.close()
+
+    return redirect("/blacklist?saved=1")
+
+@app.route("/blacklist/edit", methods=["POST"])
+def blacklist_edit():
+    user = current_user()
+
+    if not user:
+        return redirect("/login")
+
+    if not has_role("super_admin", "owner"):
+        return redirect("/dashboard")
+
+    tenant_id = get_active_tenant_id()
+
+    ban_id = safe_int(request.form.get("ban_id"))
+    phone = request.form.get("phone", "").strip()
+    reason = request.form.get("reason", "").strip()
+    is_active = safe_int(request.form.get("is_active", 1), 1)
+
+    if not ban_id or not phone:
+        return redirect("/blacklist")
+
+    db = get_db()
+
+    db.execute("""
+        UPDATE banned_customers
+        SET phone = ?,
+            reason = ?,
+            is_active = ?,
+            updated_at = CURRENT_TIMESTAMP
+        WHERE id = ?
+        AND tenant_id = ?
+    """, (
+        phone,
+        reason,
+        is_active,
+        ban_id,
+        tenant_id
+    ))
+
+    db.commit()
+    db.close()
+
+    return redirect("/blacklist?saved=1")
+
+
+@app.route("/blacklist/delete", methods=["POST"])
+def blacklist_delete():
+    user = current_user()
+
+    if not user:
+        return redirect("/login")
+
+    if not has_role("super_admin", "owner"):
+        return redirect("/dashboard")
+
+    tenant_id = get_active_tenant_id()
+    ban_id = safe_int(request.form.get("ban_id"))
+
+    db = get_db()
+
+    db.execute("""
+        DELETE FROM banned_customers
+        WHERE id = ?
+        AND tenant_id = ?
+    """, (ban_id, tenant_id))
+
+    db.commit()
+    db.close()
+
+    return redirect("/blacklist?saved=1")
+
+@app.route("/blacklist/ban-reservation", methods=["POST"])
+def blacklist_ban_reservation():
+    user = current_user()
+
+    if not user:
+        return redirect("/login")
+
+    if not has_role("super_admin", "owner"):
+        return redirect("/dashboard")
+
+    tenant_id = get_active_tenant_id()
+
+    phone = request.form.get("phone", "").strip()
+    name = request.form.get("name", "").strip()
+    reason = request.form.get("reason", "").strip()
+
+    if not phone:
+        return redirect("/dashboard")
+
+    db = get_db()
+
+    existing = db.execute("""
+        SELECT id
+        FROM banned_customers
+        WHERE tenant_id = ?
+        AND phone = ?
+        AND is_active = 1
+        LIMIT 1
+    """, (tenant_id, phone)).fetchone()
+
+    if not existing:
+        db.execute("""
+            INSERT INTO banned_customers (
+                tenant_id,
+                phone,
+                reason,
+                created_by,
+                is_active
+            )
+            VALUES (?, ?, ?, ?, 1)
+        """, (
+            tenant_id,
+            phone,
+            reason or f"Ban from reservation ({name})",
+            user["username"]
+        ))
+
+    db.commit()
+    db.close()
+
+    return redirect("/dashboard")
 
 @app.route("/menu-manager")
 def menu_manager():
@@ -2114,7 +2347,6 @@ def edit_reservation_route():
     )
 
     return jsonify({"status": "success"})
-
 
 @app.route("/export")
 def export():

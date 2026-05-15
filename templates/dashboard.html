@@ -83,12 +83,16 @@
 
         <div class="premium-actions">
             {% if role == "super_admin" %}
+                <a href="/blacklist">🚫 Ban list</a>
                 <a href="/restaurants">🏢 Бизнеси</a>
                 <a href="/create-restaurant">➕ Нов бизнес</a>
                 <a href="/users">👥 Потребители</a>
                 <a href="/menu-manager">📋 Меню</a>
                 <a href="/settings">⚙️ Настройки</a>
             {% elif role == "owner" or role == "admin" %}
+                {% if role == "owner" %}
+                <a href="/blacklist">🚫 Ban list</a>
+                {% endif %}
                 <a href="/users">👥 Потребители</a>
                 <a href="/menu-manager">📋 Меню</a>
                 <a href="/settings">⚙️ Настройки</a>
@@ -331,7 +335,17 @@
                             <td>
                                 <div class="premium-row-actions">
                                     <button onclick="openEditModal('{{ r.id }}', '{{ r.name|e }}', '{{ r.phone|e }}', '{{ r.date|e }}', '{{ r.time|e }}', '{{ r.people|e }}', '{{ r.status|e }}')">✏️</button>
-                                    <button class="delete" onclick="deleteReservation('{{ r.id }}')">🗑️</button>
+
+{% if can_manage_blacklist %}
+<form method="POST" action="/blacklist/ban-reservation" onsubmit="return confirm('Сигурен ли си, че искаш да баннеш този телефон?')">
+    <input type="hidden" name="phone" value="{{ r.phone }}">
+    <input type="hidden" name="name" value="{{ r.name }}">
+    <input type="hidden" name="reason" value="Баннат от резервация">
+    <button class="ban-btn" type="submit">🚫</button>
+</form>
+{% endif %}
+
+<button class="delete" onclick="deleteReservation('{{ r.id }}')">🗑️</button>
                                 </div>
                             </td>
                         </tr>
