@@ -97,6 +97,7 @@ PLAN_FEATURES = {
         "smart_food_answers",
         "better_fallback",
         "smart_quick_replies",
+        "blacklist"
     },
     "premium": {
         "widget",
@@ -111,6 +112,7 @@ PLAN_FEATURES = {
         "smart_food_answers",
         "better_fallback",
         "smart_quick_replies",
+        "blacklist"
         "upsell",
         "premium_analytics",
         "advanced_ai_logic",

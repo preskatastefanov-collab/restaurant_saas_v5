@@ -154,6 +154,13 @@ def is_super_admin():
 def can_manage_premium_features():
     return has_role("super_admin")
 
+def can_manage_blacklist():
+    tenant_id = get_active_tenant_id()
+
+    return has_role("super_admin") or (
+        has_role("owner") and tenant_has_feature(tenant_id, "blacklist")
+    )
+
 def require_login():
     user = current_user()
     return user is not None
@@ -1827,7 +1834,7 @@ def blacklist_page():
     if not user:
         return redirect("/login")
 
-    if not has_role("super_admin", "owner"):
+    if not can_manage_blacklist():
         return redirect("/dashboard")
 
     tenant_id = get_active_tenant_id()
@@ -1858,7 +1865,7 @@ def blacklist_add():
     if not user:
         return redirect("/login")
 
-    if not has_role("super_admin", "owner"):
+    if not can_manage_blacklist():
         return redirect("/dashboard")
 
     tenant_id = get_active_tenant_id()
@@ -1900,7 +1907,7 @@ def blacklist_unban():
     if not user:
         return redirect("/login")
 
-    if not has_role("super_admin", "owner"):
+    if not can_manage_blacklist():
         return redirect("/dashboard")
 
     tenant_id = get_active_tenant_id()
@@ -1997,7 +2004,7 @@ def blacklist_ban_reservation():
     if not user:
         return redirect("/login")
 
-    if not has_role("super_admin", "owner"):
+    if not can_manage_blacklist():
         return redirect("/dashboard")
 
     tenant_id = get_active_tenant_id()
