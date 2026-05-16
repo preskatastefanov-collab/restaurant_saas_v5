@@ -8738,3 +8738,152 @@ body.landing-page .landing-footer {
         padding:28px 20px !important;
     }
 }
+
+/* ===== LOGIN PHONE FINAL FIX ===== */
+
+@media (max-width: 700px) {
+
+    body.login-page-premium {
+        min-height: 100vh !important;
+        overflow-x: hidden !important;
+        overflow-y: auto !important;
+    }
+
+    .login-shell {
+        width: 100% !important;
+        max-width: 100% !important;
+        min-height: 100vh !important;
+        margin: 0 !important;
+        padding: 18px !important;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: flex-start !important;
+        flex-direction: column !important;
+        border-radius: 0 !important;
+        overflow: visible !important;
+    }
+
+    .login-left {
+    display: block !important;
+    width: 100% !important;
+    padding: 20px 16px 8px !important;
+    background: transparent !important;
+    min-height: auto !important;
+}
+
+.login-left-content {
+    max-width: 360px !important;
+    margin: 0 auto !important;
+    text-align: center !important;
+}
+
+.login-left h1 {
+    font-size: 28px !important;
+    line-height: 1.05 !important;
+    margin-bottom: 10px !important;
+}
+
+.login-left p {
+    font-size: 14px !important;
+    line-height: 1.4 !important;
+    margin-bottom: 16px !important;
+}
+
+.login-feature-row {
+    display: grid !important;
+    grid-template-columns: repeat(3, 1fr) !important;
+    gap: 8px !important;
+}
+
+.login-feature-icon {
+    width: 42px !important;
+    height: 42px !important;
+    font-size: 20px !important;
+}
+
+.login-feature span {
+    font-size: 10px !important;
+    line-height: 1.2 !important;
+}
+
+    .login-right {
+        width: 100% !important;
+        min-height: auto !important;
+        padding: 0 !important;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+    }
+
+    .login-card-premium {
+        width: 100% !important;
+        max-width: 360px !important;
+        margin: 0 auto !important;
+        padding: 34px 22px !important;
+        border-radius: 28px !important;
+        height: auto !important;
+        min-height: auto !important;
+        max-height: none !important;
+        overflow: visible !important;
+    }
+
+    .login-logo {
+        justify-content: center !important;
+        text-align: center !important;
+        margin-bottom: 18px !important;
+    }
+
+    .login-logo-mark {
+        width: 64px !important;
+        height: 64px !important;
+        font-size: 42px !important;
+    }
+
+    .login-logo-text {
+        font-size: 38px !important;
+        line-height: 1 !important;
+    }
+
+    .login-logo-sub {
+        font-size: 10px !important;
+        letter-spacing: 4px !important;
+    }
+
+    .login-card-premium h2 {
+        text-align: center !important;
+        font-size: 28px !important;
+        line-height: 1.15 !important;
+    }
+
+    .login-subtitle {
+        text-align: center !important;
+        font-size: 15px !important;
+        margin-bottom: 22px !important;
+    }
+
+    .login-input-wrap {
+        width: 100% !important;
+        min-height: 56px !important;
+        border-radius: 16px !important;
+    }
+
+    .login-input-wrap input {
+        font-size: 15px !important;
+    }
+
+    .login-options {
+        display: flex !important;
+        flex-direction: row !important;
+        justify-content: space-between !important;
+        align-items: center !important;
+        gap: 10px !important;
+        font-size: 13px !important;
+    }
+
+    .login-submit {
+        width: 100% !important;
+        min-height: 58px !important;
+        border-radius: 17px !important;
+        font-size: 18px !important;
+    }
+}
