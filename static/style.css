@@ -7566,6 +7566,30 @@ body.landing-page .landing-footer {
    RESPONSIVE MOBILE/TABLET
    ========================= */
 
+   .mobile-sidebar-toggle{
+    display:none;
+    position:fixed;
+    top:16px;
+    left:16px;
+    width:52px;
+    height:52px;
+    border:none;
+    border-radius:16px;
+    z-index:10000;
+
+    background:linear-gradient(
+        135deg,
+        #7c3aed,
+        #2677f2
+    );
+
+    color:white;
+    font-size:24px;
+    cursor:pointer;
+
+    box-shadow:0 15px 35px rgba(37,99,235,.3);
+}
+
 @media (max-width:1080px){
 
     .app-layout{
