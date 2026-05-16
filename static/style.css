@@ -7568,110 +7568,271 @@ body.landing-page .landing-footer {
 
 @media (max-width:1080px){
 
-.app-layout{
-    display:block !important;
+    .app-layout{
+        display:block !important;
+    }
+
+    .mobile-sidebar-toggle{
+        display:flex !important;
+    }
+
+    .premium-sidebar{
+        position:fixed !important;
+        top:0;
+        left:-320px;
+        width:290px !important;
+        height:100vh !important;
+        transition:.25s ease;
+        z-index:9999;
+    }
+
+    .premium-sidebar.mobile-open{
+        left:0;
+    }
+
+    .sidebar-overlay{
+        position:fixed;
+        inset:0;
+        background:rgba(2,6,23,.6);
+        opacity:0;
+        visibility:hidden;
+        transition:.25s ease;
+        z-index:9990;
+    }
+
+    .sidebar-overlay.show{
+        opacity:1;
+        visibility:visible;
+    }
+
+    .premium-main{
+        width:100% !important;
+        margin-left:0 !important;
+        padding:90px 16px 32px !important;
+    }
+
+    .premium-topbar,
+    .settings-topbar{
+        flex-direction:column;
+        align-items:flex-start;
+        gap:15px;
+        padding:18px;
+    }
+
+    .topbar-business,
+    .topbar-right-stack,
+    .topbar-actions-row{
+        width:100%;
+    }
+
+    .topbar-actions-row{
+        justify-content:space-between;
+    }
+
+    .premium-page-head,
+    .menu-hero,
+    .settings-hero,
+    .premium-section-head,
+    .menu-panel-head{
+        display:flex !important;
+        flex-direction:column;
+        align-items:flex-start;
+        gap:16px;
+    }
+
+    .premium-actions,
+    .menu-hero-actions,
+    .settings-action-row{
+        width:100%;
+        display:flex;
+        flex-wrap:wrap;
+        gap:10px;
+    }
+
+    .premium-actions a,
+    .premium-actions button,
+    .menu-hero-actions button,
+    .settings-main-save{
+        flex:1;
+        width:100%;
+    }
+
+    .premium-stats-grid,
+    .premium-analytics-grid,
+    .menu-stats-row,
+    .settings-nav-cards{
+        grid-template-columns:repeat(2,1fr) !important;
+    }
+
+    .settings-dashboard-grid,
+    .menu-workspace,
+    .settings-preview-layout{
+        grid-template-columns:1fr !important;
+    }
+
+    .menu-categories-panel{
+        width:100%;
+    }
+
+    .menu-tabs{
+        overflow-x:auto;
+        flex-wrap:nowrap;
+        padding-bottom:8px;
+    }
+
+    .menu-tab{
+        white-space:nowrap;
+        min-width:max-content;
+    }
+
+    .premium-table-wrap,
+    .menu-table-wrap{
+        overflow-x:auto !important;
+        width:100%;
+    }
+
+    .premium-table,
+    .menu-premium-table{
+        min-width:900px;
+    }
+
+    .users-modern-table{
+        min-width:900px;
+    }
+
+    .today-booking-row{
+        grid-template-columns:1fr !important;
+        align-items:flex-start;
+        gap:10px;
+    }
+
+    .settings-form-grid,
+    .reservation-edit-grid{
+        grid-template-columns:1fr !important;
+    }
+
+    .modal{
+        padding:16px;
+        align-items:flex-start;
+        overflow-y:auto;
+    }
+
+    .modal-content,
+    .premium-modal,
+    .business-modal,
+    .menu-item-modal{
+        width:100% !important;
+        max-width:100% !important;
+        max-height:none !important;
+        border-radius:24px;
+        padding:22px;
+        margin-top:20px;
+    }
+
+    .modal-actions{
+        width:100%;
+        flex-direction:column-reverse;
+        align-items:stretch;
+    }
+
+    .modal-actions button{
+        width:100%;
+    }
 }
-
-.mobile-sidebar-toggle{
-    display:flex !important;
-}
-
-.premium-sidebar{
-    position:fixed !important;
-    top:0;
-    left:-320px;
-
-    width:290px !important;
-    height:100vh !important;
-
-    transition:.25s ease;
-    z-index:9999;
-}
-
-.premium-sidebar.mobile-open{
-    left:0;
-}
-
-.sidebar-overlay{
-    position:fixed;
-    inset:0;
-
-    background:rgba(2,6,23,.6);
-
-    opacity:0;
-    visibility:hidden;
-
-    transition:.25s ease;
-    z-index:9990;
-}
-
-.sidebar-overlay.show{
-    opacity:1;
-    visibility:visible;
-}
-
-.premium-main{
-    width:100% !important;
-    margin-left:0 !important;
-    padding:90px 14px 30px !important;
-}
-
-.premium-topbar{
-    flex-direction:column;
-    align-items:flex-start;
-    gap:15px;
-    padding:18px;
-}
-
-.premium-page-head{
-    display:flex !important;
-    flex-direction:column;
-    align-items:flex-start;
-    gap:16px;
-}
-
-.premium-actions{
-    width:100%;
-    display:flex;
-    flex-wrap:wrap;
-    gap:10px;
-}
-
-.premium-actions a{
-    flex:1;
-}
-
-.premium-stats-grid{
-    grid-template-columns:repeat(2,1fr) !important;
-}
-
-.premium-table-wrap{
-    overflow-x:auto !important;
-}
-
-.premium-table{
-    min-width:900px;
-}
-
-}
-
 
 @media (max-width:700px){
 
-.premium-stats-grid{
-    grid-template-columns:1fr !important;
-}
+    .premium-main{
+        padding:84px 10px 22px !important;
+    }
 
-.premium-main{
-    padding:84px 10px 20px !important;
-}
+    .premium-stats-grid,
+    .premium-analytics-grid,
+    .menu-stats-row,
+    .settings-nav-cards{
+        grid-template-columns:1fr !important;
+    }
 
-.premium-table-card{
-    padding:16px;
-}
+    .premium-table-card,
+    .settings-panel,
+    .menu-categories-panel,
+    .menu-items-panel,
+    .menu-category-management,
+    .settings-preview-premium{
+        padding:16px !important;
+        border-radius:22px !important;
+    }
 
-.premium-topbar{
-    border-radius:20px;
-}
+    .premium-topbar,
+    .settings-topbar{
+        border-radius:20px;
+    }
 
+    .premium-page-head h1,
+    .settings-hero h1,
+    .menu-hero h1{
+        font-size:28px !important;
+        line-height:1.1;
+    }
+
+    .premium-section-head h2,
+    .settings-panel-head h2,
+    .menu-panel-head h2{
+        font-size:22px !important;
+    }
+
+    .premium-actions{
+        flex-direction:column;
+    }
+
+    .premium-actions a,
+    .premium-actions button{
+        width:100%;
+        min-height:50px;
+    }
+
+    .premium-table,
+    .menu-premium-table,
+    .users-modern-table{
+        min-width:820px;
+    }
+
+    .menu-product-cell{
+        min-width:260px;
+    }
+
+    .menu-table-footer,
+    .menu-pagination-footer{
+        flex-direction:column;
+        align-items:flex-start;
+        gap:12px;
+    }
+
+    .menu-pagination-controls{
+        width:100%;
+        overflow-x:auto;
+    }
+
+    .settings-nav-card{
+        min-height:auto;
+    }
+
+    .settings-preview-layout{
+        gap:16px;
+    }
+
+    .mini-chat-preview{
+        width:100%;
+    }
+
+    .notification-wrapper{
+        position:relative;
+    }
+
+    .notifications-panel{
+        right:auto !important;
+        left:0 !important;
+        width:calc(100vw - 32px) !important;
+        max-width:none !important;
+    }
 }
