@@ -1,5 +1,5 @@
 <button class="mobile-sidebar-toggle" onclick="toggleSidebar()">
-    ☰
+☰
 </button>
 
 <div class="sidebar-overlay" onclick="closeSidebar()"></div>
@@ -64,27 +64,10 @@
         </a>
         {% endif %}
 
-        {% if role in ["super_admin", "owner"] %}
+        {% if role in ["super_admin","owner"] %}
         <a class="premium-nav-link {% if request.path == '/blacklist' %}active{% endif %}"
-            href="/blacklist">
+           href="/blacklist">
             🚫 Ban list
-        </a>
-        {% endif %}
-
-        {% if role in ["super_admin", "owner"] %}
-        <a class="premium-nav-link {% if request.path == '/analytics/chats' %}active{% endif %}"
-           href="/analytics/chats">
-            💬 Chat Analytics
-        </a>
-
-        <a class="premium-nav-link {% if request.path == '/analytics/reservations' %}active{% endif %}"
-           href="/analytics/reservations">
-            📅 Reservation Analytics
-        </a>
-
-        <a class="premium-nav-link {% if request.path == '/analytics/conversion' %}active{% endif %}"
-           href="/analytics/conversion">
-            📈 Conversion
         </a>
         {% endif %}
 
@@ -106,13 +89,29 @@
 </aside>
 
 <script>
+
 function toggleSidebar() {
-    document.getElementById("premiumSidebar").classList.toggle("mobile-open");
-    document.querySelector(".sidebar-overlay").classList.toggle("show");
+
+document
+.getElementById("premiumSidebar")
+.classList.toggle("mobile-open");
+
+document
+.querySelector(".sidebar-overlay")
+.classList.toggle("show");
+
 }
 
 function closeSidebar() {
-    document.getElementById("premiumSidebar").classList.remove("mobile-open");
-    document.querySelector(".sidebar-overlay").classList.remove("show");
+
+document
+.getElementById("premiumSidebar")
+.classList.remove("mobile-open");
+
+document
+.querySelector(".sidebar-overlay")
+.classList.remove("show");
+
 }
+
 </script>
