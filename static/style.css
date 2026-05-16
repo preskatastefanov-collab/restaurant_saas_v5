@@ -8529,3 +8529,212 @@ body.landing-page .landing-footer {
         overflow: hidden !important;
     }
 }
+
+/* ===== LOGIN RESPONSIVE FIX ===== */
+
+@media (max-width: 1080px) {
+    body.login-page-premium {
+        min-height: 100vh;
+        overflow-x: hidden;
+    }
+
+    .login-shell {
+        width: calc(100% - 32px) !important;
+        max-width: 720px !important;
+        min-height: auto !important;
+        margin: 24px auto !important;
+        display: flex !important;
+        flex-direction: column !important;
+        border-radius: 28px !important;
+        overflow: hidden !important;
+    }
+
+    .login-left,
+    .login-right {
+        width: 100% !important;
+        min-height: auto !important;
+    }
+
+    .login-left {
+        padding: 48px 34px !important;
+    }
+
+    .login-left-content {
+        max-width: 100% !important;
+    }
+
+    .login-left h1 {
+        font-size: 42px !important;
+        line-height: 1.02 !important;
+    }
+
+    .login-left p {
+        font-size: 17px !important;
+        max-width: 100% !important;
+    }
+
+    .login-feature-row {
+        display: grid !important;
+        grid-template-columns: repeat(3, 1fr) !important;
+        gap: 14px !important;
+    }
+
+    .login-right {
+        padding: 34px !important;
+        display: flex !important;
+        justify-content: center !important;
+    }
+
+    .login-card-premium {
+        width: 100% !important;
+        max-width: 460px !important;
+        margin: 0 auto !important;
+    }
+}
+
+@media (max-width: 700px) {
+    .login-shell {
+        width: calc(100% - 24px) !important;
+        margin: 14px auto !important;
+        border-radius: 24px !important;
+    }
+
+    .login-left {
+        padding: 34px 22px !important;
+    }
+
+    .login-left h1 {
+        font-size: 34px !important;
+    }
+
+    .login-feature-row {
+        grid-template-columns: 1fr !important;
+    }
+
+    .login-right {
+        padding: 24px 18px 28px !important;
+    }
+
+    .login-card-premium {
+        padding: 26px 20px !important;
+        border-radius: 24px !important;
+    }
+
+    .login-logo {
+        justify-content: center !important;
+        text-align: center !important;
+    }
+
+    .login-options {
+        flex-direction: column !important;
+        align-items: flex-start !important;
+        gap: 10px !important;
+    }
+}
+
+/* ===== LOGIN CARD FINAL FIX ===== */
+
+@media (max-width:1080px){
+
+    .login-card-premium{
+        height:auto !important;
+        min-height:auto !important;
+        overflow:visible !important;
+
+        padding:40px !important;
+
+        display:flex !important;
+        flex-direction:column !important;
+        justify-content:flex-start !important;
+    }
+
+    .login-form-premium{
+        width:100% !important;
+        display:flex !important;
+        flex-direction:column !important;
+    }
+
+    .login-input-wrap{
+        width:100% !important;
+    }
+
+    .login-submit{
+        width:100% !important;
+    }
+}
+
+@media (max-width:700px){
+
+    .login-card-premium{
+        padding:28px 20px !important;
+    }
+
+    .login-logo{
+        margin-bottom:18px !important;
+    }
+
+    .login-logo-text{
+        font-size:42px !important;
+    }
+
+}
+
+/* ===== LOGIN TABLET/PHONE HARD FIX ===== */
+
+@media (max-width:1080px){
+
+    .login-page-premium,
+    .login-shell,
+    .login-left,
+    .login-right,
+    .login-card-premium{
+        height:auto !important;
+        min-height:auto !important;
+        max-height:none !important;
+        overflow:visible !important;
+    }
+
+    .login-shell{
+        display:flex !important;
+        flex-direction:column !important;
+        align-items:center !important;
+        justify-content:flex-start !important;
+        padding:36px 24px !important;
+    }
+
+    .login-right{
+        position:relative !important;
+        width:100% !important;
+        padding:28px 0 40px !important;
+        display:flex !important;
+        align-items:center !important;
+        justify-content:center !important;
+    }
+
+    .login-card-premium{
+        position:relative !important;
+        top:auto !important;
+        left:auto !important;
+        right:auto !important;
+        bottom:auto !important;
+        transform:none !important;
+
+        width:100% !important;
+        max-width:440px !important;
+        padding:36px 34px !important;
+        margin:0 auto !important;
+    }
+}
+
+@media (max-width:700px){
+
+    .login-shell{
+        width:calc(100% - 24px) !important;
+        padding:24px 14px !important;
+    }
+
+    .login-card-premium{
+        max-width:100% !important;
+        padding:28px 20px !important;
+    }
+}
