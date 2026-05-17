@@ -94,33 +94,41 @@ app.secret_key = SECRET_KEY
 
 UPLOAD_FOLDER = os.path.join("static", "uploads", "menu")
 ALLOWED_IMAGE_EXTENSIONS = {"png", "jpg", "jpeg", "webp", "gif"}
+MAX_IMAGE_SIZE_MB = 5
+MAX_IMAGE_SIZE_BYTES = MAX_IMAGE_SIZE_MB * 1024 * 1024
 
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
-
-with app.app_context():
-    init_db()
-    seed_data()
 
 
 def allowed_image_file(filename):
     return "." in filename and filename.rsplit(".", 1)[1].lower() in ALLOWED_IMAGE_EXTENSIONS
 
 
-def save_menu_image(file):
+def save_menu_image(file, tenant_id):
     if not file or not file.filename:
         return ""
 
     if not allowed_image_file(file.filename):
         return ""
 
+    file.seek(0, os.SEEK_END)
+    file_size = file.tell()
+    file.seek(0)
+
+    if file_size > MAX_IMAGE_SIZE_BYTES:
+        return ""
+
+    tenant_folder = os.path.join(UPLOAD_FOLDER, f"tenant_{tenant_id}")
+    os.makedirs(tenant_folder, exist_ok=True)
+
     filename = secure_filename(file.filename)
     timestamp = datetime.now().strftime("%Y%m%d%H%M%S%f")
     filename = f"{timestamp}_{filename}"
 
-    file_path = os.path.join(UPLOAD_FOLDER, filename)
+    file_path = os.path.join(tenant_folder, filename)
     file.save(file_path)
 
-    return f"/static/uploads/menu/{filename}"
+    return f"/static/uploads/menu/tenant_{tenant_id}/{filename}"
 
 
 def safe_int(value, default=0):
@@ -2133,7 +2141,7 @@ def add_menu_item_route():
 
     if can_use_product_images:
         image_url = request.form.get("image_url", "").strip()
-        uploaded_image = save_menu_image(request.files.get("image_file"))
+        uploaded_image = save_menu_image(request.files.get("image_file"), tenant_id)
 
     if uploaded_image:
         image_url = uploaded_image
@@ -2218,7 +2226,7 @@ def edit_menu_item_route():
 
     if can_use_product_images:
         image_url = request.form.get("image_url", "").strip()
-        uploaded_image = save_menu_image(request.files.get("image_file"))
+        uploaded_image = save_menu_image(request.files.get("image_file"), tenant_id)
 
     if uploaded_image:
         image_url = uploaded_image
