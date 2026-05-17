@@ -294,6 +294,21 @@ def home():
         demo_error=request.args.get("demo_error") == "1"
     )
 
+@app.route("/privacy")
+def privacy():
+    return render_template("privacy.html")
+
+
+@app.route("/terms")
+def terms():
+    return render_template("terms.html")
+
+
+@app.route("/contact")
+def contact():
+    return render_template("contact.html")
+
+
 @app.route("/demo-request", methods=["POST"])
 def demo_request():
     business_name = request.form.get("business_name", "").strip()
