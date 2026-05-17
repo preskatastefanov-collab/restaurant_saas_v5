@@ -88,9 +88,17 @@ from services.menu import (
     toggle_menu_item_status,
 )
 
+from database import init_db, seed_data
+
 
 app = Flask(__name__)
 app.secret_key = SECRET_KEY
+
+
+with app.app_context():
+    init_db()
+    seed_data()
+    
 
 UPLOAD_FOLDER = os.path.join("static", "uploads", "menu")
 ALLOWED_IMAGE_EXTENSIONS = {"png", "jpg", "jpeg", "webp", "gif"}
