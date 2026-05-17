@@ -1439,6 +1439,10 @@ def restaurants_edit():
     plan = normalize_plan(request.form.get("plan", "basic"))
     business_type = normalize_business_type(request.form.get("business_type", "restaurant"))
 
+    status = request.form.get("status", "trial").strip().lower()
+    if status not in ["trial", "active", "expired", "paused"]:
+        status = "trial"
+
     if not name or not slug:
         return redirect("/restaurants?error=invalid")
 
@@ -1450,6 +1454,15 @@ def restaurants_edit():
             plan=plan,
             business_type=business_type
         )
+
+        db = get_db()
+        db.execute("""
+            UPDATE tenants
+            SET status = ?
+            WHERE id = ?
+        """, (status, tenant_id))
+        db.commit()
+        db.close()
 
         clear_chat_sessions()
         return redirect("/restaurants?success=edited")

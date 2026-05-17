@@ -112,7 +112,7 @@ PLAN_FEATURES = {
         "smart_food_answers",
         "better_fallback",
         "smart_quick_replies",
-        "blacklist"
+        "blacklist",
         "upsell",
         "premium_analytics",
         "advanced_ai_logic",
@@ -530,6 +530,8 @@ def list_tenants():
                t.slug,
                t.business_type,
                t.plan,
+               t.status,
+               t.trial_end_date,
                t.is_active,
                t.created_at,
                ts.restaurant_name,
@@ -549,6 +551,8 @@ def list_tenants():
         item["business_type"] = normalize_business_type(item.get("business_type"))
         item["business_type_label"] = get_business_type_label(item["business_type"])
         item["plan"] = normalize_plan(item.get("plan"))
+        item["status"] = (item.get("status") or "trial").strip().lower()
+        item["trial_end_date"] = item.get("trial_end_date") or ""
         item["plan_label"] = get_plan_label(item["plan"])
         item["ai_enabled_by_plan"] = has_feature(item["plan"], "ai_chat")
         item["upsell_enabled_by_plan"] = has_feature(item["plan"], "upsell")

@@ -79,19 +79,33 @@
 </td>
 
 <td>
-{% if r.llm_enabled == 1 %}
-<span class="mini-pill green-pill">Включен</span>
-{% else %}
-<span class="mini-pill gray-pill">Изключен</span>
-{% endif %}
-</td>
 
-<td>
-{% if r.is_active == 1 %}
-<span class="mini-pill green-pill">Активен</span>
+{% if r.status == "active" %}
+<span class="mini-pill green-pill">
+✅ Active
+</span>
+
+{% elif r.status == "trial" %}
+<span class="mini-pill orange-pill">
+⏳ Trial
+</span>
+
+{% elif r.status == "expired" %}
+<span class="mini-pill red-pill">
+❌ Expired
+</span>
+
+{% elif r.status == "paused" %}
+<span class="mini-pill gray-pill">
+⏸ Paused
+</span>
+
 {% else %}
-<span class="mini-pill red-pill">Спрян</span>
+<span class="mini-pill orange-pill">
+⏳ Trial
+</span>
 {% endif %}
+
 </td>
 
 <td>
@@ -192,15 +206,28 @@ onclick="openEditModal('{{ r.id }}')">
 <input name="slug" value="{{ r.slug }}" required>
 
 <select name="plan">
-<option value="basic">Basic</option>
-<option value="standard">Standard</option>
-<option value="premium">Premium</option>
+    <option value="basic" {% if r.plan == "basic" %}selected{% endif %}>Basic</option>
+    <option value="standard" {% if r.plan == "standard" %}selected{% endif %}>Standard</option>
+    <option value="premium" {% if r.plan == "premium" %}selected{% endif %}>Premium</option>
 </select>
 
 <select name="business_type">
+
 {% for bt in business_type_options %}
-<option value="{{ bt.value }}">{{ bt.label }}</option>
+
+<option value="{{ bt.value }}" {% if r.business_type == bt.value %}selected{% endif %}>
+    {{ bt.label }}
+</option>
+
 {% endfor %}
+
+</select>
+
+<select name="status">
+    <option value="trial" {% if r.status == "trial" %}selected{% endif %}>Trial</option>
+    <option value="active" {% if r.status == "active" %}selected{% endif %}>Active</option>
+    <option value="expired" {% if r.status == "expired" %}selected{% endif %}>Expired</option>
+    <option value="paused" {% if r.status == "paused" %}selected{% endif %}>Paused</option>
 </select>
 
 <div class="modal-actions">
