@@ -8887,3 +8887,84 @@ body.landing-page .landing-footer {
         font-size: 18px !important;
     }
 }
+
+.reservy-footer{
+    background:#050b1f;
+    color:white;
+    padding:34px 24px;
+}
+
+.reservy-footer-inner{
+    max-width:1200px;
+    margin:0 auto;
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    gap:20px;
+}
+
+.reservy-footer-inner strong{
+    display:block;
+    font-size:24px;
+    font-weight:950;
+}
+
+.reservy-footer-inner span{
+    color:#8ea0c8;
+    font-size:13px;
+    letter-spacing:2px;
+    text-transform:uppercase;
+}
+
+.reservy-footer-links{
+    display:flex;
+    gap:18px;
+    flex-wrap:wrap;
+}
+
+.reservy-footer-links a{
+    color:#cbd5e1;
+    text-decoration:none;
+    font-weight:800;
+}
+
+.reservy-footer-links a:hover{
+    color:white;
+}
+
+@media(max-width:700px){
+    .reservy-footer-inner{
+        flex-direction:column;
+        align-items:flex-start;
+    }
+}
+
+.footer-brand{
+display:flex;
+align-items:center;
+gap:18px;
+}
+
+.footer-logo{
+width:58px;
+height:58px;
+
+border-radius:18px;
+
+display:flex;
+align-items:center;
+justify-content:center;
+
+font-size:36px;
+font-weight:900;
+color:white;
+
+background:linear-gradient(
+135deg,
+#45a6ff,
+#2d7dff
+);
+
+box-shadow:
+0 0 25px rgba(70,130,255,.45);
+}
