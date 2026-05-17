@@ -88,7 +88,31 @@
 
 </td>
 
-<td>{{r.business_type or "—"}}</td>
+<td>
+
+{% if r.business_type=="restaurant" %}
+Ресторант
+
+{% elif r.business_type=="bar" %}
+Бар
+
+{% elif r.business_type=="cafe" %}
+Кафене
+
+{% elif r.business_type=="pizzeria" %}
+Пицария
+
+{% elif r.business_type=="fast_food" %}
+Бързо хранене
+
+{% elif r.business_type=="other" %}
+Друго
+
+{% else %}
+—
+{% endif %}
+
+</td>
 
 <td>
     {% if r.plan_interest == "basic" %}
