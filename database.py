@@ -217,7 +217,8 @@ def init_db():
     add_column_if_missing(c, "tenants", "business_type", "business_type TEXT DEFAULT 'restaurant'")
     add_column_if_missing(c, "tenants", "is_active", "is_active INTEGER DEFAULT 1")
     add_column_if_missing(c, "tenants", "is_demo", "is_demo INTEGER DEFAULT 0")
-
+    add_column_if_missing(c, "tenants", "status", "status TEXT DEFAULT 'trial'")
+    add_column_if_missing(c, "tenants", "trial_end_date", "trial_end_date TEXT DEFAULT ''")
 
     add_column_if_missing(c, "tenant_settings", "website", "website TEXT DEFAULT ''")
     add_column_if_missing(c, "tenant_settings", "working_hours", "working_hours TEXT DEFAULT ''")
@@ -235,6 +236,7 @@ def init_db():
     add_column_if_missing(c, "menu_items", "upsell_side", "upsell_side TEXT DEFAULT ''")
     add_column_if_missing(c, "menu_items", "sort_order", "sort_order INTEGER DEFAULT 0")
     add_column_if_missing(c, "menu_items", "is_active", "is_active INTEGER DEFAULT 1")
+
     add_column_if_missing(c, "menu_categories", "name_en", "name_en TEXT DEFAULT ''")
 
     add_column_if_missing(c, "menu_items", "name_en", "name_en TEXT DEFAULT ''")
@@ -242,9 +244,11 @@ def init_db():
     add_column_if_missing(c, "menu_items", "upsell_drink_en", "upsell_drink_en TEXT DEFAULT ''")
     add_column_if_missing(c, "menu_items", "upsell_dessert_en", "upsell_dessert_en TEXT DEFAULT ''")
     add_column_if_missing(c, "menu_items", "upsell_side_en", "upsell_side_en TEXT DEFAULT ''")
+
     add_column_if_missing(c, "password_reset_requests", "admin_note", "admin_note TEXT DEFAULT ''")
     add_column_if_missing(c, "password_reset_requests", "handled_by", "handled_by TEXT DEFAULT ''")
     add_column_if_missing(c, "password_reset_requests", "updated_at", "updated_at TEXT DEFAULT ''")
+
     add_column_if_missing(c, "demo_requests", "plan_interest", "plan_interest TEXT DEFAULT ''")
     add_column_if_missing(c, "demo_requests", "budget", "budget TEXT DEFAULT ''")
     add_column_if_missing(c, "demo_requests", "lead_source", "lead_source TEXT DEFAULT ''")
@@ -425,8 +429,9 @@ def seed_data():
     c = conn.cursor()
 
     c.execute("""
-    INSERT OR IGNORE INTO tenants (id, name, slug, business_type, plan, is_active, is_demo)
-    VALUES (1, ?, 'demo-restaurant', 'restaurant', 'premium', 1, 1)
+    INSERT OR IGNORE INTO tenants
+    (id, name, slug, business_type, plan, is_active, is_demo, status)
+    VALUES (1, ?, 'demo-restaurant', 'restaurant', 'premium', 1, 1, 'active')
     """, (DEFAULT_TENANT_NAME,))
     
     c.execute("""
