@@ -1,3 +1,6 @@
+import shutil
+import cloudinary.uploader
+from datetime import datetime
 import os
 import sqlite3
 from config import (
@@ -33,6 +36,35 @@ def get_db():
     conn.row_factory = sqlite3.Row
     return conn
 
+def create_database_backup():
+    db_path = get_absolute_database_path()
+
+    if not os.path.exists(db_path):
+        return ""
+
+    timestamp = datetime.now().strftime("%Y_%m_%d_%H_%M_%S")
+    backup_name = f"reservy_backup_{timestamp}.db"
+
+    local_backup_dir = os.path.join(BASE_DIR, "backups")
+    os.makedirs(local_backup_dir, exist_ok=True)
+
+    local_backup_path = os.path.join(local_backup_dir, backup_name)
+
+    shutil.copy2(db_path, local_backup_path)
+
+    try:
+        result = cloudinary.uploader.upload(
+            local_backup_path,
+            folder="reservy/database_backups",
+            resource_type="raw",
+            public_id=backup_name
+        )
+
+        return result.get("secure_url", "")
+
+    except Exception as e:
+        print("DATABASE BACKUP ERROR:", e)
+        return local_backup_path
 
 def column_exists(cursor, table_name, column_name):
     rows = cursor.execute(f"PRAGMA table_info({table_name})").fetchall()

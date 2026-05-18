@@ -7,7 +7,7 @@ from datetime import datetime, timedelta
 from flask import Flask, request, jsonify, session, render_template, redirect, send_file
 from werkzeug.utils import secure_filename
 
-from database import init_db, seed_data, get_db
+from database import init_db, seed_data, get_db, create_database_backup
 from config import SECRET_KEY
 from core.chatbot import ChatBot
 
@@ -429,6 +429,22 @@ def chat(slug):
 
     return jsonify(reply)
 
+@app.route("/admin/create-backup", methods=["POST"])
+def admin_create_backup():
+    user = current_user()
+
+    if not user:
+        return redirect("/login")
+
+    if not has_role("super_admin"):
+        return redirect("/dashboard")
+
+    backup_url = create_database_backup()
+
+    if backup_url:
+        return redirect("/dashboard?backup_success=1")
+
+    return redirect("/dashboard?backup_error=1")
 
 @app.route("/login", methods=["GET", "POST"])
 def login():
