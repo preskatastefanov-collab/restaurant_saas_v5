@@ -1,3 +1,6 @@
+import cloudinary
+import cloudinary.uploader
+import cloudinary.api
 import os
 from datetime import datetime, timedelta
 
@@ -91,6 +94,18 @@ from services.menu import (
 from database import init_db, seed_data
 
 
+from dotenv import load_dotenv
+load_dotenv()
+
+
+cloudinary.config(
+    cloud_name=os.getenv("CLOUDINARY_CLOUD_NAME"),
+    api_key=os.getenv("CLOUDINARY_API_KEY"),
+    api_secret=os.getenv("CLOUDINARY_API_SECRET"),
+    secure=True
+)
+
+
 app = Flask(__name__)
 app.secret_key = SECRET_KEY
 
@@ -126,17 +141,18 @@ def save_menu_image(file, tenant_id):
     if file_size > MAX_IMAGE_SIZE_BYTES:
         return ""
 
-    tenant_folder = os.path.join(UPLOAD_FOLDER, f"tenant_{tenant_id}")
-    os.makedirs(tenant_folder, exist_ok=True)
+    try:
+        result = cloudinary.uploader.upload(
+            file,
+            folder=f"reservy/tenant_{tenant_id}",
+            resource_type="image"
+        )
 
-    filename = secure_filename(file.filename)
-    timestamp = datetime.now().strftime("%Y%m%d%H%M%S%f")
-    filename = f"{timestamp}_{filename}"
+        return result["secure_url"]
 
-    file_path = os.path.join(tenant_folder, filename)
-    file.save(file_path)
-
-    return f"/static/uploads/menu/tenant_{tenant_id}/{filename}"
+    except Exception as e:
+        print("Cloudinary error:", e)
+        return ""
 
 
 def safe_int(value, default=0):
