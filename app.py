@@ -1015,6 +1015,22 @@ def dashboard():
         active_business=get_active_tenant_info(),
     )
 
+@app.route("/backups")
+def backups():
+
+    user = current_user()
+
+    if not user:
+        return redirect("/login")
+
+    if not has_role("super_admin"):
+        return redirect("/dashboard")
+
+    return render_template(
+        "backups.html",
+        role=user["role"]
+    )
+
 @app.route("/api/notifications")
 def api_notifications():
     user = current_user()
