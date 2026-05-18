@@ -32,6 +32,37 @@
 </div>
 </div>
 
+<div class="crm-filters">
+    <input id="crmSearchInput" type="text" placeholder="🔍 Търси по бизнес, контакт, телефон, email..." onkeyup="filterDemoCRM()">
+
+    <select id="crmStatusFilter" onchange="filterDemoCRM()">
+        <option value="">Всички статуси</option>
+        <option value="new">Нова</option>
+        <option value="contacted">Контакт</option>
+        <option value="demo">Demo</option>
+        <option value="negotiation">Преговор</option>
+        <option value="client">Клиент</option>
+        <option value="rejected">Отказ</option>
+    </select>
+
+    <select id="crmPlanFilter" onchange="filterDemoCRM()">
+        <option value="">Всички планове</option>
+        <option value="basic">Basic</option>
+        <option value="standard">Standard</option>
+        <option value="premium">Premium</option>
+    </select>
+
+    <select id="crmTypeFilter" onchange="filterDemoCRM()">
+        <option value="">Всички типове</option>
+        <option value="restaurant">Ресторант</option>
+        <option value="bar">Бар</option>
+        <option value="cafe">Кафене</option>
+        <option value="pizzeria">Пицария</option>
+        <option value="fast_food">Бързо хранене</option>
+        <option value="other">Друго</option>
+    </select>
+</div>
+
 <div class="premium-table-wrap">
 
 <table class="premium-table">
@@ -60,7 +91,11 @@
 {% if requests %}
 {% for r in requests %}
 
-<tr>
+<tr
+    data-status="{{ r.status or '' }}"
+    data-plan="{{ r.plan_interest or '' }}"
+    data-type="{{ r.business_type or '' }}"
+>
 
 <td>{{r.id}}</td>
 
@@ -179,8 +214,7 @@
 <button
 type="button"
 
-onclick='openDemoModal({{
-{
+onclick='openDemoModal({{ {
 "id":r.id,
 "business_name":r.business_name,
 "contact_name":r.contact_name,
@@ -194,8 +228,7 @@ onclick='openDemoModal({{
 "admin_note":r.admin_note,
 "handled_by":r.handled_by,
 "next_contact":r.next_contact
-}|tojson
-}})'
+}|tojson }})'
 
 >
 
@@ -491,6 +524,80 @@ function closeDemoModal(){
 document.getElementById(
 "demoModal"
 ).style.display="none";
+
+}
+
+function filterDemoCRM(){
+
+    const search=
+    document.getElementById(
+    "crmSearchInput"
+    ).value.toLowerCase();
+
+    const status=
+    document.getElementById(
+    "crmStatusFilter"
+    ).value;
+
+    const plan=
+    document.getElementById(
+    "crmPlanFilter"
+    ).value;
+
+    const type=
+    document.getElementById(
+    "crmTypeFilter"
+    ).value;
+
+    const rows=
+    document.querySelectorAll(
+    ".premium-table tbody tr"
+    );
+
+    rows.forEach(row=>{
+
+        if(
+        row.querySelector(
+        ".empty-state"
+        )
+        ) return;
+
+        const rowText=
+        row.innerText.toLowerCase();
+
+        const rowStatus=
+        row.dataset.status||"";
+
+        const rowPlan=
+        row.dataset.plan||"";
+
+        const rowType=
+        row.dataset.type||"";
+
+        const matchesSearch=
+        !search ||
+        rowText.includes(search);
+
+        const matchesStatus=
+        !status ||
+        rowStatus===status;
+
+        const matchesPlan=
+        !plan ||
+        rowPlan===plan;
+
+        const matchesType=
+        !type ||
+        rowType===type;
+
+        row.style.display=(
+        matchesSearch &&
+        matchesStatus &&
+        matchesPlan &&
+        matchesType
+        ) ? "" : "none";
+
+    });
 
 }
 
