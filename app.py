@@ -466,10 +466,15 @@ def restore_backup():
     if not has_role("super_admin"):
         return redirect("/dashboard")
 
-    # предпазен backup преди restore
-    create_database_backup()
+    backup_url = request.form.get("backup_url", "").strip()
 
-    return redirect("/backups")
+    restored = restore_database_from_url(backup_url)
+
+    if restored:
+        session.clear()
+        return redirect("/login?restore_success=1")
+
+    return redirect("/backups?restore_error=1")
 
 @app.route("/login", methods=["GET", "POST"])
 def login():

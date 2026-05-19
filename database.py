@@ -1,3 +1,4 @@
+import requests
 import shutil
 import cloudinary.uploader
 from datetime import datetime
@@ -107,6 +108,41 @@ def format_backup_size(bytes_value):
 
     except Exception:
         return "—"
+    
+def restore_database_from_url(backup_url):
+    if not backup_url:
+        return False
+
+    db_path = get_absolute_database_path()
+
+    try:
+        # защитен backup преди restore
+        create_database_backup()
+
+        response = requests.get(backup_url, timeout=60)
+
+        if response.status_code != 200:
+            print("RESTORE DOWNLOAD ERROR:", response.status_code)
+            return False
+
+        temp_restore_path = db_path + ".restore_tmp"
+
+        with open(temp_restore_path, "wb") as f:
+            f.write(response.content)
+
+        # проверка дали файлът е валидна SQLite база
+        test_conn = sqlite3.connect(temp_restore_path)
+        test_conn.execute("SELECT name FROM sqlite_master LIMIT 1")
+        test_conn.close()
+
+        shutil.copy2(temp_restore_path, db_path)
+        os.remove(temp_restore_path)
+
+        return True
+
+    except Exception as e:
+        print("RESTORE DATABASE ERROR:", e)
+        return False
 
 def column_exists(cursor, table_name, column_name):
     rows = cursor.execute(f"PRAGMA table_info({table_name})").fetchall()
