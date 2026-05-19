@@ -75,6 +75,7 @@
 <th>Размер</th>
 <th>Download</th>
 <th>Restore</th>
+<th>Delete</th>
 </tr>
 </thead>
 
@@ -119,11 +120,35 @@ style="background:#7c3aed;"
 
 </td>
 
+<td>
+<form
+method="POST"
+action="/admin/delete-backup"
+onsubmit="return confirm('⚠️ Сигурни ли сте, че искате да изтриете този backup? Това действие не може да бъде върнато.')"
+>
+
+<input
+type="hidden"
+name="public_id"
+value="{{ b.public_id }}"
+>
+
+<button
+type="submit"
+class="mini-open-btn"
+style="background:#ef4444;"
+>
+🗑 Delete
+</button>
+
+</form>
+</td>
+
 </tr>
 {% endfor %}
 {% else %}
 <tr>
-<td colspan="4" class="empty-state">
+<td colspan="6" class="empty-state">
 Все още няма създадени backup-и.
 </td>
 </tr>

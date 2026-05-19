@@ -1069,6 +1069,26 @@ def backups():
         backup_error=request.args.get("backup_error") == "1",
     )
 
+@app.route("/admin/delete-backup", methods=["POST"])
+def delete_backup():
+
+    user = current_user()
+
+    if not user:
+        return redirect("/login")
+
+    if not has_role("super_admin"):
+        return redirect("/dashboard")
+
+    public_id = request.form.get("public_id", "").strip()
+
+    deleted = delete_database_backup(public_id)
+
+    if deleted:
+        return redirect("/backups?delete_success=1")
+
+    return redirect("/backups?delete_error=1")
+
 @app.route("/api/notifications")
 def api_notifications():
     user = current_user()

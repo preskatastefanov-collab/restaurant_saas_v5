@@ -80,6 +80,7 @@ def list_database_backups():
 
         for item in result.get("resources", []):
             backups.append({
+                "public_id": item.get("public_id", ""),
                 "name": item.get("public_id", "").split("/")[-1],
                 "url": item.get("secure_url", ""),
                 "created_at": item.get("created_at", ""),
@@ -142,6 +143,22 @@ def restore_database_from_url(backup_url):
 
     except Exception as e:
         print("RESTORE DATABASE ERROR:", e)
+        return False
+    
+def delete_database_backup(public_id):
+    if not public_id:
+        return False
+
+    try:
+        result = cloudinary.uploader.destroy(
+            public_id,
+            resource_type="raw"
+        )
+
+        return result.get("result") in ["ok", "not found"]
+
+    except Exception as e:
+        print("DELETE BACKUP ERROR:", e)
         return False
 
 def column_exists(cursor, table_name, column_name):
