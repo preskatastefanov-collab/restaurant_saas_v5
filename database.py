@@ -161,6 +161,24 @@ def delete_database_backup(public_id):
         print("DELETE BACKUP ERROR:", e)
         return False
 
+def delete_old_backups(limit=30):
+    try:
+        backups = list_database_backups()
+
+        old_backups = backups[limit:]
+
+        for backup in old_backups:
+            public_id = backup.get("public_id", "")
+
+            if public_id:
+                delete_database_backup(public_id)
+
+        return True
+
+    except Exception as e:
+        print("DELETE OLD BACKUPS ERROR:", e)
+        return False
+
 def column_exists(cursor, table_name, column_name):
     rows = cursor.execute(f"PRAGMA table_info({table_name})").fetchall()
     return any(row[1] == column_name for row in rows)
