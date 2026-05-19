@@ -2,6 +2,15 @@ import cloudinary
 import cloudinary.uploader
 import cloudinary.api
 import os
+from database import (
+    init_db,
+    seed_data,
+    get_db,
+    create_database_backup,
+    list_database_backups,
+    format_backup_size,
+)
+
 from datetime import datetime, timedelta
 
 from flask import Flask, request, jsonify, session, render_template, redirect, send_file
@@ -442,9 +451,9 @@ def admin_create_backup():
     backup_url = create_database_backup()
 
     if backup_url:
-        return redirect("/dashboard?backup_success=1")
+        return redirect("/backups?backup_success=1")
 
-    return redirect("/dashboard?backup_error=1")
+    return redirect("/backups?backup_error=1")
 
 @app.route("/login", methods=["GET", "POST"])
 def login():
@@ -1026,9 +1035,17 @@ def backups():
     if not has_role("super_admin"):
         return redirect("/dashboard")
 
+    backups_list = list_database_backups()
+
+    for b in backups_list:
+        b["size_label"] = format_backup_size(b.get("bytes"))
+
     return render_template(
         "backups.html",
-        role=user["role"]
+        role=user["role"],
+        backups=backups_list,
+        backup_success=request.args.get("backup_success") == "1",
+        backup_error=request.args.get("backup_error") == "1",
     )
 
 @app.route("/api/notifications")

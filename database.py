@@ -65,6 +65,48 @@ def create_database_backup():
     except Exception as e:
         print("DATABASE BACKUP ERROR:", e)
         return local_backup_path
+    
+def list_database_backups():
+    try:
+        result = cloudinary.api.resources(
+            type="upload",
+            resource_type="raw",
+            prefix="reservy/database_backups",
+            max_results=50
+        )
+
+        backups = []
+
+        for item in result.get("resources", []):
+            backups.append({
+                "name": item.get("public_id", "").split("/")[-1],
+                "url": item.get("secure_url", ""),
+                "created_at": item.get("created_at", ""),
+                "bytes": item.get("bytes", 0),
+            })
+
+        backups.sort(key=lambda x: x["created_at"], reverse=True)
+        return backups
+
+    except Exception as e:
+        print("LIST BACKUPS ERROR:", e)
+        return []
+
+
+def format_backup_size(bytes_value):
+    try:
+        size = int(bytes_value or 0)
+
+        if size >= 1024 * 1024:
+            return f"{round(size / (1024 * 1024), 2)} MB"
+
+        if size >= 1024:
+            return f"{round(size / 1024, 2)} KB"
+
+        return f"{size} B"
+
+    except Exception:
+        return "—"
 
 def column_exists(cursor, table_name, column_name):
     rows = cursor.execute(f"PRAGMA table_info({table_name})").fetchall()

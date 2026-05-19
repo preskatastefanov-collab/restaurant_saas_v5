@@ -4,60 +4,106 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Backups | Reservy</title>
-
 <link rel="stylesheet" href="/static/style.css">
 </head>
 
 <body class="app-layout">
-
 {% include "partials/sidebar.html" %}
 
 <main class="premium-main">
 
 <section class="premium-page-head">
-
 <div>
 <h1>💾 Database Backups</h1>
-<p>Управление на backup-и на системата.</p>
+<p>Създаване и преглед на backup-и на базата данни.</p>
 </div>
-
 </section>
+
+{% if backup_success %}
+<div class="settings-success-banner">✅ Backup създаден успешно.</div>
+{% endif %}
+
+{% if backup_error %}
+<div class="settings-success-banner">❌ Възникна проблем при backup.</div>
+{% endif %}
 
 <section class="premium-stats-grid">
 
 <div class="premium-stat-card">
-
 <div class="stat-icon blue">☁️</div>
-
 <h3>Cloud Storage</h3>
-
 <strong>Active</strong>
+<p>Backup файловете се пазят в Cloudinary.</p>
+</div>
 
-<p>Cloudinary backup система</p>
+<div class="premium-stat-card">
+<div class="stat-icon green">💾</div>
+<h3>Create Backup</h3>
+
+<form method="POST" action="/admin/create-backup">
+<button class="premium-export-btn" type="submit">
+💾 Създай Backup
+</button>
+</form>
 
 </div>
 
 <div class="premium-stat-card">
+<div class="stat-icon purple">📦</div>
+<h3>Total Backups</h3>
+<strong>{{ backups|length }}</strong>
+<p>Последни backup файлове.</p>
+</div>
 
-<div class="stat-icon green">💾</div>
+</section>
 
-<h3>Create Backup</h3>
+<section class="premium-table-card">
 
-<form method="POST" action="/admin/create-backup">
+<div class="premium-section-head">
+<div>
+<h2>📂 Backup история</h2>
+<p>Последните backup-и, качени в cloud storage.</p>
+</div>
+</div>
 
-<button class="premium-export-btn">
+<div class="premium-table-wrap">
+<table class="premium-table">
+<thead>
+<tr>
+<th>Име</th>
+<th>Дата</th>
+<th>Размер</th>
+<th>Download</th>
+</tr>
+</thead>
 
-Създай Backup
-
-</button>
-
-</form>
-
+<tbody>
+{% if backups %}
+{% for b in backups %}
+<tr>
+<td><strong>{{ b.name }}</strong></td>
+<td>{{ b.created_at or "—" }}</td>
+<td>{{ b.size_label or "—" }}</td>
+<td>
+<a class="mini-open-btn" href="{{ b.url }}" target="_blank">
+⬇ Download
+</a>
+</td>
+</tr>
+{% endfor %}
+{% else %}
+<tr>
+<td colspan="4" class="empty-state">
+Все още няма създадени backup-и.
+</td>
+</tr>
+{% endif %}
+</tbody>
+</table>
 </div>
 
 </section>
 
 </main>
-
 </body>
 </html>
