@@ -74,6 +74,7 @@
 <th>Дата</th>
 <th>Размер</th>
 <th>Download</th>
+<th>Restore</th>
 </tr>
 </thead>
 
@@ -89,6 +90,35 @@
 ⬇ Download
 </a>
 </td>
+
+<td>
+
+<form
+method="POST"
+action="/admin/restore-backup"
+onsubmit="return confirm(
+'⚠️ Това ще замени текущата база данни. Преди това автоматично ще бъде създаден backup. Продължавате ли?'
+)"
+>
+
+<input
+type="hidden"
+name="backup_url"
+value="{{ b.url }}"
+>
+
+<button
+type="submit"
+class="mini-open-btn"
+style="background:#7c3aed;"
+>
+🔄 Restore
+</button>
+
+</form>
+
+</td>
+
 </tr>
 {% endfor %}
 {% else %}

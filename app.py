@@ -455,6 +455,22 @@ def admin_create_backup():
 
     return redirect("/backups?backup_error=1")
 
+@app.route("/admin/restore-backup", methods=["POST"])
+def restore_backup():
+
+    user = current_user()
+
+    if not user:
+        return redirect("/login")
+
+    if not has_role("super_admin"):
+        return redirect("/dashboard")
+
+    # предпазен backup преди restore
+    create_database_backup()
+
+    return redirect("/backups")
+
 @app.route("/login", methods=["GET", "POST"])
 def login():
     brand_name = "Reservy"
