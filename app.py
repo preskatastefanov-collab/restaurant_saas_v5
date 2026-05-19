@@ -11,6 +11,12 @@ from database import (
     format_backup_size,
 )
 
+from apscheduler.schedulers.background import BackgroundScheduler
+from database import (
+    create_database_backup,
+    delete_old_backups
+)
+
 from datetime import datetime, timedelta
 
 from flask import Flask, request, jsonify, session, render_template, redirect, send_file
@@ -118,6 +124,30 @@ cloudinary.config(
 app = Flask(__name__)
 app.secret_key = SECRET_KEY
 
+scheduler = BackgroundScheduler()
+
+
+def auto_backup_job():
+    try:
+        print("⏰ Running automatic backup...")
+        create_database_backup()
+
+        # пази само последните 30 backup-а
+        delete_old_backups(limit=30)
+
+        print("✅ Automatic backup completed")
+
+    except Exception as e:
+        print("AUTO BACKUP ERROR:", e)
+
+
+scheduler.add_job(
+    auto_backup_job,
+    trigger="interval",
+    hours=24
+)
+
+scheduler.start()
 
 with app.app_context():
     init_db()
