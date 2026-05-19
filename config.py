@@ -7,7 +7,10 @@ load_dotenv()
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 
 # 🗄️ Database
-DATABASE_PATH = os.path.join(BASE_DIR, "data", "database.db")
+DATABASE_PATH = os.getenv(
+    "DATABASE_PATH",
+    os.path.join(BASE_DIR, "data", "database.db")
+)
 
 # 🔐 Security
 SECRET_KEY = "restaurant_saas_v5_secret_key"
