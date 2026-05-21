@@ -1492,8 +1492,7 @@ People: {c['people']}
         )
 
         if reservation_result and reservation_result.get("saved"):
-
-            send_reservation_email(
+            email_sent = send_reservation_email(
         tenant_id=self.tenant_id,
         name=c["name"],
         phone=c["phone"],
@@ -1501,6 +1500,8 @@ People: {c['people']}
         time=c["time"],
         people=c["people"]
     )
+
+        print("RESERVATION EMAIL SENT:", email_sent)
 
         log_event(self.tenant_id, "reservation_created", {
             "name": c["name"],
