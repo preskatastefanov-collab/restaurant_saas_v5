@@ -1,3 +1,4 @@
+from services.email import send_reservation_email
 from core.intents import detect_intent
 from core.parsers import extract_people, extract_date, extract_time, extract_contact
 from core.validators import (
@@ -1489,6 +1490,17 @@ People: {c['people']}
             status="confirmed",
             notes=""
         )
+
+        if reservation_result and reservation_result.get("saved"):
+
+            send_reservation_email(
+        tenant_id=self.tenant_id,
+        name=c["name"],
+        phone=c["phone"],
+        date=c["date"],
+        time=c["time"],
+        people=c["people"]
+    )
 
         log_event(self.tenant_id, "reservation_created", {
             "name": c["name"],

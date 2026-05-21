@@ -31,3 +31,8 @@ DEFAULT_ADMIN_ROLE = "super_admin"
 # 🕒 Default working hours
 DEFAULT_OPEN_HOUR = 10
 DEFAULT_CLOSE_HOUR = 22
+
+SMTP_HOST=os.getenv("SMTP_HOST","smtp.gmail.com")
+SMTP_PORT=int(os.getenv("SMTP_PORT","587"))
+SMTP_EMAIL=os.getenv("SMTP_EMAIL","")
+SMTP_PASSWORD=os.getenv("SMTP_PASSWORD","")
