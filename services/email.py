@@ -1,13 +1,8 @@
-import smtplib
-
-from email.mime.text import MIMEText
-from email.mime.multipart import MIMEMultipart
+import requests
 
 from config import (
-    SMTP_HOST,
-    SMTP_PORT,
-    SMTP_EMAIL,
-    SMTP_PASSWORD
+    RESEND_API_KEY,
+    FROM_EMAIL
 )
 
 from services.tenants import get_tenant_settings
@@ -28,51 +23,63 @@ def send_reservation_email(
         if not settings:
             return False
 
-        business_email = settings.get("email", "").strip()
+        business_email = settings.get(
+            "email",
+            ""
+        ).strip()
 
         if not business_email:
             return False
 
-        message = MIMEMultipart()
+        payload = {
+            "from": FROM_EMAIL,
+            "to": [business_email],
+            "subject": "Нова резервация - Reservy",
+            "html": f"""
+            <h2>📅 Нова резервация</h2>
 
-        message["From"] = SMTP_EMAIL
-        message["To"] = business_email
-        message["Subject"] = "Нова резервация - Reservy"
+            <p><strong>Име:</strong> {name}</p>
 
-        body = f"""
-Нова резервация:
+            <p><strong>Телефон:</strong> {phone}</p>
 
-Име: {name}
-Телефон: {phone}
-Дата: {date}
-Час: {time}
-Хора: {people}
+            <p><strong>Дата:</strong> {date}</p>
 
-Източник: AI Chatbot
-"""
+            <p><strong>Час:</strong> {time}</p>
 
-        message.attach(
-            MIMEText(body, "plain", "utf-8")
+            <p><strong>Хора:</strong> {people}</p>
+
+            <hr>
+
+            <p>Източник: AI Chatbot</p>
+            """
+        }
+
+        response = requests.post(
+            "https://api.resend.com/emails",
+            headers={
+                "Authorization": f"Bearer {RESEND_API_KEY}",
+                "Content-Type": "application/json"
+            },
+            json=payload,
+            timeout=30
         )
 
-        server = smtplib.SMTP(
-            SMTP_HOST,
-            SMTP_PORT
+        print(
+            "RESEND STATUS:",
+            response.status_code
         )
 
-        server.starttls()
-
-        server.login(
-            SMTP_EMAIL,
-            SMTP_PASSWORD
+        print(
+            "RESEND RESPONSE:",
+            response.text
         )
 
-        server.send_message(message)
-
-        server.quit()
-
-        return True
+        return response.status_code in [200, 201]
 
     except Exception as e:
-        print("EMAIL ERROR:", e)
+        print(
+            "EMAIL ERROR:",
+            e
+        )
+
         return False
