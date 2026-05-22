@@ -93,11 +93,14 @@ PLAN_FEATURES = {
         "export",
         "menu_manager",
         "user_management_basic",
+
         "ai_chat",
         "smart_food_answers",
         "better_fallback",
         "smart_quick_replies",
         "blacklist"
+
+        "email_notifications"
     },
     "premium": {
         "widget",
@@ -108,11 +111,13 @@ PLAN_FEATURES = {
         "export",
         "menu_manager",
         "user_management_basic",
+
         "ai_chat",
         "smart_food_answers",
         "better_fallback",
         "smart_quick_replies",
         "blacklist",
+
         "upsell",
         "premium_analytics",
         "advanced_ai_logic",
@@ -120,6 +125,8 @@ PLAN_FEATURES = {
         "priority_features",
         "product_images",
         "sales_recommendations",
+
+        "email_notifications"
     },
 }
 

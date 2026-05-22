@@ -1,5 +1,6 @@
 import requests
 
+from services.tenants import tenant_has_feature
 from config import (
     RESEND_API_KEY,
     FROM_EMAIL
@@ -18,6 +19,16 @@ def send_reservation_email(
 ):
     try:
 
+
+        if not tenant_has_feature(
+                tenant_id,
+                "email_notifications"
+            ):
+            print(
+            "EMAIL DISABLED FOR PLAN"
+        )
+            return False
+
         settings = get_tenant_settings(tenant_id)
 
         if not settings:
@@ -30,6 +41,11 @@ def send_reservation_email(
 
         if not business_email:
             return False
+        
+        print(
+            "BUSINESS EMAIL:",
+            business_email
+)
 
         payload = {
             "from": FROM_EMAIL,
