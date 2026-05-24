@@ -279,12 +279,15 @@ def init_db():
         tenant_id INTEGER NOT NULL,
         name TEXT NOT NULL,
         phone TEXT NOT NULL,
+        customer_email TEXT DEFAULT '',
         date TEXT NOT NULL,
         time TEXT NOT NULL,
         people INTEGER NOT NULL,
         source TEXT DEFAULT 'chatbot',
         status TEXT DEFAULT 'confirmed',
         notes TEXT DEFAULT '',
+        reminder_24_sent INTEGER DEFAULT 0,
+        reminder_2_sent INTEGER DEFAULT 0,
         created_at TEXT DEFAULT CURRENT_TIMESTAMP,
         FOREIGN KEY (tenant_id) REFERENCES tenants(id)
     )
@@ -407,6 +410,26 @@ def init_db():
     add_column_if_missing(c, "banned_customers", "created_by", "created_by TEXT DEFAULT ''")
     add_column_if_missing(c, "banned_customers", "is_active", "is_active INTEGER DEFAULT 1")
     add_column_if_missing(c, "banned_customers", "updated_at", "updated_at TEXT DEFAULT ''")
+    add_column_if_missing(
+    c,
+    "reservations",
+    "customer_email",
+    "customer_email TEXT DEFAULT ''"
+)
+    
+    add_column_if_missing(
+        c,
+        "reservations",
+        "reminder_24_sent",
+        "reminder_24_sent INTEGER DEFAULT 0"
+)
+
+    add_column_if_missing(
+        c,
+        "reservations",
+        "reminder_2_sent",
+        "reminder_2_sent INTEGER DEFAULT 0"
+)
 
     conn.commit()
     conn.close()

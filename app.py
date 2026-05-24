@@ -11,6 +11,8 @@ from database import (
     format_backup_size,
 )
 
+from services.reminders import run_reservation_reminders
+
 from apscheduler.schedulers.background import BackgroundScheduler
 from database import (
     create_database_backup,
@@ -145,6 +147,12 @@ scheduler.add_job(
     auto_backup_job,
     trigger="interval",
     hours=24
+)
+
+scheduler.add_job(
+    run_reservation_reminders,
+    trigger="interval",
+    minutes=5
 )
 
 scheduler.start()

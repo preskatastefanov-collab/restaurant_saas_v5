@@ -16,7 +16,19 @@ def is_demo_tenant(tenant_id):
     return int(row["is_demo"] or 0) == 1
 
 
-def create_reservation(tenant_id, name, phone, date, time, people, source="dashboard", status="confirmed", notes=""):
+def create_reservation(
+    tenant_id,
+    name,
+    phone,
+    date,
+    time,
+    people,
+    source="dashboard",
+    status="confirmed",
+    notes="",
+    customer_email=""
+):
+    
     if is_demo_tenant(tenant_id):
         return {
             "saved": False,
@@ -27,10 +39,10 @@ def create_reservation(tenant_id, name, phone, date, time, people, source="dashb
     db = get_db()
     db.execute("""
         INSERT INTO reservations (
-            tenant_id, name, phone, date, time, people, source, status, notes
+            tenant_id, name, phone, customer_email, date, time, people, source, status, notes
         )
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
-    """, (tenant_id, name, phone, date, time, people, source, status, notes))
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    """, (tenant_id, name, phone, customer_email, date, time, people, source, status, notes))
     db.commit()
     db.close()
 

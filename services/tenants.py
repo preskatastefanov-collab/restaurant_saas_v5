@@ -98,9 +98,8 @@ PLAN_FEATURES = {
         "smart_food_answers",
         "better_fallback",
         "smart_quick_replies",
-        "blacklist"
-
-        "email_notifications"
+        "blacklist",
+        "email_notifications",
     },
     "premium": {
         "widget",
@@ -126,7 +125,8 @@ PLAN_FEATURES = {
         "product_images",
         "sales_recommendations",
 
-        "email_notifications"
+        "email_notifications",
+        "reservation_reminders",
     },
 }
 
