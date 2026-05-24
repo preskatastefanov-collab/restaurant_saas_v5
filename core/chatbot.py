@@ -42,6 +42,8 @@ class ChatBot:
             "time": None,
             "name": None,
             "phone": None,
+            "customer_email": None,
+            "email_offer_shown": False,
             "confirmed": False,
             "last_question": None,
             "last_topic": None,
@@ -511,7 +513,8 @@ class ChatBot:
             c.get("time"),
             c.get("name"),
             c.get("phone"),
-            c.get("last_question") in ["people", "date", "time", "contact", "confirm"]
+            c.get("customer_email"),
+            c.get("last_question") in ["people", "date", "time", "contact", "customer_email", "confirm"]
         ])
 
     def clear_reservation_context_if_needed(self, text, intent):
@@ -832,6 +835,7 @@ class ChatBot:
                 "language": self.get_lang(),
                 "ai_chat_feature": tenant_has_ai_chat,
                 "upsell_feature": tenant_has_upsell,
+                "sales_recommendations_feature": tenant_has_sales_recommendations,
                 "llm_enabled": llm_enabled,
             })
 
@@ -863,6 +867,37 @@ class ChatBot:
                         "❌ Okay, I cancelled the current action."
                     ),
                     self.default_buttons()
+                )
+
+            if self.context.get("last_question") == "customer_email":
+                possible_email = original_message.strip()
+
+                if possible_email.lower() in [
+                    "пропусни",
+                    "skip",
+                    "не",
+                    "no",
+                    "без email",
+                    "без имейл",
+                    "без имейл адрес",
+                    "нямам",
+                    "no email"
+                ]:
+                    self.context["customer_email"] = ""
+                    self.context["last_question"] = "confirm"
+                    return self.handle_reservation(settings)
+
+                if "@" in possible_email and "." in possible_email:
+                    self.context["customer_email"] = possible_email
+                    self.context["last_question"] = "confirm"
+                    return self.handle_reservation(settings)
+
+                return self.make_response(
+                    self.tr(
+                        "Моля, въведете валиден email или напишете „пропусни“ 😊",
+                        "Please enter a valid email or type “skip” 😊"
+                    ),
+                    [self.tr("Пропусни", "Skip")]
                 )
 
             followup_response = None
@@ -921,14 +956,15 @@ class ChatBot:
 
             if intent == "contact":
                 return self.handle_contact(settings)
-            
+
             exact_item_response = self.handle_exact_item_question(
                 normalized_message,
                 upsell_enabled=tenant_has_upsell
-                )
+            )
+
             if exact_item_response:
                 return exact_item_response
-            
+
             if (
                 not tenant_has_smart_food_answers
                 and self.looks_like_food_question(normalized_message)
@@ -941,7 +977,7 @@ class ChatBot:
                     ),
                     [self.tr("Меню", "Menu"), self.tr("Контакти", "Contact")]
                 )
-            
+
             if self.looks_like_recommendation_question(normalized_message):
                 if not tenant_has_smart_food_answers:
                     return self.make_response(
@@ -988,12 +1024,16 @@ class ChatBot:
 
             if people:
                 self.context["people"] = people
+
             if date:
                 self.context["date"] = date
+
             if time:
                 self.context["time"] = time
+
             if name:
                 self.context["name"] = name
+
             if phone:
                 self.context["phone"] = phone
 
@@ -1002,6 +1042,7 @@ class ChatBot:
 
                 if self.context.get("last_question") == "people":
                     self.context["people"] = num
+
                 elif self.context.get("last_question") == "time" and 0 <= num <= 23:
                     self.context["time"] = f"{num:02d}:00"
 
@@ -1055,6 +1096,7 @@ class ChatBot:
                 "buttons": self.default_buttons(),
                 "context": self.context,
             }
+
 
     def handle_contact(self, settings):
         phone = settings.get("phone") or "0888 123 456"
@@ -1377,7 +1419,7 @@ class ChatBot:
                 ),
                 []
             )
-        
+
         if is_phone_banned(self.tenant_id, c["phone"]):
             old_history = self.context.get("chat_history", [])
             old_language = self.context.get("language", "bg")
@@ -1389,12 +1431,31 @@ class ChatBot:
             return self.make_response(
                 self.tr(
                     "❌ За съжаление не можем да приемем резервация от този телефонен номер.\n\nАко смятате, че това е грешка, свържете се с заведението.",
-                    "❌ „Unfortunately, we cannot accept reservations from this phone number.If you believe this is a mistake, please contact our venue.“"
+                    "❌ Unfortunately, we cannot accept reservations from this phone number.\n\nIf you believe this is a mistake, please contact our venue."
                 ),
                 [
                     self.tr("Контакти", "Contact"),
                     self.tr("Меню", "Menu")
                 ]
+            )
+
+        if (
+            not c.get("email_offer_shown")
+            and tenant_has_feature(self.tenant_id, "reservation_reminders")
+        ):
+            c["email_offer_shown"] = True
+            c["last_question"] = "customer_email"
+
+            return self.make_response(
+                self.tr(
+                    """📧 Ако желаете да получите email напомняне преди резервацията, въведете Вашия email.
+
+Може и да пропуснете тази стъпка, като напишете „пропусни“.""",
+                    """📧 If you would like to receive an email reminder before your reservation, enter your email.
+
+You can also skip this step by typing “skip”."""
+                ),
+                [self.tr("Пропусни", "Skip")]
             )
 
         if not c.get("confirmed"):
@@ -1406,6 +1467,7 @@ class ChatBot:
 
 Име: {c['name']}
 Телефон: {c['phone']}
+Email за напомняне: {c.get('customer_email') or 'няма'}
 Дата: {c['date']}
 Час: {c['time']}
 Хора: {c['people']}
@@ -1415,6 +1477,7 @@ class ChatBot:
 
 Name: {c['name']}
 Phone: {c['phone']}
+Reminder email: {c.get('customer_email') or 'none'}
 Date: {c['date']}
 Time: {c['time']}
 People: {c['people']}
@@ -1425,6 +1488,7 @@ People: {c['people']}
             )
 
         return self.finalize_reservation()
+
 
     def is_ready_for_confirmation(self):
         c = self.context
@@ -1488,18 +1552,21 @@ People: {c['people']}
             people=c["people"],
             source="chatbot",
             status="confirmed",
-            notes=""
+            notes="",
+            customer_email=c.get("customer_email") or ""
         )
+
+        email_sent = False
 
         if reservation_result and reservation_result.get("saved"):
             email_sent = send_reservation_email(
-        tenant_id=self.tenant_id,
-        name=c["name"],
-        phone=c["phone"],
-        date=c["date"],
-        time=c["time"],
-        people=c["people"]
-    )
+                tenant_id=self.tenant_id,
+                name=c["name"],
+                phone=c["phone"],
+                date=c["date"],
+                time=c["time"],
+                people=c["people"]
+            )
 
         print("RESERVATION EMAIL SENT:", email_sent)
 
@@ -1514,6 +1581,7 @@ People: {c['people']}
         data = {
             "name": c["name"],
             "phone": c["phone"],
+            "customer_email": c.get("customer_email") or "",
             "date": c["date"],
             "time": c["time"],
             "people": c["people"]
@@ -1532,6 +1600,13 @@ People: {c['people']}
             self.tr("Нова резервация", "New reservation")
         ]
 
+        reminder_line_bg = ""
+        reminder_line_en = ""
+
+        if data["customer_email"]:
+            reminder_line_bg = f"\n📧 Ще получите email напомняне на: {data['customer_email']}"
+            reminder_line_en = f"\n📧 You will receive an email reminder at: {data['customer_email']}"
+
         if reservation_result and reservation_result.get("demo"):
             return self.make_response(
                 self.tr(
@@ -1540,7 +1615,7 @@ People: {c['people']}
 📌 {data['name']}
 📅 {data['date']}
 ⏰ {data['time']}
-👥 {data['people']} човека
+👥 {data['people']} човека{reminder_line_bg}
 
 ℹ️ Това е DEMO режим — резервацията не е записана като реална.""",
                     f"""✅ Demo reservation completed successfully!
@@ -1548,7 +1623,7 @@ People: {c['people']}
 📌 {data['name']}
 📅 {data['date']}
 ⏰ {data['time']}
-👥 {data['people']} people
+👥 {data['people']} people{reminder_line_en}
 
 ℹ️ This is DEMO mode — the reservation was not saved as a real booking."""
                 ),
@@ -1562,7 +1637,7 @@ People: {c['people']}
 📌 {data['name']}
 📅 {data['date']}
 ⏰ {data['time']}
-👥 {data['people']} човека
+👥 {data['people']} човека{reminder_line_bg}
 
 Очакваме ви 😊""",
                 f"""✅ Done! The reservation has been saved.
@@ -1570,7 +1645,7 @@ People: {c['people']}
 📌 {data['name']}
 📅 {data['date']}
 ⏰ {data['time']}
-👥 {data['people']} people
+👥 {data['people']} people{reminder_line_en}
 
 We are expecting you 😊"""
             ),
