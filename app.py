@@ -2301,13 +2301,16 @@ def add_menu_item_route():
 
     tenant_id = get_active_tenant_id()
 
-    category_id = safe_int(request.form.get("category_id"))
+    category_id = safe_int(request.form.get("category_id"), 0)
     name = request.form.get("name", "").strip()
     description = request.form.get("description", "").strip()
     price = safe_float(request.form.get("price", 0), 0.0)
+    sort_order = safe_int(request.form.get("sort_order", 0), 0)
+
     upsell_drink = request.form.get("upsell_drink", "").strip()
     upsell_dessert = request.form.get("upsell_dessert", "").strip()
     upsell_side = request.form.get("upsell_side", "").strip()
+
     can_use_upsell = tenant_has_feature(tenant_id, "upsell")
     can_use_product_images = tenant_has_feature(tenant_id, "product_images")
 
@@ -2315,16 +2318,18 @@ def add_menu_item_route():
         upsell_drink = ""
         upsell_dessert = ""
         upsell_side = ""
-        sort_order = safe_int(request.form.get("sort_order", 0), 0)
 
-        image_url = ""
+    image_url = ""
 
     if can_use_product_images:
         image_url = request.form.get("image_url", "").strip()
-        uploaded_image = save_menu_image(request.files.get("image_file"), tenant_id)
+        uploaded_image = save_menu_image(
+            request.files.get("image_file"),
+            tenant_id
+        )
 
-    if uploaded_image:
-        image_url = uploaded_image
+        if uploaded_image:
+            image_url = uploaded_image
 
     if name:
         create_menu_item(
