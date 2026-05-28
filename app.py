@@ -859,7 +859,7 @@ def dashboard():
 
     today = datetime.now().date()
     today_str = today.strftime("%d.%m.%Y")
-    now_dt = datetime.now()
+    now_dt = datetime.now() + timedelta(hours=3)
 
     max_capacity = safe_int(settings.get("max_capacity", 20), 20)
 
@@ -1142,7 +1142,7 @@ def api_notifications():
     tenant_id = get_active_tenant_id()
     reservations = get_reservations_by_tenant(tenant_id)
 
-    now_dt = datetime.now()
+    nnow_dt = datetime.now() + timedelta(hours=3)
     today_str = now_dt.strftime("%d.%m.%Y")
 
     notifications = []
@@ -1220,7 +1220,7 @@ def notifications_page():
     tenant_id = get_active_tenant_id()
     reservations = get_reservations_by_tenant(tenant_id)
 
-    now_dt = datetime.now()
+    now_dt = datetime.now() + timedelta(hours=3)
     today = now_dt.date()
     today_str = today.strftime("%d.%m.%Y")
 
