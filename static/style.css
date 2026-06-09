@@ -9001,3 +9001,107 @@ box-shadow:
         grid-template-columns:1fr;
     }
 }
+
+.notifications-page-card {
+    padding: 28px;
+}
+
+.all-notifications-list {
+    display: grid;
+    gap: 18px;
+    margin-top: 24px;
+}
+
+.all-notification-item {
+    display: flex;
+    gap: 18px;
+    align-items: flex-start;
+    padding: 22px;
+    border-radius: 22px;
+    background: linear-gradient(135deg, #ffffff, #f8fbff);
+    border: 1px solid #dbe7ff;
+    box-shadow: 0 18px 45px rgba(15, 23, 42, 0.08);
+}
+
+.all-notification-icon {
+    width: 46px;
+    height: 46px;
+    border-radius: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #eef5ff;
+    font-size: 22px;
+}
+
+.all-notification-content {
+    flex: 1;
+}
+
+.all-notification-title-row {
+    display: flex;
+    justify-content: space-between;
+    gap: 16px;
+    align-items: center;
+    margin-bottom: 10px;
+}
+
+.all-notification-title-row h3 {
+    margin: 0;
+    font-size: 20px;
+}
+
+.all-notification-title-row span {
+    padding: 8px 14px;
+    border-radius: 999px;
+    background: #e0f2fe;
+    color: #0369a1;
+    font-weight: 800;
+    font-size: 13px;
+}
+
+.all-notification-content p {
+    margin: 0;
+    color: #475569;
+    font-size: 16px;
+    line-height: 1.6;
+}
+
+.all-notification-item.late,
+.all-notification-item.past {
+    border-color: #fecaca;
+    background: linear-gradient(135deg, #fffafa, #fff1f2);
+}
+
+.all-notification-item.soon,
+.all-notification-item.upcoming {
+    border-color: #fed7aa;
+    background: linear-gradient(135deg, #fffaf0, #fff7ed);
+}
+
+.all-notification-item.now,
+.all-notification-item.active {
+    border-color: #bfdbfe;
+    background: linear-gradient(135deg, #eff6ff, #ffffff);
+}
+
+.all-notification-item.pending {
+    border-color: #fde68a;
+    background: linear-gradient(135deg, #fffbeb, #ffffff);
+}
+
+.all-notification-item.cancelled {
+    border-color: #e5e7eb;
+    background: linear-gradient(135deg, #f8fafc, #ffffff);
+}
+
+@media (max-width: 768px) {
+    .all-notification-item {
+        flex-direction: column;
+    }
+
+    .all-notification-title-row {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+}
