@@ -55,6 +55,17 @@
                             </div>
 
                             <p>{{ n.text }}</p>
+
+                            <div class="notification-actions">
+    <a class="notif-call-btn" href="tel:{{ n.phone }}">📞 Обади се</a>
+
+    <a class="notif-edit-btn" href="/dashboard">✏️ Отвори</a>
+
+    <form method="POST" action="/notifications/dismiss/{{ n.id }}">
+        <button type="submit" class="notif-hide-btn">👁️ Скрий</button>
+    </form>
+</div>
+
                         </div>
                     </div>
                 {% endfor %}

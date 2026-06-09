@@ -9105,3 +9105,36 @@ box-shadow:
         align-items: flex-start;
     }
 }
+
+.notification-actions {
+    display: flex;
+    gap: 10px;
+    margin-top: 16px;
+    flex-wrap: wrap;
+}
+
+.notification-actions a,
+.notification-actions button {
+    border: none;
+    text-decoration: none;
+    padding: 10px 14px;
+    border-radius: 999px;
+    font-weight: 800;
+    cursor: pointer;
+    font-size: 14px;
+}
+
+.notif-call-btn {
+    background: #dcfce7;
+    color: #166534;
+}
+
+.notif-edit-btn {
+    background: #dbeafe;
+    color: #1d4ed8;
+}
+
+.notif-hide-btn {
+    background: #f1f5f9;
+    color: #334155;
+}

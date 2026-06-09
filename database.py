@@ -194,6 +194,15 @@ def init_db():
     c = conn.cursor()
 
     c.execute("""
+CREATE TABLE IF NOT EXISTS dismissed_notifications (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    tenant_id INTEGER NOT NULL,
+    reservation_id INTEGER NOT NULL,
+    created_at TEXT DEFAULT CURRENT_TIMESTAMP
+)
+""")
+
+    c.execute("""
     CREATE TABLE IF NOT EXISTS tenants (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         name TEXT NOT NULL,

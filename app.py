@@ -2,6 +2,7 @@ import cloudinary
 import cloudinary.uploader
 import cloudinary.api
 import os
+from database import get_db
 from database import (
     init_db,
     seed_data,
@@ -1226,9 +1227,22 @@ def notifications_page():
 
     all_notifications = []
 
+    db = get_db()
+    dismissed_rows = db.execute("""
+    SELECT reservation_id
+    FROM dismissed_notifications
+    WHERE tenant_id = ?
+    """, (tenant_id,)).fetchall()
+    db.close()
+
+    dismissed_ids = [row["reservation_id"] for row in dismissed_rows]
+
     for r in reservations:
         res_date = parse_bg_date(r["date"])
         if not res_date:
+            continue
+
+        if r["id"] in dismissed_ids:
             continue
 
         reservation_time = str(r.get("time", "")).strip()
@@ -1278,9 +1292,11 @@ def notifications_page():
                 type_class = "notification-cancelled"
 
             all_notifications.append({
+                "id": r["id"],
                 "icon": icon,
                 "title": f"{type_label} резервация: {r['name']}",
                 "text": f"{r['date']} · {reservation_time} · {r['people']} човека · {r['phone']}",
+                "phone": r["phone"],
                 "type_label": type_label,
                 "type_class": type_class,
                 "date": r["date"],
@@ -1302,6 +1318,34 @@ def notifications_page():
         role=user["role"],
         active_business=get_active_tenant_info()
     )
+
+@app.route("/notifications/dismiss/<int:reservation_id>", methods=["POST"])
+def dismiss_notification(reservation_id):
+    user = current_user()
+
+    if not user:
+        return redirect("/login")
+
+    tenant_id = get_active_tenant_id()
+
+    db = get_db()
+
+    existing = db.execute("""
+        SELECT id FROM dismissed_notifications
+        WHERE tenant_id = ? AND reservation_id = ?
+        LIMIT 1
+    """, (tenant_id, reservation_id)).fetchone()
+
+    if not existing:
+        db.execute("""
+            INSERT INTO dismissed_notifications (tenant_id, reservation_id)
+            VALUES (?, ?)
+        """, (tenant_id, reservation_id))
+        db.commit()
+
+    db.close()
+
+    return redirect("/notifications")
 
 @app.route("/analytics/chats")
 def analytics_chats():
