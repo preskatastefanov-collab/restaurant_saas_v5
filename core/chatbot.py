@@ -40,6 +40,9 @@ class ChatBot:
             return (category.get("name_en") or category.get("name") or "").strip()
 
         return (category.get("name") or "").strip()
+    
+    def normalize_text(self, value):
+        return " ".join((value or "").strip().lower().split())
 
     def empty_context(self):
         return {
@@ -493,59 +496,58 @@ class ChatBot:
 
         return any(k in text for k in strong_keywords)
 
-def is_menu_category_message(self, text):
-    category_match = find_menu_category_match(
-        self.tenant_id,
-        text
-    )
+    def is_menu_category_message(self, text):
+        category = find_menu_category_match(
+            self.tenant_id,
+            text
+        )
 
-    if category_match:
-        return True
-
-    normalized = self.normalize_text(text)
-    categories = get_menu_categories(self.tenant_id)
-
-    for category in categories:
-        bg_name = self.normalize_text(category.get("name") or "")
-        en_name = self.normalize_text(category.get("name_en") or "")
-
-        if normalized == bg_name or normalized == en_name:
+        if category:
             return True
 
-    return False
+        normalized = self.normalize_text(text)
+        categories = get_menu_categories(self.tenant_id)
 
+        for category in categories:
+            bg_name = self.normalize_text(category.get("name") or "")
+            en_name = self.normalize_text(category.get("name_en") or "")
 
-def is_exact_category_choice(self, text):
-    category = find_menu_category_match(
-        self.tenant_id,
-        text
-    )
+            if normalized == bg_name or normalized == en_name:
+                return True
 
-    if not category:
         return False
 
-    search_text = self.normalize_text(text)
+    def is_exact_category_choice(self, text):
+        category = find_menu_category_match(
+            self.tenant_id,
+            text
+        )
 
-    names = [
-        self.normalize_text(category.get("name") or ""),
-        self.normalize_text(category.get("name_en") or ""),
-    ]
+        if not category:
+            return False
 
-    return search_text in names
+        search_text = self.normalize_text(text)
 
-def is_reservation_in_progress(self):
-        c = self.context
-        return any([
-            c.get("people"),
-            c.get("date"),
-            c.get("time"),
-            c.get("name"),
-            c.get("phone"),
-            c.get("customer_email"),
-            c.get("last_question") in ["people", "date", "time", "contact", "customer_email", "confirm"]
-        ])
+        names = [
+            self.normalize_text(category.get("name") or ""),
+            self.normalize_text(category.get("name_en") or ""),
+        ]
 
-def clear_reservation_context_if_needed(self, text, intent):
+        return search_text in names
+
+    def is_reservation_in_progress(self):
+                c = self.context
+                return any([
+                c.get("people"),
+                c.get("date"),
+                c.get("time"),
+                c.get("name"),
+                c.get("phone"),
+                c.get("customer_email"),
+                c.get("last_question") in ["people", "date", "time", "contact", "customer_email", "confirm"]
+            ])
+
+    def clear_reservation_context_if_needed(self, text, intent):
         if intent in ["reservation", "confirm"]:
             return
 
@@ -565,7 +567,7 @@ def clear_reservation_context_if_needed(self, text, intent):
             self.context["chat_history"] = old_history
             self.context["language"] = old_language
 
-def update_topic_context(self, text, intent):
+    def update_topic_context(self, text, intent):
         if self.looks_like_food_question(text) or intent == "menu" or self.is_menu_category_message(text):
             self.context["last_topic"] = "food"
         elif intent == "contact":
@@ -573,7 +575,7 @@ def update_topic_context(self, text, intent):
         elif intent == "reservation":
             self.context["last_topic"] = "reservation"
 
-def should_use_llm(self, original_message, intent, llm_enabled):
+    def should_use_llm(self, original_message, intent, llm_enabled):
         if llm_enabled != 1:
             return False
 
@@ -588,16 +590,16 @@ def should_use_llm(self, original_message, intent, llm_enabled):
 
         return False
 
-def find_item_by_text(self, text):
+    def find_item_by_text(self, text):
         search_message = self.translate_common_english_items(text)
         return find_item_mentioned_in_text(self.tenant_id, search_message)
 
-def find_item_by_name(self, item_name):
+    def find_item_by_name(self, item_name):
         if not item_name:
             return None
         return self.find_item_by_text(item_name)
 
-def save_upsell_memory(self, upsell, base_item=None):
+    def save_upsell_memory(self, upsell, base_item=None):
         if not upsell:
             return
 
@@ -623,7 +625,7 @@ def save_upsell_memory(self, upsell, base_item=None):
             self.context["last_suggested_upsell"] = suggested_item
             return
 
-def build_upsell_text(self, base_item, suggested_item):
+    def build_upsell_text(self, base_item, suggested_item):
         base_name = self.translate_item_name(base_item.get("name"), base_item) if base_item else self.tr("това", "this")
         suggested_name = self.translate_item_name(suggested_item.get("name"), suggested_item) if suggested_item else self.tr("това предложение", "this suggestion")
 
@@ -632,7 +634,7 @@ def build_upsell_text(self, base_item, suggested_item):
 
         return f"Към „{base_name}“ много добре върви {suggested_name} — искате ли да направим резервация? 😊"
 
-def ask_llm(self, original_message):
+    def ask_llm(self, original_message):
         llm_reply = get_llm_reply(
             self.tenant_id,
             original_message,
@@ -644,7 +646,7 @@ def ask_llm(self, original_message):
 
         return None
 
-def format_item_details(self, item):
+    def format_item_details(self, item):
         name = self.translate_item_name(item.get("name") or self.tr("Артикул", "Item"), item)
         description = self.translate_description(item.get("description") or "", item)
         price = self.format_price_eur(item.get("price"))
@@ -656,7 +658,7 @@ def format_item_details(self, item):
 
         return text
 
-def handle_upsell_followup(self, original_message):
+    def handle_upsell_followup(self, original_message):
         suggested_item = self.context.get("last_suggested_upsell")
         last_item = self.context.get("last_recommended_item")
 
@@ -714,7 +716,7 @@ def handle_upsell_followup(self, original_message):
 
         return None
 
-def handle_exact_item_question(self, original_message, upsell_enabled=False):
+    def handle_exact_item_question(self, original_message, upsell_enabled=False):
         item = self.find_item_by_text(original_message)
 
         if not item:
@@ -765,7 +767,7 @@ def handle_exact_item_question(self, original_message, upsell_enabled=False):
 
         return self.make_response(text, buttons)
 
-def handle_smart_recommendations(self, original_message, upsell_enabled=False):
+    def handle_smart_recommendations(self, original_message, upsell_enabled=False):
         search_message = self.translate_common_english_items(original_message)
 
         items = get_smart_recommendations(
@@ -824,7 +826,7 @@ def handle_smart_recommendations(self, original_message, upsell_enabled=False):
 
         return self.make_response("\n".join(lines), buttons)
 
-def get_response(self, message, context=None):
+    def get_response(self, message, context=None):
         try:
             if context:
                 self.context = context
@@ -1126,7 +1128,7 @@ def get_response(self, message, context=None):
             }
 
 
-def handle_contact(self, settings):
+    def handle_contact(self, settings):
         phone = settings.get("phone") or "0888 123 456"
         address = self.translate_address(settings.get("address") or "Центъра на града")
         website = settings.get("website") or ""
@@ -1175,7 +1177,7 @@ def handle_contact(self, settings):
 
         return self.make_response(text, buttons)
 
-def handle_menu(self, text, upsell_enabled=False):
+    def handle_menu(self, text, upsell_enabled=False):
         categories = get_menu_categories(self.tenant_id)
 
         if not categories:
@@ -1286,7 +1288,7 @@ def handle_menu(self, text, upsell_enabled=False):
 
         return self.make_response("\n".join(lines), buttons)
 
-def handle_reservation(self, settings):
+    def handle_reservation(self, settings):
         c = self.context
         max_capacity = int(settings.get("max_capacity", 20))
         open_hour = int(settings.get("open_hour", 10))
@@ -1521,7 +1523,7 @@ People: {c['people']}
         return self.finalize_reservation()
 
 
-def is_ready_for_confirmation(self):
+    def is_ready_for_confirmation(self):
         c = self.context
 
         return all([
@@ -1532,7 +1534,7 @@ def is_ready_for_confirmation(self):
             c.get("phone")
         ])
 
-def check_availability(self, date, time, people, max_capacity):
+    def check_availability(self, date, time, people, max_capacity):
         rows = get_reservations_for_date(self.tenant_id, date)
         requested_hour = int(str(time).split(":")[0])
 
@@ -1552,7 +1554,7 @@ def check_availability(self, date, time, people, max_capacity):
             "free_places_after": max(max_capacity - (occupied + requested_people), 0)
         }
 
-def get_suggestions(self, date, max_capacity):
+    def get_suggestions(self, date, max_capacity):
         rows = get_reservations_for_date(self.tenant_id, date)
         hours = [f"{str(h).zfill(2)}:00" for h in range(12, 22)]
         free = []
@@ -1571,7 +1573,7 @@ def get_suggestions(self, date, max_capacity):
 
         return free[:4]
 
-def finalize_reservation(self):
+    def finalize_reservation(self):
         c = self.context
 
         reservation_result = create_reservation(
