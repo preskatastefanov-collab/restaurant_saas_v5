@@ -497,25 +497,36 @@ class ChatBot:
         return any(k in text for k in strong_keywords)
 
     def is_menu_category_message(self, text):
-        category = find_menu_category_match(
+        search_text = self.normalize_text(text)
+
+        categories = get_menu_categories(self.tenant_id)
+
+        for category in categories:
+            names = [
+                self.normalize_text(category.get("name") or ""),
+                self.normalize_text(category.get("name_en") or ""),
+                self.normalize_text(self.get_category_display_name(category)),
+            ]
+
+            if search_text in names:
+                return True
+
+        category_match = find_menu_category_match(
             self.tenant_id,
             text
         )
 
-        if category:
+        if category_match:
             return True
 
-        normalized = self.normalize_text(text)
-        categories = get_menu_categories(self.tenant_id)
+        translated_text = self.translate_common_english_items(text)
 
-        for category in categories:
-            bg_name = self.normalize_text(category.get("name") or "")
-            en_name = self.normalize_text(category.get("name_en") or "")
+        category_match = find_menu_category_match(
+            self.tenant_id,
+            translated_text
+        )
 
-            if normalized == bg_name or normalized == en_name:
-                return True
-
-        return False
+        return category_match is not None
 
     def is_exact_category_choice(self, text):
         category = find_menu_category_match(
@@ -1189,10 +1200,31 @@ class ChatBot:
                 self.default_buttons()
             )
 
-        wanted_category = find_menu_category_match(
-            self.tenant_id,
-            self.translate_common_english_items(text)
-        )
+        wanted_category = None
+        search_text = self.normalize_text(text)
+
+        for category in categories:
+            names = [
+                self.normalize_text(category.get("name") or ""),
+                self.normalize_text(category.get("name_en") or ""),
+                self.normalize_text(self.get_category_display_name(category)),
+            ]
+
+            if search_text in names:
+                wanted_category = category
+                break
+
+        if not wanted_category:
+            wanted_category = find_menu_category_match(
+                self.tenant_id,
+                text
+            )
+
+        if not wanted_category:
+            wanted_category = find_menu_category_match(
+                self.tenant_id,
+                self.translate_common_english_items(text)
+            )
 
         if not wanted_category:
             category_names = [
@@ -1211,28 +1243,40 @@ class ChatBot:
                     "bakery": "🥐 Разбира се 😊 Ето нашите продукти.",
                     "sweet_shop": "🍰 Разбира се 😊 Ето десертите и предложенията.",
                     "food_truck": "🚚 Разбира се 😊 Ето менюто ни.",
-                }.get(self.business_type, "📋 Разбира се 😊 Ето какво можете да разгледате."),
+                }.get(
+                    self.business_type,
+                    "📋 Разбира се 😊 Ето какво можете да разгледате."
+                ),
                 "📋 Sure 😊 Here are our menu categories."
             )
 
             return self.make_response(
-                intro + self.tr("\n\n👉 Изберете категория:", "\n\n👉 Choose a category:"),
+                intro + self.tr(
+                    "\n\n👉 Изберете категория:",
+                    "\n\n👉 Choose a category:"
+                ),
                 category_names
             )
 
         self.context["last_seen_category"] = wanted_category
-        items = get_menu_items_by_category(self.tenant_id, wanted_category["id"])
+
+        items = get_menu_items_by_category(
+            self.tenant_id,
+            wanted_category["id"]
+        )
 
         if not items:
             return self.make_response(
                 self.tr(
                     f"📋 В категория „{wanted_category['name']}“ все още няма добавени артикули.",
-                    f"📋 There are no items added in “{self.translate_category_name(wanted_category['name'])}” yet."
+                    f"📋 There are no items added in “{self.get_category_display_name(wanted_category)}” yet."
                 ),
                 [self.tr("Меню", "Menu")]
             )
 
-        lines = [f"📋 {self.get_category_display_name(wanted_category)}:"]
+        lines = [
+            f"📋 {self.get_category_display_name(wanted_category)}:"
+        ]
 
         for item in items:
             item_name = self.translate_item_name(item.get("name"), item)
@@ -1241,43 +1285,17 @@ class ChatBot:
             has_image = " 📷" if item.get("image_url") else ""
             price = self.format_price_eur(item.get("price"))
 
-            lines.append(f"- {item_name}{has_image} — {price}{description_text}")
-
-        item_for_upsell = items[0] if items else None
-
-        if item_for_upsell:
-            self.context["last_recommended_item"] = item_for_upsell
-
-        upsell = get_smart_upsell_for_item(
-            self.tenant_id,
-            item=item_for_upsell,
-            user_text=self.translate_common_english_items(text),
-            business_type=self.business_type
-        ) if upsell_enabled and item_for_upsell else None
-
-        if upsell:
-            self.save_upsell_memory(upsell, base_item=item_for_upsell)
-            suggested_item = self.context.get("last_suggested_upsell")
-
-            if suggested_item:
-                lines.append("\n" + self.build_upsell_text(item_for_upsell, suggested_item))
-        else:
-            if self.supports_reservations():
-                lines.append(self.tr(
-                    "\n👉 Искате ли след това да направим резервация? 😊",
-                    "\n👉 Would you like to make a reservation after that? 😊"
-                ))
-            else:
-                lines.append(self.tr(
-                    "\n👉 Искате ли да видите и друга категория?",
-                    "\n👉 Would you like to see another category?"
-                ))
+            lines.append(
+                f"- {item_name}{has_image} — {price}{description_text}"
+            )
 
         buttons = []
 
         for item in items[:5]:
             if item.get("name"):
-                buttons.append(self.translate_item_name(item.get("name"), item))
+                buttons.append(
+                    self.translate_item_name(item.get("name"), item)
+                )
 
         buttons.append(self.tr("Меню", "Menu"))
 
@@ -1286,7 +1304,10 @@ class ChatBot:
 
         buttons.append(self.tr("Контакти", "Contact"))
 
-        return self.make_response("\n".join(lines), buttons)
+        return self.make_response(
+            "\n".join(lines),
+            buttons
+        )
 
     def handle_reservation(self, settings):
         c = self.context
