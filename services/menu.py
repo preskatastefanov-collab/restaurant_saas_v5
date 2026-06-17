@@ -1,5 +1,6 @@
 from database import get_db
 from services.tenants import tenant_has_feature
+from services.translator import translate_to_english
 
 def normalize_text(value):
     return " ".join((value or "").strip().lower().split())
@@ -62,48 +63,12 @@ def bg_to_en(value):
         return STATIC_BG_EN[text]
 
     try:
-        from openai import OpenAI
-        from config import OPENAI_API_KEY
-
-        if not OPENAI_API_KEY:
-            print("TRANSLATE DEBUG: липсва OPENAI_API_KEY")
-            return text
-
-        client = OpenAI(api_key=OPENAI_API_KEY)
-
-        prompt = f"""
-Translate this Bulgarian restaurant menu text to natural English.
-
-Return ONLY the English translation.
-No explanations.
-No quotation marks.
-
-Text:
-{text}
-""".strip()
-
-        response = client.chat.completions.create(
-            model="gpt-4o-mini",
-            messages=[
-                {
-                    "role": "system",
-                    "content": "You are a professional restaurant menu translator from Bulgarian to English."
-                },
-                {
-                    "role": "user",
-                    "content": prompt
-                }
-            ],
-            max_tokens=80,
-        )
-
-        translated = response.choices[0].message.content.strip()
+        translated = translate_to_english(text)
 
         if translated and not has_cyrillic(translated):
             print("TRANSLATE OK:", text, "=>", translated)
             return translated
 
-        print("TRANSLATE WARNING:", text, "=>", translated)
         return text
 
     except Exception as e:

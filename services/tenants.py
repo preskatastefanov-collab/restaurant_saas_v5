@@ -1,4 +1,5 @@
 from database import get_db
+from services.translator import translate_to_english
 
 VALID_PLANS = {"basic", "standard", "premium"}
 
@@ -354,15 +355,20 @@ def create_tenant(
 
     tenant_id = cursor.lastrowid
     default_llm_enabled = 1 if has_feature(plan, "ai_chat") else 0
+    restaurant_name_en = translate_to_english(name)
+    welcome_message_en = translate_to_english(defaults["welcome_message"])
 
     cursor.execute("""
         INSERT INTO tenant_settings (
             tenant_id,
             restaurant_name,
+            restaurant_name_en,
             phone,
             email,
             address,
+            address_en,
             welcome_message,
+            welcome_message_en,
             max_capacity,
             open_hour,
             close_hour,
@@ -371,11 +377,13 @@ def create_tenant(
             widget_enabled,
             llm_enabled
         )
-        VALUES (?, ?, '', '', '', ?, ?, ?, ?, '#1e88ff', ?, 1, ?)
+        VALUES (?, ?, ?, '', '', '', '', ?, ?, ?, ?, ?, '#1e88ff', ?, 1, ?)
     """, (
         tenant_id,
         name,
+        restaurant_name_en,
         defaults["welcome_message"],
+        welcome_message_en,
         max_capacity,
         open_hour,
         close_hour,
@@ -494,14 +502,21 @@ def update_tenant_settings(
     widget_enabled,
     llm_enabled
 ):
+    restaurant_name_en = translate_to_english(restaurant_name)
+    address_en = translate_to_english(address)
+    welcome_message_en = translate_to_english(welcome_message)
+
     db = get_db()
     db.execute("""
         UPDATE tenant_settings
         SET restaurant_name = ?,
+            restaurant_name_en = ?,
             phone = ?,
             email = ?,
             address = ?,
+            address_en = ?,
             welcome_message = ?,
+            welcome_message_en = ?,
             max_capacity = ?,
             open_hour = ?,
             close_hour = ?,
@@ -512,10 +527,13 @@ def update_tenant_settings(
         WHERE tenant_id = ?
     """, (
         restaurant_name,
+        restaurant_name_en,
         phone,
         email,
         address,
+        address_en,
         welcome_message,
+        welcome_message_en,
         max_capacity,
         open_hour,
         close_hour,

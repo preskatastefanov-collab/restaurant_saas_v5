@@ -379,6 +379,10 @@ CREATE TABLE IF NOT EXISTS dismissed_notifications (
 
     add_column_if_missing(c, "tenant_settings", "website", "website TEXT DEFAULT ''")
     add_column_if_missing(c, "tenant_settings", "working_hours", "working_hours TEXT DEFAULT ''")
+    add_column_if_missing(c, "tenant_settings", "restaurant_name_en", "restaurant_name_en TEXT DEFAULT ''")
+    add_column_if_missing(c, "tenant_settings", "address_en", "address_en TEXT DEFAULT ''")
+    add_column_if_missing(c, "tenant_settings", "working_hours_en", "working_hours_en TEXT DEFAULT ''")
+    add_column_if_missing(c, "tenant_settings", "welcome_message_en", "welcome_message_en TEXT DEFAULT ''")
     add_column_if_missing(c, "tenant_settings", "primary_color", "primary_color TEXT DEFAULT '#1e88ff'")
     add_column_if_missing(c, "tenant_settings", "widget_title", "widget_title TEXT DEFAULT 'Restaurant AI Chatbot'")
     add_column_if_missing(c, "tenant_settings", "widget_enabled", "widget_enabled INTEGER DEFAULT 1")
