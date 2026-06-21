@@ -57,6 +57,7 @@ from services.auth import (
 
 from services.tenants import (
     get_tenant_settings,
+    get_tenant_by_slug,
     update_tenant_settings,
     create_tenant,
     list_tenants,
@@ -349,6 +350,14 @@ def clear_chat_sessions():
         session.pop(k, None)
     session.modified = True
 
+def is_demo_read_only():
+    return session.get("demo_read_only") is True
+
+
+def block_demo_read_only():
+    if is_demo_read_only():
+        return redirect("/dashboard")
+    return None
 
 @app.route("/")
 def home():
@@ -441,6 +450,27 @@ def public_site(slug):
         business_label=business_label,
     )
 
+@app.route("/demo-dashboard/<slug>")
+def demo_dashboard_access(slug):
+    tenant = get_tenant_by_slug(slug)
+
+    if not tenant:
+        return "Няма намерен demo бизнес.", 404
+
+    session.clear()
+
+    session["user"] = {
+        "id": 0,
+        "username": "demo_viewer",
+        "role": "demo_viewer",
+        "tenant_id": tenant["id"]
+    }
+
+    session["active_tenant_id"] = tenant["id"]
+    session["demo_read_only"] = True
+    session.modified = True
+
+    return redirect("/dashboard")
 
 @app.route("/chat/<slug>", methods=["POST"])
 def chat(slug):
@@ -1082,6 +1112,7 @@ def dashboard():
         tenant_has_premium_analytics=tenant_has_feature(tenant_id, "premium_analytics"),
         tenant_has_upsell=tenant_has_feature(tenant_id, "upsell"),
         active_business=get_active_tenant_info(),
+        demo_read_only=session.get("demo_read_only", False),
     )
 
 @app.route("/backups")
@@ -1356,15 +1387,13 @@ def analytics_chats():
 
     tenant_id = get_active_tenant_id()
 
-    if not can_access_premium_analytics(tenant_id):
-        return redirect("/dashboard")
-
     return render_template(
         "analytics_chats.html",
         role=user["role"],
         active_business=get_active_tenant_info(),
         data=get_analytics_page_data(tenant_id),
         events=get_recent_events(tenant_id, event_type="chat_message", limit=100),
+        demo_read_only=session.get("demo_read_only", False),
     )
 
 
@@ -1377,9 +1406,6 @@ def analytics_reservations():
 
     tenant_id = get_active_tenant_id()
 
-    if not can_access_premium_analytics(tenant_id):
-        return redirect("/dashboard")
-
     return render_template(
         "analytics_reservations.html",
         role=user["role"],
@@ -1387,6 +1413,7 @@ def analytics_reservations():
         data=get_analytics_page_data(tenant_id),
         started_events=get_recent_events(tenant_id, event_type="reservation_started", limit=100),
         created_events=get_recent_events(tenant_id, event_type="reservation_created", limit=100),
+        demo_read_only=session.get("demo_read_only", False),
     )
 
 
@@ -1399,14 +1426,12 @@ def analytics_conversion():
 
     tenant_id = get_active_tenant_id()
 
-    if not can_access_premium_analytics(tenant_id):
-        return redirect("/dashboard")
-
     return render_template(
         "analytics_conversion.html",
         role=user["role"],
         active_business=get_active_tenant_info(),
         data=get_analytics_page_data(tenant_id),
+        demo_read_only=session.get("demo_read_only", False),
     )
 
 @app.route("/settings", methods=["GET", "POST"])
@@ -1416,6 +1441,10 @@ def settings():
     if not user:
         return redirect("/login")
 
+    demo_block = block_demo_read_only()
+    if demo_block:
+        return demo_block
+    
     if not has_role("super_admin", "owner", "admin"):
         return redirect("/dashboard")
 
@@ -1563,6 +1592,10 @@ def restaurants():
     if not user:
         return redirect("/login")
 
+    demo_block = block_demo_read_only()
+    if demo_block:
+        return demo_block
+    
     if not has_role("super_admin"):
         return redirect("/dashboard")
 
@@ -1707,6 +1740,10 @@ def create_restaurant():
     if not user:
         return redirect("/login")
 
+    demo_block = block_demo_read_only()
+    if demo_block:
+        return demo_block
+    
     if not has_role("super_admin"):
         return redirect("/dashboard")
 
@@ -1774,6 +1811,10 @@ def users_page():
     if not user:
         return redirect("/login")
 
+    demo_block = block_demo_read_only()
+    if demo_block:
+        return demo_block
+    
     if not has_role("owner", "admin", "super_admin"):
         return redirect("/dashboard")
 
@@ -2067,6 +2108,10 @@ def blacklist_page():
     if not user:
         return redirect("/login")
 
+    demo_block = block_demo_read_only()
+    if demo_block:
+        return demo_block
+    
     if not can_manage_blacklist():
         return redirect("/dashboard")
 
@@ -2289,6 +2334,10 @@ def menu_manager():
     if not user:
         return redirect("/login")
 
+    demo_block = block_demo_read_only()
+    if demo_block:
+        return demo_block
+    
     if not has_role("super_admin", "owner", "admin"):
         return redirect("/dashboard")
 
@@ -2600,6 +2649,10 @@ def export():
     if not user:
         return redirect("/login")
 
+    demo_block = block_demo_read_only()
+    if demo_block:
+        return demo_block
+    
     if not has_role("owner", "admin", "staff", "super_admin"):
         return redirect("/dashboard")
 

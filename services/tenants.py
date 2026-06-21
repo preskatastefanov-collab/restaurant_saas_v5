@@ -214,6 +214,18 @@ def get_tenant(tenant_id):
     db.close()
     return dict(row) if row else None
 
+def get_tenant_by_slug(slug):
+    db = get_db()
+    row = db.execute("""
+        SELECT *
+        FROM tenants
+        WHERE slug = ?
+          AND is_active = 1
+        LIMIT 1
+    """, (slug,)).fetchone()
+    db.close()
+
+    return dict(row) if row else None
 
 def get_tenant_plan(tenant_id):
     tenant = get_tenant(tenant_id)

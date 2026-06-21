@@ -331,55 +331,85 @@
                     </tr>
                 </thead>
                 <tbody>
-                    {% if reservations %}
-                        {% for r in reservations %}
-                        <tr>
-                            <td>{{ r.name }}</td>
-                            <td>{{ r.phone }}</td>
-                            <td>{{ r.date }}</td>
-                            <td>{{ r.time }}</td>
-                            <td><span class="people-badge">{{ r.people }}</span></td>
-                            <td>
-{% if r.status == "confirmed" %}
-    <span class="status-badge status-green">Потвърдена</span>
-{% elif r.status == "pending" %}
-    <span class="status-badge status-yellow">Непотвърдена</span>
-{% elif r.status == "cancelled" %}
-    <span class="status-badge status-red">Отказана</span>
+{% if reservations %}
+    {% for r in reservations %}
+    <tr>
+        <td>{{ r.name }}</td>
+        <td>{{ r.phone }}</td>
+        <td>{{ r.date }}</td>
+        <td>{{ r.time }}</td>
+        <td><span class="people-badge">{{ r.people }}</span></td>
+
+        <td>
+            {% if r.status == "confirmed" %}
+                <span class="status-badge status-green">Потвърдена</span>
+            {% elif r.status == "pending" %}
+                <span class="status-badge status-yellow">Непотвърдена</span>
+            {% elif r.status == "cancelled" %}
+                <span class="status-badge status-red">Отказана</span>
+            {% else %}
+                <span class="status-badge">Потвърдена</span>
+            {% endif %}
+        </td>
+
+        <td>
+            <div class="premium-row-actions">
+
+            {% if not demo_read_only %}
+
+                <button onclick="openEditModal('{{ r.id }}', '{{ r.name|e }}', '{{ r.phone|e }}', '{{ r.date|e }}', '{{ r.time|e }}', '{{ r.people|e }}', '{{ r.status|e }}')">
+                    ✏️
+                </button>
+
+                {% if can_manage_blacklist %}
+                <form method="POST"
+                      action="/blacklist/ban-reservation"
+                      onsubmit="return confirm('Сигурен ли си, че искаш да баннеш този телефон?')">
+
+                    <input type="hidden" name="phone" value="{{ r.phone }}">
+                    <input type="hidden" name="name" value="{{ r.name }}">
+                    <input type="hidden" name="reason" value="Баннат от резервация">
+
+                    <button class="ban-btn" type="submit">🚫</button>
+                </form>
+                {% endif %}
+
+                <button class="delete"
+                        onclick="deleteReservation('{{ r.id }}')">
+                    🗑️
+                </button>
+
+            {% else %}
+
+                <button class="premium-disabled-btn" disabled>
+                    👁️ Demo
+                </button>
+
+            {% endif %}
+
+            </div>
+        </td>
+
+    </tr>
+    {% endfor %}
+
 {% else %}
-    <span class="status-badge">Потвърдена</span>
+
+    <tr>
+        <td colspan="7" class="empty-state">
+            Няма намерени резервации
+        </td>
+    </tr>
+
 {% endif %}
-</td>
-                            <td>
-                                <div class="premium-row-actions">
-                                    <button onclick="openEditModal('{{ r.id }}', '{{ r.name|e }}', '{{ r.phone|e }}', '{{ r.date|e }}', '{{ r.time|e }}', '{{ r.people|e }}', '{{ r.status|e }}')">✏️</button>
+</tbody>
+</table>
+</div>
 
-{% if can_manage_blacklist %}
-<form method="POST" action="/blacklist/ban-reservation" onsubmit="return confirm('Сигурен ли си, че искаш да баннеш този телефон?')">
-    <input type="hidden" name="phone" value="{{ r.phone }}">
-    <input type="hidden" name="name" value="{{ r.name }}">
-    <input type="hidden" name="reason" value="Баннат от резервация">
-    <button class="ban-btn" type="submit">🚫</button>
-</form>
-{% endif %}
+<a class="view-all-reservations" href="/dashboard">
+    Виж всички резервации →
+</a>
 
-<button class="delete" onclick="deleteReservation('{{ r.id }}')">🗑️</button>
-                                </div>
-                            </td>
-                        </tr>
-                        {% endfor %}
-                    {% else %}
-                        <tr>
-                            <td colspan="7" class="empty-state">Няма намерени резервации</td>
-                        </tr>
-                    {% endif %}
-                </tbody>
-            </table>
-        </div>
-
-        <a class="view-all-reservations" href="/dashboard">
-            Виж всички резервации →
-        </a>
     </section>
 
 </main>

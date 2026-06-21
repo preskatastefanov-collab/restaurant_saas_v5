@@ -22,6 +22,8 @@
             🏠 Табло
         </a>
 
+        {% if not demo_read_only %}
+
         {% if role == "super_admin" %}
         <a class="premium-nav-link {% if request.path == '/restaurants' %}active{% endif %}"
            href="/restaurants">
@@ -78,6 +80,8 @@
         </a>
         {% endif %}
 
+        {% endif %}
+        
     </nav>
 
     <div class="premium-user-box">

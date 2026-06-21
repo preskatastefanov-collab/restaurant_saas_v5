@@ -9220,3 +9220,32 @@ box-shadow:
 .reservy-footer-links a:hover{
     color:#4f9cff;
 }
+
+/* ================= DEMO MODE ================= */
+
+.demo-badge{
+    display:inline-flex;
+    align-items:center;
+    gap:8px;
+    padding:10px 18px;
+    border-radius:999px;
+    background:linear-gradient(135deg,#f59e0b,#f97316);
+    color:#fff;
+    font-size:14px;
+    font-weight:900;
+    box-shadow:0 12px 30px rgba(249,115,22,.28);
+}
+
+.demo-readonly-note{
+    margin:18px 0;
+    padding:16px 20px;
+    border-radius:18px;
+    background:#fff7ed;
+    border:1px solid #fed7aa;
+    color:#9a3412;
+    font-weight:900;
+}
+
+.demo-hidden{
+    display:none !important;
+}
